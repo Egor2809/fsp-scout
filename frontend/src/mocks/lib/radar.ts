@@ -62,7 +62,7 @@ export function salaryRadar(db: MockDb, specialization: Specialization, grade: G
       : verdict === 'below_market'
         ? `Ваша вилка ниже ожиданий ${formatShare(shareAbove)} кандидатов ${label}`
         : verdict === 'above_market'
-          ? `Вилка выше ожиданий ${formatShare(shareBelow)} кандидатов ${label} — можно рассчитывать на сильных`
+          ? `Вилка выше ожиданий ${formatShare(shareBelow)} кандидатов ${label}: можно рассчитывать на сильных`
           : `Вилка в рынке: пересекается с ожиданиями ${formatShare(share(within))} кандидатов ${label}`
 
   return {
@@ -102,6 +102,6 @@ export function recommendCategories(
   const lower = prevGrade(need.grade)
   const higher = nextGrade(need.grade)
   if (higher) list.push(make(higher, 'adjacent', `Сильнее по уровню, ожидания обычно выше вашей вилки`))
-  if (lower) list.push(make(lower, 'adjacent', `Растущие специалисты с подтверждёнными навыками — ниже ожидания, нужен онбординг`))
+  if (lower) list.push(make(lower, 'adjacent', `Растущие специалисты с подтверждёнными навыками: ожидания ниже, нужен онбординг`))
   return list
 }

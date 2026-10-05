@@ -6,6 +6,7 @@ import type { Grade, Specialization, WorkFormat } from '@/api/generated/model'
 import { PlayerCard } from '@/components/candidate'
 import { ChipMultiSelect, SelectField, SkillPicker } from '@/components/fields'
 import { PageHeader } from '@/components/layout/AppShell'
+import { FadeIn } from '@/components/motion'
 import { EmptyState, QueryView } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -33,7 +34,7 @@ export default function Candidates() {
   })
   return (
     <>
-      <PageHeader eyebrow="Банк кандидатов" meta={query.data ? `${query.data.total} в банке` : undefined} title="Все кандидаты с подтверждённым грейдом" description="Анонимные карточки. Контакты — после принятия инвайта." />
+      <PageHeader eyebrow="Банк кандидатов" meta={query.data ? `${query.data.total} в банке` : undefined} title="Все кандидаты с подтверждённым грейдом" description="Анонимные карточки. Контакты откроются после принятия инвайта." />
       <div className="mb-5 grid gap-3 rounded-lg border bg-card p-4">
         <div className="flex flex-wrap gap-3">
           <div className="w-52">
@@ -61,9 +62,11 @@ export default function Candidates() {
               </p>
               <div className="grid gap-3 lg:grid-cols-2">
                 {res.items.map((c, i) => (
-                  <Link key={c.id} to={`/e/candidates/${c.id}`} className="group rounded-lg text-foreground no-underline outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-                    <PlayerCard card={c} rank={(res.page - 1) * res.page_size + i + 1} className="h-full transition-colors group-hover:border-primary/50" />
-                  </Link>
+                  <FadeIn key={c.id} index={i} className="grid">
+                    <Link to={`/e/candidates/${c.id}`} className="group lift rounded-lg text-foreground no-underline outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                      <PlayerCard card={c} rank={(res.page - 1) * res.page_size + i + 1} className="h-full transition-colors group-hover:border-primary/50" />
+                    </Link>
+                  </FadeIn>
                 ))}
               </div>
               {res.total > res.page * res.page_size && (

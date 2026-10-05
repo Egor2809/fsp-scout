@@ -51,7 +51,7 @@ export default function HowItWorks() {
               <input type="range" min={-3} max={3} step={0.1} value={theta} onChange={(e) => setTheta(Number(e.target.value))} className="accent-primary" aria-label="Оценка θ" />
             </label>
             <p className="text-sm">
-              При текущей оценке <b className="num">θ = {theta.toFixed(1)}</b> больше всего информации даст <b>{best.name.toLowerCase()}</b> задание — его тест и выберет следующим.
+              При текущей оценке <b className="num">θ = {theta.toFixed(1)}</b> больше всего информации даст <b>{best.name.toLowerCase()}</b> задание, его тест и выберет следующим.
             </p>
           </div>
         </Section>
@@ -60,7 +60,7 @@ export default function HowItWorks() {
             <ol className="grid list-decimal gap-2 pl-5 text-sm">
               <li>Старт с задания уровня заявленного грейда.</li>
               <li>После каждого ответа пересчитываем оценку θ и её погрешность.</li>
-              <li>Следующее задание — с максимумом информации в точке θ, по разным компетенциям.</li>
+              <li>Следующим идёт задание с максимумом информации в точке θ, компетенции чередуются.</li>
               <li>Останавливаемся, когда погрешность достаточно мала (или по лимиту заданий).</li>
               <li>Практическая задача проверяет код на скрытых тестах.</li>
               <li>Итог: грейд, перцентиль в категории и подтверждённые навыки.</li>
@@ -69,8 +69,8 @@ export default function HowItWorks() {
           <Section title="Правила">
             <ul className="grid gap-2 text-sm">
               <li>Подтверждённый грейд меняется не чаще раза в {GRADE_CHANGE_COOLDOWN_DAYS} дней.</li>
-              <li>Повтор того же грейда — через {RETAKE_COOLDOWN_DAYS} дней.</li>
-              <li>Не прошли — можно сразу попробовать грейд ниже (один раз).</li>
+              <li>Тот же грейд можно пересдать через {RETAKE_COOLDOWN_DAYS} дней.</li>
+              <li>Не прошли: можно сразу один раз попробовать грейд ниже.</li>
               <li>Вставки текста и переключения вкладок учитываются как сигнал, но не блокируют тест.</li>
             </ul>
           </Section>

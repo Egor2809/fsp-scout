@@ -8,8 +8,8 @@
  *   #C8C9CA  границы и неактивные элементы
  *
  * Ошибки — отдельный тёмно-красный с иконкой (не фирменный красный).
- * Шрифты: Tektur — дисплей (заголовки страниц, категория, табло), рубленый техно-гротеск с осью ширины;
- *         Golos Text — основной интерфейс; JetBrains Mono (фирменный ФСП) — все цифры и код.
+ * Шрифты: пара «заголовки + текст» задаётся переменными --font-display/--font-text и переключается
+ *         атрибутом data-font на <html> (страница /fonts). JetBrains Mono (фирменный ФСП) — цифры и код.
  * Направление: «скаутинг в спорте» — синие полотна, табло, карточки игроков.
  */
 
@@ -74,6 +74,44 @@
   color-scheme: light;
 }
 
+/* Пары шрифтов. По умолчанию Wix Madefor; атрибут data-font работает и на <html>, и на обёртке (образцы на /fonts) */
+:root,
+[data-font='wix'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Wix Madefor Display Variable', 'Wix Madefor Text Variable', ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 650;
+  --display-tracking: -0.022em;
+  --display-variation: normal;
+  --text-variation: normal;
+}
+[data-font='geologica'] {
+  --font-text: 'Geologica Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Geologica Variable', ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 600;
+  --display-tracking: -0.028em;
+  --display-variation: 'SHRP' 28;
+  --text-variation: 'SHRP' 0;
+}
+[data-font='commissioner'] {
+  --font-text: 'Commissioner Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Commissioner Variable', ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 620;
+  --display-tracking: -0.026em;
+  --display-variation: normal;
+  --text-variation: normal;
+}
+[data-font='serif'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+  --display-weight: 560;
+  --display-tracking: -0.018em;
+  --display-variation: normal;
+  --text-variation: normal;
+}
+[data-font] {
+  font-family: var(--font-text);
+}
+
 .dark {
   /* Тёмная тема на #1B1C21 */
   --background: var(--fsp-ink);
@@ -127,9 +165,9 @@
 }
 
 @theme inline {
-  --font-sans: 'Golos Text Variable', 'Golos Text', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: var(--font-text);
   --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-heading: 'Tektur Variable', 'Tektur', 'Golos Text Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-display);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

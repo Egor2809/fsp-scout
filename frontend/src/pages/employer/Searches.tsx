@@ -25,7 +25,7 @@ export default function Searches() {
       <QueryView query={query}>
         {(list) =>
           list.length === 0 ? (
-            <EmptyState icon={<IconUsersGroup />} title="Подборок пока нет" description="Опишите потребность текстом — соберём подборку с объяснениями." action={<NewNeedButton />} />
+            <EmptyState icon={<IconUsersGroup />} title="Подборок пока нет" description="Опишите потребность текстом, и мы соберём подборку с объяснениями." action={<NewNeedButton />} />
           ) : (
             <ul className="grid gap-2">
               {list.map((s) => {

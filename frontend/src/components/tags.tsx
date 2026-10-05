@@ -9,6 +9,7 @@ import {
 import type { ApplicationStatus, Availability, CandidateSkill, Category, FspLevel, InvitationStatus } from '@/api/generated/model'
 import { INVITATION_STATUS_META, type StatusTone } from '@/lib/invitationStatus'
 import { applicationStatusLabel, availabilityLabel, fspLevelLabel, skillLevelLabel, skillSourceLabel } from '@/lib/labels'
+import { Swap } from '@/components/motion'
 import { cn } from '@/lib/utils'
 
 const TONE: Record<StatusTone, string> = {
@@ -33,9 +34,11 @@ export function Tag({ tone = 'neutral', children, className, icon }: { tone?: St
 export function InvitationStatusBadge({ status, viewer }: { status: InvitationStatus; viewer: 'candidate' | 'employer' }) {
   const meta = INVITATION_STATUS_META[status]
   return (
-    <Tag tone={meta.tone} icon={status === 'postponed' ? <IconClockPause aria-hidden /> : undefined}>
-      {viewer === 'candidate' ? meta.candidateLabel : meta.label}
-    </Tag>
+    <Swap id={status}>
+      <Tag tone={meta.tone} icon={status === 'postponed' ? <IconClockPause aria-hidden /> : undefined}>
+        {viewer === 'candidate' ? meta.candidateLabel : meta.label}
+      </Tag>
+    </Swap>
   )
 }
 
@@ -53,7 +56,7 @@ export function ApplicationStatusBadge({ status }: { status: ApplicationStatus }
   return <Tag tone={APP_TONE[status]}>{applicationStatusLabel[status]}</Tag>
 }
 
-/** Категория «Backend · Middle» — дисплейный Tektur капсом, как номер на майке. */
+/** Категория «Backend · Middle» — дисплейная гарнитура пары на тёмной плашке. */
 export function CategoryTag({ category, size = 'sm', className }: { category: Category | null | undefined; size?: 'sm' | 'lg'; className?: string }) {
   if (!category) {
     return <Tag tone="muted">Грейд не подтверждён</Tag>
@@ -61,7 +64,7 @@ export function CategoryTag({ category, size = 'sm', className }: { category: Ca
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-md bg-foreground font-heading font-bold tracking-[-0.01em] whitespace-nowrap text-background uppercase',
+        'inline-flex items-center rounded-md bg-foreground font-heading font-semibold tracking-[-0.005em] whitespace-nowrap text-background',
         size === 'lg' ? 'h-9 px-3 text-[0.9375rem]' : 'h-6 px-2 text-[0.6875rem]',
         className,
       )}
@@ -137,7 +140,7 @@ export function SkillStatBars({ skills, limit = 5, className }: { skills: Candid
     .slice(0, limit)
   if (!top.length) return null
   return (
-    <ul className={cn('grid gap-1.5', className)} aria-label="Ключевые навыки">
+    <ul className={cn('grid gap-1.5', className)} aria-label="Основные навыки">
       {top.map((s) => {
         const v = Math.round(s.score ?? LEVEL_SCORE[s.level])
         return (

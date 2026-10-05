@@ -36,11 +36,11 @@ export default function Landing() {
           <ConnectLines className="text-white opacity-[0.2] dark:opacity-[0.2]" />
           <div className="relative">
             <p className="eyebrow mb-4 text-white/85">Обратный найм в ИТ</p>
-            <h1 className="display-caps text-[2.25rem] sm:text-[3.75rem]">
+            <h1 className="display-xl text-[2.5rem] sm:text-[4rem]">
               Компании приходят <span className="underline decoration-brand-accent decoration-[0.12em] underline-offset-[0.12em]">к вам</span>
             </h1>
             <p className="mt-5 max-w-lg text-white/85 text-pretty">
-              Пройдите адаптивный тест один раз — и получайте инвайты с вилкой от работодателей. Профиль анонимен, контакты открываются только после вашего согласия.
+              Пройдите адаптивный тест один раз и получайте инвайты с вилкой от работодателей. Профиль анонимен, контакты открываются только после вашего согласия.
               Победы на соревнованиях ФСП усиливают карточку.
             </p>
             <ul className="mt-6 grid gap-2 text-sm text-white">
@@ -51,7 +51,7 @@ export default function Landing() {
           </div>
         </section>
         <section className="grid content-start gap-4">
-          <h2 className="display-caps text-xl">Войти в демо</h2>
+          <h2 className="display text-xl">Войти в демо</h2>
           {DEMO_PERSONAS.map((p) => (
             <button
               key={p.key}
@@ -81,7 +81,7 @@ export default function Landing() {
             }}
           >
             <p className="flex items-center gap-2 font-medium">
-              <IconUserPlus className="size-5 text-link" /> Новый кандидат — пройти путь с нуля
+              <IconUserPlus className="size-5 text-link" /> Новый кандидат: путь с нуля
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <FormField label="Имя и фамилия" htmlFor="reg-name">

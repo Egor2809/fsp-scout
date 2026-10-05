@@ -59,7 +59,7 @@ function PrivacyForm({ initial }: { initial: PrivacySettings }) {
       <Section title="Что показывать в карточке">
         <div className="divide-y">
           {toggle('show_fsp', 'Достижения ФСП', 'Уровень и результаты соревнований')}
-          {toggle('show_company_names', 'Названия компаний в опыте', 'Иначе — «Компания скрыта» с отраслью')}
+          {toggle('show_company_names', 'Названия компаний в опыте', 'Иначе вместо названия будет «Компания скрыта» и отрасль')}
           {toggle('show_city', 'Город', 'Иначе виден только формат работы')}
         </div>
       </Section>
@@ -86,7 +86,7 @@ export default function Privacy() {
   const query = useGetMyPrivacy()
   return (
     <>
-      <PageHeader eyebrow="Приватность" title="Кто и что видит" description="Компании видят анонимную карточку. ФИО и контакты — только после того, как вы примете инвайт или откликнетесь." />
+      <PageHeader eyebrow="Приватность" title="Кто и что видит" description="Компании видят анонимную карточку. ФИО и контакты откроются, когда вы примете инвайт или откликнетесь." />
       <QueryView query={query}>{(data) => <PrivacyForm initial={data} />}</QueryView>
     </>
   )

@@ -15,7 +15,7 @@ export default function History() {
   const grades = useGetMyGradeHistory()
   return (
     <>
-      <PageHeader eyebrow="Тесты и грейды" title="История тестов" description="Грейд меняется не чаще раза в 90 дней, повтор того же грейда — через 30 дней." />
+      <PageHeader eyebrow="Тесты и грейды" title="История тестов" description="Грейд меняется не чаще раза в 90 дней. Тот же грейд можно пересдать через 30 дней." />
       <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
         <div className="grid content-start gap-5">
           <Section title="Попытки">

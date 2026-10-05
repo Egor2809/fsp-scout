@@ -6,7 +6,7 @@ import fspLogoLight from '@/assets/brand/fsp-logo-light.svg'
 export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <span className="font-heading text-[1.05rem] font-bold tracking-tight text-foreground">Скаут</span>
+      <span className="font-heading text-[1.05rem] font-semibold tracking-tight text-foreground">Скаут</span>
       {!compact && (
         <>
           <span aria-hidden className="font-heading text-sm text-muted-foreground">

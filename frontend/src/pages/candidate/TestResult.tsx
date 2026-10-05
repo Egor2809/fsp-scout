@@ -5,6 +5,7 @@ import { useGetTestResult, useStartTest } from '@/api/generated/endpoints/assess
 import { errorMessage } from '@/api/problem'
 import { Section } from '@/components/candidate'
 import { ConnectLines } from '@/components/brand'
+import { CountUp, FadeIn } from '@/components/motion'
 import { InlineError, QueryView } from '@/components/states'
 import { SkillList, Stat, Tag } from '@/components/tags'
 import { Button } from '@/components/ui/button'
@@ -38,14 +39,14 @@ export default function TestResult() {
                   <span>· заявлено {gradeLabel[r.declared_grade]}</span>
                   <span className="num">· {formatDate(r.finished_at)}</span>
                 </p>
-                <div className="grid gap-3">
+                <FadeIn className="grid gap-3" delay={r.percentile !== null ? 0.7 : 0} y={8}>
                   <p className="text-sm font-medium text-white/85">{testOutcomeLabel[r.outcome]}</p>
-                  <h1 className="display-caps text-[clamp(2.75rem,9vw,7.5rem)] break-words text-white">{r.category ? r.category.label : 'Без категории'}</h1>
-                </div>
+                  <h1 className="display-xl text-[clamp(2.75rem,8vw,6.5rem)] break-words text-white">{r.category ? r.category.label : 'Без категории'}</h1>
+                </FadeIn>
                 <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 border-t border-white/30 pt-6">
                   {r.percentile !== null ? (
                     <div className="flex items-end gap-4">
-                      <span className="num text-[clamp(4.5rem,14vw,10rem)] leading-[0.8] font-bold tracking-tighter">{r.percentile}</span>
+                      <CountUp value={r.percentile} className="num text-[clamp(4.5rem,14vw,10rem)] leading-[0.8] font-bold tracking-tighter" />
                       <span className="grid gap-1 pb-1 text-sm text-white/85">
                         <span className="eyebrow text-white">перцентиль</span>
                         среди кандидатов категории
@@ -63,7 +64,7 @@ export default function TestResult() {
                     ].map(([label, value, isNum]) => (
                       <div key={String(label)} className="grid content-end gap-1.5 border-l border-white/30 px-4 sm:px-6">
                         <dt className="eyebrow text-white/85">{label}</dt>
-                        <dd className={isNum ? 'num text-[2rem] leading-none font-bold' : 'font-heading text-xl leading-none font-bold uppercase'}>{value}</dd>
+                        <dd className={isNum ? 'num text-[2rem] leading-none font-bold' : 'font-heading text-xl leading-none font-semibold'}>{value}</dd>
                       </div>
                     ))}
                   </dl>
@@ -87,7 +88,7 @@ export default function TestResult() {
                           </span>
                         </div>
                         <div className="h-1.5 overflow-hidden rounded-[2px] bg-muted" aria-hidden>
-                          <div className="h-full bg-primary" style={{ width: `${c.score}%` }} />
+                          <div className="h-full origin-left animate-[bar-grow_600ms_cubic-bezier(0.22,1,0.36,1)_both] bg-primary" style={{ width: `${c.score}%` }} />
                         </div>
                       </li>
                     ))}
@@ -107,7 +108,7 @@ export default function TestResult() {
                       </ResponsiveContainer>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Вертикаль — оценка уровня (θ). После верных ответов задания усложняются. <Link to="/how-it-works">Как работает тест</Link>
+                      По вертикали оценка уровня (θ). После верных ответов задания усложняются. <Link to="/how-it-works">Как работает тест</Link>
                     </p>
                   </Section>
                 )}

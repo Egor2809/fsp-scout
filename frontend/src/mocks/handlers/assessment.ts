@@ -132,7 +132,7 @@ export const assessmentHandlers = [
     if (elig.active_test_id) return problem(409, 'test_in_progress', 'Тест уже идёт', 'Завершите начатый тест.')
     const g = elig.grades.find((x) => x.grade === grade)
     if (!g?.can_start) {
-      return problem(409, 'retake_locked', 'Попытка пока недоступна', g?.reason === 'grade_change_cooldown' ? 'Подтверждённый грейд меняется не чаще одного раза в 90 дней.' : 'Повторная попытка на этот грейд — через 30 дней.', g?.available_at ? { available_at: g.available_at } : {})
+      return problem(409, 'retake_locked', 'Попытка пока недоступна', g?.reason === 'grade_change_cooldown' ? 'Подтверждённый грейд меняется не чаще одного раза в 90 дней.' : 'Этот грейд можно пересдать через 30 дней.', g?.available_at ? { available_at: g.available_at } : {})
     }
     const vacancyId = parsed.data.vacancy_id ?? null
     if (vacancyId && !db.vacancies.some((v) => v.id === vacancyId)) return notFound('Вакансия')

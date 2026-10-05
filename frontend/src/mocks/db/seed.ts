@@ -935,7 +935,7 @@ export function buildSeed(now: Date = new Date()): MockDb {
       companyId: cSever.id,
       title: 'Идемпотентный обработчик платежа',
       description:
-        'Напишите обработчик `handle_payment(event, storage)`: событие может прийти повторно, сумма должна списаться ровно один раз. `storage` — словарь, имитирующий таблицу с уникальным ключом. Опишите в комментарии, как поведёт себя решение при параллельных вызовах.',
+        'Напишите обработчик `handle_payment(event, storage)`: событие может прийти повторно, сумма должна списаться ровно один раз. Словарь `storage` имитирует таблицу с уникальным ключом. Опишите в комментарии, как поведёт себя решение при параллельных вызовах.',
       kind: 'code',
       specializations: ['backend'],
       grades: ['middle', 'senior'],
@@ -957,7 +957,7 @@ export function buildSeed(now: Date = new Date()): MockDb {
       companyId: cTele.id,
       title: 'Ревью: утечка горутин в обработчике',
       description:
-        'Перед вами фрагмент HTTP-обработчика на Go. Найдите проблемы (утечки, гонки, обработка контекста) и предложите исправления. Ответ — список замечаний как в код-ревью.',
+        'Перед вами фрагмент HTTP-обработчика на Go. Найдите проблемы (утечки, гонки, обработка контекста) и предложите исправления. Ответ дайте списком замечаний, как в код-ревью.',
       kind: 'review',
       specializations: ['backend'],
       grades: ['middle', 'senior'],
@@ -1027,14 +1027,14 @@ export function buildSeed(now: Date = new Date()): MockDb {
       candidateId: DEMO_CANDIDATE_FSP_ID,
       submittedAt: ago(18),
       answerText:
-        'Кеш в Redis по ключу schedule:{group}:{date} с TTL 10 минут. Инвалидация по событию изменения расписания из outbox. Перед началом занятий — прогрев популярных групп. Защита от thundering herd: single-flight на ключ.',
+        'Кеш в Redis по ключу schedule:{group}:{date} с TTL 10 минут. Инвалидация по событию изменения расписания из outbox. Перед началом занятий прогреваем популярные группы. Защита от thundering herd: single-flight на ключ.',
       code: null,
       language: null,
       status: 'scored',
       llmScore: 81,
       finalScore: 84,
       freshSignal: true,
-      feedback: 'Хорошая схема, single-flight — отличная идея.',
+      feedback: 'Хорошая схема, single-flight здесь к месту.',
     },
   ]
   const subPool = backendPool.slice(2, 6)
@@ -1047,7 +1047,7 @@ export function buildSeed(now: Date = new Date()): MockDb {
       taskId: tSever.id,
       candidateId: cand.id,
       submittedAt: ago(5 - idx),
-      answerText: idx % 2 === 0 ? 'Проверяю ключ через setdefault — операция атомарна в рамках словаря; для БД — уникальный индекс и INSERT ... ON CONFLICT DO NOTHING.' : null,
+      answerText: idx % 2 === 0 ? 'Проверяю ключ через setdefault: для словаря операция атомарна. В БД то же даёт уникальный индекс и INSERT ... ON CONFLICT DO NOTHING.' : null,
       code:
         'def handle_payment(event, storage):\n    key = event["id"]\n    if key in storage:\n        return storage[key]\n    storage[key] = {"amount": event["amount"], "status": "charged"}\n    return storage[key]\n',
       language: 'python',

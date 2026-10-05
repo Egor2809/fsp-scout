@@ -113,7 +113,7 @@ export function retakeDatesAfter(
 
 export const eligibilityReasonText: Record<EligibilityReason, string> = {
   grade_change_cooldown: 'Подтверждённый грейд меняется не чаще раза в 90 дней',
-  retake_cooldown: 'Повторная попытка на этот грейд — через 30 дней',
+  retake_cooldown: 'Этот грейд можно пересдать через 30 дней',
   lower_attempt_used: 'Попытка на грейд ниже после провала уже использована',
   test_in_progress: 'Сначала завершите начатый тест',
   survey_required: 'Сначала пройдите опрос',

@@ -66,7 +66,7 @@ export default function Vacancies() {
   const query = useListVacancies({ specialization: spec ?? undefined, q: q.trim() || undefined })
   return (
     <>
-      <PageHeader eyebrow="Вакансии" title="Открытые вакансии" description="Отклик раскрывает компании ваши контакты — так же, как принятие инвайта." />
+      <PageHeader eyebrow="Вакансии" title="Открытые вакансии" description="Отклик раскрывает компании ваши контакты, как и принятие инвайта." />
       <div className="mb-4 flex flex-wrap gap-2">
         <Input aria-label="Поиск" placeholder="Поиск по названию" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
         <div className="w-52">

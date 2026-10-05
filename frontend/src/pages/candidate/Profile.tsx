@@ -18,7 +18,7 @@ export default function CandidateProfile() {
   const preview = useGetMyCardPreview()
   return (
     <>
-      <PageHeader eyebrow="Профиль" title="Профиль и карточка" description="Слева — ваши данные. Справа — анонимная карточка, которую видит работодатель до принятия инвайта." />
+      <PageHeader eyebrow="Профиль" title="Профиль и карточка" description="Слева ваши данные, справа анонимная карточка. Её видит работодатель, пока вы не приняли инвайт." />
       <div className="grid gap-5 lg:grid-cols-2">
         <QueryView query={profile}>
           {(p) => (

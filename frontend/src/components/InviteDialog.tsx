@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { formatDate, validateSalaryRange } from '@/lib/format'
 import { CONTACT_CHANNELS, WORK_FORMATS, contactChannelLabel, workFormatLabel } from '@/lib/labels'
 
-const BELOW = 'Вилка ниже ожиданий кандидата — инвайт не дойдёт. Поднимите верхнюю границу.'
+const BELOW = 'Вилка ниже ожиданий кандидата, инвайт не дойдёт. Поднимите верхнюю границу.'
 
 export function InviteDialog({ card, open, onOpenChange, source }: { card: CandidateCard; open: boolean; onOpenChange: (v: boolean) => void; source?: InvitationSource }) {
   const { session } = useAuth()
@@ -50,7 +50,7 @@ export function InviteDialog({ card, open, onOpenChange, source }: { card: Candi
   const below = (precheck.data && !precheck.data.salary_ok && !salaryError) || hasProblemCode(create.error, 'salary_below_floor')
   const errors = {
     title: title.trim().length >= 3 ? null : 'Название позиции',
-    description: description.trim().length >= 20 ? null : 'Опишите задачи и команду — от 20 символов',
+    description: description.trim().length >= 20 ? null : 'Опишите задачи и команду, не короче 20 символов',
     person: person.trim() ? null : 'Кто будет на связи',
     contact: contact.trim() ? null : 'Укажите контакт',
   }
@@ -118,7 +118,7 @@ export function InviteDialog({ card, open, onOpenChange, source }: { card: Candi
               setSalary(v)
               if (create.isError) create.reset()
             }}
-            error={salaryError && (touched || salary.from !== null) ? salaryError : below ? { field: 'to', message: BELOW } : null} hint="Точные ожидания кандидата не раскрываются — мы лишь проверим, что вилка их не ниже" />
+            error={salaryError && (touched || salary.from !== null) ? salaryError : below ? { field: 'to', message: BELOW } : null} hint="Точные ожидания кандидата скрыты. Мы проверим только, что вилка не ниже них" />
           <div className="grid gap-4 sm:grid-cols-3">
             <FormField label="Формат" htmlFor="inv-fmt">
               <SelectField id="inv-fmt" value={format} onChange={setFormat} options={WORK_FORMATS.map((f) => ({ value: f, label: workFormatLabel[f] }))} />

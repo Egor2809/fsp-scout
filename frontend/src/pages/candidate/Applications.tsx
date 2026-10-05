@@ -35,7 +35,7 @@ export default function Applications() {
                     {a.events.map((e, i) => (
                       <li key={i}>
                         {formatDate(e.at)} · {applicationStatusLabel[e.status]}
-                        {e.note ? ` — ${e.note}` : ''}
+                        {e.note ? `: ${e.note}` : ''}
                       </li>
                     ))}
                   </ol>

@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { IconAlertOctagon, IconInbox, IconRefresh } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
@@ -55,7 +56,7 @@ export function EmptyState({
       <ConnectLines className="opacity-[0.1] dark:opacity-[0.14]" />
       <EmptyHeader className="relative">
         <EmptyMedia variant="icon">{icon ?? <IconInbox />}</EmptyMedia>
-        <EmptyTitle className="font-heading font-bold tracking-tight uppercase">{title}</EmptyTitle>
+        <EmptyTitle className="font-heading font-semibold">{title}</EmptyTitle>
         {description && <EmptyDescription>{description}</EmptyDescription>}
       </EmptyHeader>
       {action && <EmptyContent className="relative">{action}</EmptyContent>}
@@ -89,9 +90,16 @@ export function QueryView<T>({
   children: (data: T) => ReactNode
   errorTitle?: string
 }) {
+  // Если данные пришли после скелетона, проявляем их; из кэша показываем сразу
+  const [afterSkeleton] = useState(() => query.isPending)
+  const reduce = useReducedMotion()
   if (query.isPending) return <>{skeleton ?? <SkeletonCards />}</>
   if (query.isError || query.data === undefined) {
     return <ErrorBanner title={errorTitle ?? 'Не удалось загрузить данные'} error={query.error} onRetry={() => void query.refetch()} />
   }
-  return <>{children(query.data)}</>
+  return (
+    <motion.div initial={afterSkeleton && !reduce ? { opacity: 0 } : false} animate={{ opacity: 1 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
+      {children(query.data)}
+    </motion.div>
+  )
 }

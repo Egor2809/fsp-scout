@@ -25,6 +25,7 @@ import {
 import { useListMyInvitations } from '@/api/generated/endpoints/invitations/invitations'
 import { useAuth } from '@/auth/context'
 import { ConnectLines, Logo } from '@/components/brand'
+import { PageTransition } from '@/components/motion'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -225,7 +226,7 @@ export function AppShell({ role }: { role: 'candidate' | 'employer' }) {
               <NavList groups={groups} onNavigate={() => setMenuOpen(false)} />
             </SheetContent>
           </Sheet>
-          <Link to={role === 'candidate' ? '/c' : '/e'} className="no-underline" aria-label="Скаут — на главную кабинета">
+          <Link to={role === 'candidate' ? '/c' : '/e'} className="no-underline" aria-label="Скаут, на главную кабинета">
             <Logo />
           </Link>
           <span className="ml-2 hidden rounded-md border px-2 py-0.5 font-mono text-[0.7rem] tracking-wider text-muted-foreground uppercase sm:inline">
@@ -248,16 +249,15 @@ export function AppShell({ role }: { role: 'candidate' | 'employer' }) {
         </aside>
         <main id="main" className="min-w-0 flex-1 py-6 pb-16">
           <Suspense key={location.pathname} fallback={<PageFallback />}>
-            <Outlet />
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
           </Suspense>
         </main>
       </div>
     </div>
   )
 }
-
-/** Короткий заголовок (≤ 22 символов) — капсом, как табло; длинный — обычным регистром. */
-const SHORT_TITLE = 22
 
 export function PageHeader({
   eyebrow,
@@ -277,7 +277,6 @@ export function PageHeader({
   motif?: boolean
   children?: ReactNode
 }) {
-  const short = typeof title === 'string' && title.length <= SHORT_TITLE
   return (
     <header className={cn('relative mb-6 border-b pb-5', motif && 'overflow-hidden rounded-lg border bg-surface/50 p-5 sm:p-6')}>
       {motif && <ConnectLines />}
@@ -292,7 +291,7 @@ export function PageHeader({
               {meta && <span className="num text-foreground">{meta}</span>}
             </p>
           )}
-          <h1 className={cn(short ? 'display-caps text-[1.75rem] sm:text-[2.25rem]' : 'display text-[1.5rem] sm:text-[1.875rem]')}>{title}</h1>
+          <h1 className="display text-[1.625rem] sm:text-[2rem]">{title}</h1>
           {description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground text-pretty">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}

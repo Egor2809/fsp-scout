@@ -1,8 +1,12 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
-@import '@fontsource-variable/golos-text/index.css';
-@import '@fontsource-variable/tektur/standard.css';
+/* Пары шрифтов переключаются на /fonts; файлы грузятся только для активной пары (unicode-range + ленивые @font-face) */
+@import '@fontsource-variable/wix-madefor-display/index.css';
+@import '@fontsource-variable/wix-madefor-text/index.css';
+@import '@fontsource-variable/geologica/shrp.css';
+@import '@fontsource-variable/commissioner/index.css';
+@import '@fontsource-variable/source-serif-4/opsz.css';
 @import '@fontsource-variable/jetbrains-mono/index.css';
 @import './theme.css';
 
@@ -17,16 +21,30 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    font-synthesis: none;
+    font-kerning: normal;
+    font-optical-sizing: auto;
   }
   body {
     @apply bg-background text-foreground;
+    line-height: 1.5;
+    font-variation-settings: var(--text-variation);
   }
-  /* h1 страниц — дисплейный Tektur (см. .display); секции — Golos Text */
+  /* Заголовки: дисплейная гарнитура пары, плотный трекинг, баланс строк */
   h1,
   h2,
   h3,
   h4 {
-    @apply tracking-tight text-balance;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-variation-settings: var(--display-variation);
+    letter-spacing: var(--display-tracking);
+    text-wrap: balance;
+  }
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
   }
   a {
     @apply text-link underline-offset-4;
@@ -37,13 +55,21 @@
   samp {
     @apply font-mono;
   }
+  /* Цвет бирки по умолчанию; утилиты text-* его перекрывают (нулевая специфичность) */
+  :where(.eyebrow) {
+    color: var(--muted-foreground);
+  }
   ::selection {
     background: color-mix(in oklab, var(--fsp-blue) 22%, transparent);
   }
 }
 
 @layer utilities {
-  /* Цифры: грейд, перцентиль, вилка, индекс — JetBrains Mono, табличные */
+  /* Цифры: грейд, перцентиль, вилка, индекс: JetBrains Mono, табличные */
+  .num,
+  table {
+    font-variant-numeric: tabular-nums;
+  }
   .num {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
@@ -56,22 +82,48 @@
     line-height: 1rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--muted-foreground);
   }
-  /* Дисплей: Tektur, плотный трекинг. Капс + сжатая ширина — для коротких заголовков (.display-caps) */
+  /* Дисплей: гарнитура заголовков активной пары. Крупный кегль, плотнее трекинг */
   .display {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    line-height: 1.08;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-variation-settings: var(--display-variation);
+    letter-spacing: var(--display-tracking);
+    line-height: 1.1;
+    text-wrap: balance;
   }
+  .display-xl {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-variation-settings: var(--display-variation);
+    letter-spacing: calc(var(--display-tracking) * 1.6);
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+  /* Капс: только короткие подписи; капсу нужна разрядка, а не сжатие */
   .display-caps {
-    font-family: var(--font-heading);
-    font-weight: 800;
-    font-stretch: 82%;
-    letter-spacing: -0.015em;
-    line-height: 0.92;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-variation-settings: var(--display-variation);
+    letter-spacing: 0.04em;
+    line-height: 1;
     text-transform: uppercase;
+  }
+  /* Интерактивная карточка: лёгкий подъём при наведении, сжатие при нажатии */
+  .lift {
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 180ms ease-out,
+      border-color 180ms ease-out;
+  }
+  @media (hover: hover) {
+    .lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px -12px color-mix(in oklab, var(--foreground) 35%, transparent);
+    }
+  }
+  .lift:active {
+    transform: translateY(0) scale(0.99);
   }
   /* Синее полотно табло с лёгким шумом (feTurbulence, opacity 0.08) */
   .canvas-board {
@@ -96,6 +148,15 @@
   }
   .scrollbar-none {
     scrollbar-width: none;
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }
 

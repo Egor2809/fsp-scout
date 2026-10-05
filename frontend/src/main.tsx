@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClientProvider } from '@tanstack/react-query'
+import { MotionConfig } from 'motion/react'
 import './index.css'
 import App from './App.tsx'
 import { createQueryClient } from '@/api/queryClient'
@@ -9,10 +10,12 @@ import { AuthGate } from '@/auth/AuthGate'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { config } from '@/config'
+import { applyFontPair } from '@/lib/fontPair'
 import { applyTheme } from '@/lib/theme'
 
 async function bootstrap() {
   applyTheme()
+  applyFontPair()
   if (config.apiMock) {
     const { startMockWorker } = await import('@/mocks/browser')
     await startMockWorker()
@@ -26,10 +29,12 @@ async function bootstrap() {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <AuthGate provider={provider} initial={session}>
-          <TooltipProvider>
-            <App />
-            <Toaster position="top-center" />
-          </TooltipProvider>
+          <MotionConfig reducedMotion="user">
+            <TooltipProvider>
+              <App />
+              <Toaster position="top-center" />
+            </TooltipProvider>
+          </MotionConfig>
         </AuthGate>
       </QueryClientProvider>
     </StrictMode>,

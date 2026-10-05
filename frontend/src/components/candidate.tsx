@@ -4,6 +4,7 @@ import type { CandidateCard, ExplanationFactor, FspAchievement, MatchExplanation
 import { AvailabilityTag, CategoryTag, FreshSignalBadge, FspBadge, FspIndexBadge, InvitationStatusBadge, SkillList, SkillStatBars, Stat, Tag, ApplicationStatusBadge } from '@/components/tags'
 import { formatDate, formatPercentile, formatSalaryRange, formatSalaryRangeShort, formatShortDate, formatYears } from '@/lib/format'
 import { contactChannelLabel, fspDisciplineLabel, fspLevelLabel, fspResultLabel, industryLabel, workFormatLabel } from '@/lib/labels'
+import { FadeIn } from '@/components/motion'
 import { cn } from '@/lib/utils'
 
 const POLARITY_TONE = { positive: 'success', negative: 'danger', neutral: 'neutral' } as const
@@ -26,7 +27,7 @@ export function WhyPanel({ explanation, className }: { explanation: MatchExplana
   return (
     <section className={cn('rounded-lg border bg-card p-4', className)} aria-labelledby="why-title">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="why-title" className="font-heading text-sm font-bold tracking-tight uppercase">
+        <h2 id="why-title" className="font-heading text-sm font-semibold">
           Почему в подборке
         </h2>
         <span className="num text-sm text-muted-foreground">
@@ -115,7 +116,7 @@ export function PlayerCard({ card, rank, status, footer, className }: { card: Ca
             {status}
           </div>
           {card.category ? (
-            <p className="font-heading text-[1.0625rem] leading-tight font-bold tracking-[-0.01em] uppercase sm:text-[1.25rem]">{card.category.label}</p>
+            <p className="font-heading text-[1.0625rem] leading-tight font-semibold tracking-[-0.015em] sm:text-[1.25rem]">{card.category.label}</p>
           ) : (
             <CategoryTag category={null} className="justify-self-start" />
           )}
@@ -193,7 +194,7 @@ export function CandidateCardView({ card }: { card: CandidateCard }) {
                 <span className="font-medium">{e.role}</span>
                 <span className="text-sm text-muted-foreground">
                   {e.company_hidden || !e.company_name ? 'Компания скрыта' : e.company_name}
-                  {e.industry ? ` · ${industryLabel[e.industry]}` : ''} · {formatShortDate(e.start)} — {e.end ? formatShortDate(e.end) : 'сейчас'}
+                  {e.industry ? ` · ${industryLabel[e.industry]}` : ''} · {formatShortDate(e.start)} – {e.end ? formatShortDate(e.end) : 'сейчас'}
                 </span>
                 {e.description && <p className="text-sm">{e.description}</p>}
               </li>
@@ -230,7 +231,7 @@ export function ContactsBlock({ card }: { card: CandidateCard }) {
 
 export function ContactList({ contacts, note }: { contacts: NonNullable<CandidateCard['contacts']>; note?: string }) {
   return (
-    <div className="grid gap-2 rounded-lg border border-success/30 bg-success-surface p-4 text-sm">
+    <FadeIn y={4} className="grid gap-2 rounded-lg border border-success/30 bg-success-surface p-4 text-sm">
       <p className="font-semibold">{contacts.full_name}</p>
       <p className="flex items-center gap-2">
         <IconMail className="size-4" aria-hidden />
@@ -252,7 +253,7 @@ export function ContactList({ contacts, note }: { contacts: NonNullable<Candidat
         Предпочитает: {contactChannelLabel[contacts.preferred_channel]}
         {note ? ` · ${note}` : ''}
       </p>
-    </div>
+    </FadeIn>
   )
 }
 
@@ -287,7 +288,7 @@ export function NoFspHistory() {
       <IconMedal className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
       <div>
         <p className="font-medium">Нет истории ФСП</p>
-        <p className="text-muted-foreground">Это нормально: подбор строится на тесте и навыках. Участие в соревнованиях ФСП — дополнительный сигнал, не обязательный.</p>
+        <p className="text-muted-foreground">Подбор строится на тесте и навыках. Соревнования ФСП дают дополнительный сигнал, но они не обязательны.</p>
       </div>
     </div>
   )

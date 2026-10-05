@@ -215,7 +215,7 @@ export const invitationHandlers = [
     const c = ctx.candidate
     const channel = parsed.data.channel
     const available = channel === 'email' ? Boolean(c.email) : channel === 'phone' ? Boolean(c.phone) : Boolean(c.telegram)
-    if (!available) return validationProblem([{ pointer: '/channel', detail: 'Этот канал не заполнен в профиле — добавьте контакт или выберите другой' }])
+    if (!available) return validationProblem([{ pointer: '/channel', detail: 'Этот канал не заполнен в профиле. Добавьте контакт или выберите другой' }])
     if (parsed.data.call_slot && new Date(parsed.data.call_slot).getTime() < ctx.now.getTime()) {
       return validationProblem([{ pointer: '/call_slot', detail: 'Слот созвона должен быть в будущем' }])
     }

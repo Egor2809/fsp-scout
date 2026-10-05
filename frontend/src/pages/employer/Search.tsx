@@ -13,6 +13,7 @@ import { CategoryTag, FspBadge, Tag } from '@/components/tags'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { formatPercentile, formatSalaryRangeShort, formatYears } from '@/lib/format'
+import { FadeIn } from '@/components/motion'
 import { cn } from '@/lib/utils'
 
 function Refine({ search }: { search: Search }) {
@@ -55,7 +56,7 @@ function Refine({ search }: { search: Search }) {
   )
 }
 
-function ResultRow({ item, searchId, selected, onSelect }: { item: SearchResultItem; searchId: string; selected: boolean; onSelect: () => void }) {
+function ResultRow({ item, index, searchId, selected, onSelect }: { item: SearchResultItem; index: number; searchId: string; selected: boolean; onSelect: () => void }) {
   const c = item.candidate
   const add = useAddToShortlist()
   const remove = useRemoveFromShortlist()
@@ -65,7 +66,7 @@ function ResultRow({ item, searchId, selected, onSelect }: { item: SearchResultI
     m.mutate({ searchId, candidateId: c.id }, { onSuccess: () => void invalidatePaths(qc, `/searches/${searchId}`) })
   }
   return (
-    <li>
+    <FadeIn as="li" index={index}>
       <div
         role="button"
         tabIndex={0}
@@ -73,7 +74,7 @@ function ResultRow({ item, searchId, selected, onSelect }: { item: SearchResultI
         onClick={onSelect}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onSelect())}
         className={cn(
-          'grid cursor-pointer grid-cols-[3.25rem_1fr] gap-x-3 py-3.5 pr-2 pl-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset',
+          'grid cursor-pointer grid-cols-[3.25rem_1fr] gap-x-3 py-3.5 pr-2 pl-3 transition-colors duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset',
           selected ? 'bg-accent shadow-[inset_3px_0_0_var(--primary)]' : 'hover:bg-muted/60',
         )}
       >
@@ -105,7 +106,7 @@ function ResultRow({ item, searchId, selected, onSelect }: { item: SearchResultI
         </p>
         <ExplanationChips chips={item.explanation.chips} className="mt-2" />
       </div>
-    </li>
+    </FadeIn>
   )
 }
 
@@ -116,7 +117,7 @@ export default function SearchPage() {
   const [selected, setSelected] = useState<string | null>(null)
   return (
     <>
-      <PageHeader eyebrow="Подборка" meta={results.data ? `v${results.data.version} · ${results.data.total} в таблице` : undefined} title={search.data?.title ?? 'Подборка'} description="Каждый кандидат — с объяснением: что совпало, что подтверждено тестом и где расхождения." />
+      <PageHeader eyebrow="Подборка" meta={results.data ? `v${results.data.version} · ${results.data.total} в таблице` : undefined} title={search.data?.title ?? 'Подборка'} description="У каждого кандидата есть объяснение: что совпало, что подтверждено тестом и где расхождения." />
       <QueryView query={results}>
         {(res) => {
           const current = res.items.find((i) => i.candidate.id === selected) ?? res.items[0]
@@ -133,8 +134,8 @@ export default function SearchPage() {
                   <span className="pr-12">Перц.</span>
                 </div>
                 <ol className="-mt-3 grid divide-y divide-border border-b">
-                  {res.items.map((item) => (
-                    <ResultRow key={item.candidate.id} item={item} searchId={searchId} selected={current?.candidate.id === item.candidate.id} onSelect={() => setSelected(item.candidate.id)} />
+                  {res.items.map((item, i) => (
+                    <ResultRow key={item.candidate.id} item={item} index={i} searchId={searchId} selected={current?.candidate.id === item.candidate.id} onSelect={() => setSelected(item.candidate.id)} />
                   ))}
                 </ol>
               </div>

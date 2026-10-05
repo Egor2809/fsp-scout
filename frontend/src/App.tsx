@@ -1,11 +1,13 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router'
+import { createBrowserRouter, Navigate, Outlet, RouterProvider, useLocation } from 'react-router'
 import { homeFor, useAuth } from '@/auth/context'
 import { AppShell, PageFallback } from '@/components/layout/AppShell'
+import { PageTransition } from '@/components/motion'
 
 const Landing = lazy(() => import('@/pages/common/Landing'))
 const HowItWorks = lazy(() => import('@/pages/common/HowItWorks'))
 const NotFound = lazy(() => import('@/pages/common/NotFound'))
+const Fonts = lazy(() => import('@/pages/common/Fonts'))
 
 const CHome = lazy(() => import('@/pages/candidate/Home'))
 const COnboarding = lazy(() => import('@/pages/candidate/Onboarding'))
@@ -46,9 +48,12 @@ function SharedShell() {
 }
 
 function Bare() {
+  const { pathname } = useLocation()
   return (
-    <Suspense fallback={<div className="p-6"><PageFallback /></div>}>
-      <Outlet />
+    <Suspense key={pathname} fallback={<div className="p-6"><PageFallback /></div>}>
+      <PageTransition>
+        <Outlet />
+      </PageTransition>
     </Suspense>
   )
 }
@@ -56,7 +61,10 @@ function Bare() {
 const router = createBrowserRouter([
   {
     element: <Bare />,
-    children: [{ path: '/', element: <Landing /> }],
+    children: [
+      { path: '/', element: <Landing /> },
+      { path: '/fonts', element: <Fonts /> },
+    ],
   },
   {
     path: '/c',

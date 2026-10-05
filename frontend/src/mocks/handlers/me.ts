@@ -138,7 +138,7 @@ export const meHandlers = [
   route.candidate('post', '/me/resume', ({ ctx, form }) => {
     const file = form?.get('file')
     if (!(file instanceof File)) return validationProblem([{ pointer: '/file', detail: 'Прикрепите PDF-файл' }])
-    if (file.size > 5 * 1024 * 1024) return problem(413, 'file_too_large', 'Файл слишком большой', 'Максимальный размер резюме — 5 МБ.')
+    if (file.size > 5 * 1024 * 1024) return problem(413, 'file_too_large', 'Файл слишком большой', 'Резюме должно весить не больше 5 МБ.')
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
     if (!isPdf) return problem(415, 'unsupported_media_type', 'Нужен PDF', 'Загрузите резюме в формате PDF.')
     const c = ctx.candidate
@@ -172,7 +172,7 @@ export const meHandlers = [
         about: 'Backend-разработчик: платёжные сервисы, интеграции, высоконагруженные API.',
       },
       confidence: { full_name: 0.98, email: 0.99, phone: 0.93, telegram: 0.71, city: 0.86, experience_years: 0.64, roles: 0.82, skills: 0.8, soft_skills: 0.55, experience: 0.77, about: 0.6 },
-      warnings: ['Стаж посчитан по датам в резюме — проверьте', 'Навык «Clean Architecture» не найден в справочнике'],
+      warnings: ['Стаж посчитан по датам в резюме, проверьте его', 'Навык «Clean Architecture» не найден в справочнике'],
     }
     return json(result)
   }),
@@ -182,7 +182,7 @@ export const meHandlers = [
     if (!c.standing) return problem(409, 'grade_unconfirmed', 'Грейд не подтверждён', 'PDF-профиль формируется после прохождения теста.')
     const verified = c.skills.filter((s) => s.verified).map((s) => s.name).join(', ')
     const pdf = buildPdf([
-      { text: 'Скаут x ФСП — верифицированный профиль', size: 18, gap: 40 },
+      { text: 'Скаут × ФСП: верифицированный профиль', size: 18, gap: 40 },
       { text: c.fullName, size: 14 },
       { text: `Категория: ${categoryLabel(c.standing.specialization, c.standing.grade)}, ${c.standing.percentile}-й перцентиль` },
       { text: `Грейд подтверждён: ${formatDate(c.standing.confirmedAt)}` },

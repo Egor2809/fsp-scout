@@ -7,6 +7,7 @@ import type { Answer, CodeRunResult, TestItem, TestProgress } from '@/api/genera
 import { errorMessage } from '@/api/problem'
 import { invalidatePaths } from '@/api/queryClient'
 import { CodeEditor } from '@/components/CodeEditor'
+import { FadeIn } from '@/components/motion'
 import { ErrorBanner, InlineError, QueryView } from '@/components/states'
 import { DifficultyMeter, Tag } from '@/components/tags'
 import { Button } from '@/components/ui/button'
@@ -69,10 +70,16 @@ function ProgressBar({ progress, left }: { progress: TestProgress; left: number 
           <span
             key={i}
             className={cn(
-              'min-w-0 flex-1 rounded-[1px]',
-              l.done ? 'bg-primary dark:bg-link' : l.current ? 'bg-primary/35 ring-1 ring-primary ring-inset dark:ring-link' : l.optional ? 'bg-border/50' : 'bg-border',
+              'relative min-w-0 flex-1 overflow-hidden rounded-[1px] transition-[background-color,box-shadow] duration-300 ease-out',
+              l.current ? 'bg-primary/20 ring-1 ring-primary ring-inset dark:ring-link' : l.optional ? 'bg-border/50' : 'bg-border',
             )}
-          />
+          >
+            {/* Заливка сегмента: scaleX 0 → 1, без перерасчёта раскладки */}
+            <span
+              aria-hidden
+              className={cn('absolute inset-0 origin-left bg-primary transition-transform duration-300 ease-out dark:bg-link', l.done ? 'scale-x-100' : 'scale-x-0')}
+            />
+          </span>
         ))}
       </div>
     </div>
@@ -118,6 +125,7 @@ function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem
     )
 
   return (
+    <FadeIn y={8}>
     <article className="grid gap-5" aria-labelledby="item-title" onPaste={() => (paste.current += 1)}>
       <header className="grid gap-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -138,7 +146,7 @@ function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem
       {item.type === 'single_choice' && item.options && (
         <RadioGroup value={options[0] ?? ''} onValueChange={(v) => setOptions([v])} className="grid gap-2" aria-label="Варианты ответа">
           {item.options.map((o) => (
-            <label key={o.id} htmlFor={`o-${o.id}`} className={cn('flex cursor-pointer items-start gap-3 rounded-lg border p-3', options[0] === o.id && 'border-primary bg-primary/5')}>
+            <label key={o.id} htmlFor={`o-${o.id}`} className={cn('flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors duration-150 hover:border-primary/40', options[0] === o.id && 'border-primary bg-primary/5')}>
               <RadioGroupItem id={`o-${o.id}`} value={o.id} className="mt-0.5" />
               <span className="whitespace-pre-line">{o.text}</span>
             </label>
@@ -151,7 +159,7 @@ function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem
           {item.options.map((o) => {
             const on = options.includes(o.id)
             return (
-              <label key={o.id} htmlFor={`o-${o.id}`} className={cn('flex cursor-pointer items-start gap-3 rounded-lg border p-3', on && 'border-primary bg-primary/5')}>
+              <label key={o.id} htmlFor={`o-${o.id}`} className={cn('flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors duration-150 hover:border-primary/40', on && 'border-primary bg-primary/5')}>
                 <Checkbox id={`o-${o.id}`} checked={on} onCheckedChange={(v) => setOptions((s) => (v === true ? [...s, o.id] : s.filter((x) => x !== o.id)))} className="mt-0.5" />
                 <span className="whitespace-pre-line">{o.text}</span>
               </label>
@@ -215,6 +223,7 @@ function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem
         </Button>
       </div>
     </article>
+    </FadeIn>
   )
 }
 
@@ -255,7 +264,7 @@ export default function TestRun() {
             ) : (
               <div className="grid justify-items-start gap-4 rounded-lg border bg-card p-6">
                 <IconFlag className="size-8 text-link" aria-hidden />
-                <h1 className="display-caps text-[1.75rem]">Все задания пройдены</h1>
+                <h1 className="display text-[1.75rem]">Все задания пройдены</h1>
                 <p className="text-muted-foreground">Завершите тест, чтобы увидеть категорию, перцентиль и подтверждённые навыки.</p>
                 {finish.isError && <ErrorBanner error={finish.error} />}
                 <Button onClick={doFinish} disabled={finish.isPending}>

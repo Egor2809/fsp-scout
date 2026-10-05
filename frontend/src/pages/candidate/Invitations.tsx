@@ -63,7 +63,7 @@ function AcceptDialog({ inv, open, onOpenChange }: { inv: Invitation; open: bool
                   onSuccess: () => {
                     void refresh()
                     onOpenChange(false)
-                    toast.success('Инвайт принят — компания свяжется с вами')
+                    toast.success('Инвайт принят, компания свяжется с вами')
                   },
                 },
               )
@@ -87,7 +87,7 @@ function DeclineDialog({ inv, open, onOpenChange }: { inv: Invitation; open: boo
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Отклонить инвайт</DialogTitle>
-          <DialogDescription>Причина поможет компании и улучшит следующие подборки. Ваши контакты не раскрываются.</DialogDescription>
+          <DialogDescription>Причина поможет компании и улучшит следующие подборки. Контакты останутся скрытыми.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <RadioGroup value={reason ?? ''} onValueChange={(v) => setReason(v as DeclineReason)} aria-label="Причина отказа" className="grid gap-2">
@@ -174,7 +174,7 @@ function InvitationItem({ inv }: { inv: Invitation }) {
       {inv.response?.reason && (
         <p className="text-sm text-muted-foreground">
           Ваша причина отказа: {declineReasonLabel[inv.response.reason]}
-          {inv.response.comment ? ` — «${inv.response.comment}»` : ''}
+          {inv.response.comment ? `: «${inv.response.comment}»` : ''}
         </p>
       )}
       {(actions.accept || actions.decline || actions.postpone) && (

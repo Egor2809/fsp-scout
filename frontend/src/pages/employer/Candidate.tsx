@@ -31,7 +31,7 @@ export default function CandidatePage() {
                 </Link>
               }
               title="Анонимная карточка"
-              description="Без ФИО, фото и контактов — только проверяемые сигналы: тест, навыки, ФСП, задания."
+              description="Без ФИО, фото и контактов. Только проверяемые сигналы: тест, навыки, ФСП, задания."
               actions={
                 canInvite ? (
                   <Button onClick={() => setOpen(true)}>

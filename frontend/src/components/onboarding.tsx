@@ -153,7 +153,7 @@ export function SurveyForm({ onDone }: { onDone: () => void }) {
           Готов к переезду
         </label>
       </div>
-      <SalaryRangeField label="Ожидания, ₽ в месяц на руки" value={salary} onChange={setSalary} error={touched ? errors.salary : null} hint="Работодатель не увидит точные цифры ниже своей вилки: мы лишь не пропустим инвайт ниже ожиданий" />
+      <SalaryRangeField label="Ожидания, ₽ в месяц на руки" value={salary} onChange={setSalary} error={touched ? errors.salary : null} hint="Работодатель не увидит эти цифры. Инвайт с вилкой ниже ожиданий до вас не дойдёт" />
       {create.isError && <ErrorBanner error={create.error} />}
       <Button type="submit" disabled={create.isPending} className="justify-self-start">
         Сохранить и выбрать грейд
@@ -217,7 +217,7 @@ export function GradePicker() {
               )
             })}
           </div>
-          {el.next_grade_change_at && <p className="text-sm text-muted-foreground">Следующая смена подтверждённого грейда — не раньше {formatDate(el.next_grade_change_at)}.</p>}
+          {el.next_grade_change_at && <p className="text-sm text-muted-foreground">Подтверждённый грейд можно сменить не раньше {formatDate(el.next_grade_change_at)}.</p>}
           <InlineError>{start.isError ? errorMessage(start.error) : null}</InlineError>
           <Button
             className="justify-self-start"

@@ -31,7 +31,7 @@ export const DEMO_PERSONAS: readonly DemoPersona[] = [
     displayName: 'Мария Кузнецова',
     email: 'm.kuznetsova@demo.scout',
     title: 'Кандидат без истории ФСП',
-    description: 'Frontend · Junior, корректный нейтральный блок «Нет истории ФСП»',
+    description: 'Frontend · Junior, показывает пустое состояние «Нет истории ФСП»',
   },
   {
     key: 'employer',

@@ -27,7 +27,7 @@ export default function CandidateHome() {
               eyebrow="Кабинет кандидата"
               meta={new Date().toLocaleDateString('ru-RU')}
               title={`Здравствуйте, ${p.full_name.split(' ')[0]}`}
-              description={p.visibility === 'visible' ? 'Профиль виден работодателям анонимно. Контакты откроются только по вашему согласию.' : 'Профиль сейчас скрыт из подбора — проверьте согласия и настройки приватности.'}
+              description={p.visibility === 'visible' ? 'Профиль виден работодателям анонимно. Контакты откроются только по вашему согласию.' : 'Профиль скрыт из подбора. Проверьте согласия и настройки приватности.'}
               actions={
                 <Button asChild variant="outline">
                   <Link to="/c/profile">

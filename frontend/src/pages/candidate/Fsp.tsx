@@ -70,7 +70,7 @@ export default function Fsp() {
                       ))}
                     </ul>
                     <p className="mt-3 text-xs text-muted-foreground">
-                      <Tag>ФСП</Tag> Индекс — сумма вкладов; старые результаты весят меньше.
+                      <Tag>ФСП</Tag> Индекс складывается из вкладов, старые результаты весят меньше.
                     </p>
                   </Section>
                 </div>

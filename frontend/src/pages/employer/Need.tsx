@@ -59,7 +59,7 @@ function NeedForm({ need, onConfirmed }: { need: Need; onConfirmed: () => void }
       <blockquote className="rounded-lg border-l-4 border-primary bg-surface/60 p-3 text-sm text-muted-foreground">{need.raw_text}</blockquote>
       {need.parsed.unrecognized.length > 0 && (
         <p className="text-sm text-muted-foreground">
-          Не распознали: {need.parsed.unrecognized.map((u) => `«${u}»`).join(', ')} — добавьте вручную, если важно.
+          Не распознали: {need.parsed.unrecognized.map((u) => `«${u}»`).join(', ')}. Если это важно, добавьте вручную.
         </p>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -202,7 +202,7 @@ export default function NeedPage() {
   const query = useGetNeed(needId)
   return (
     <>
-      <PageHeader eyebrow="Потребность" title="Проверьте параметры" description="Мы разобрали текст на чипы. Поправьте, если нужно, и подтвердите — вилка обязательна." />
+      <PageHeader eyebrow="Потребность" title="Проверьте параметры" description="Мы разобрали текст на чипы. Поправьте, если нужно, и подтвердите. Вилка обязательна." />
       <QueryView query={query}>
         {(need) => (
           <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">

@@ -40,10 +40,10 @@ function Row({ inv }: { inv: Invitation }) {
       {r?.decision === 'declined' && (
         <p className="rounded-lg bg-surface/60 p-3 text-sm">
           Причина отказа: <b>{r.reason ? declineReasonLabel[r.reason] : 'не указана'}</b>
-          {r.comment ? ` — «${r.comment}»` : ''}
+          {r.comment ? `: «${r.comment}»` : ''}
         </p>
       )}
-      {r?.decision === 'postponed' && <p className="text-sm text-muted-foreground">Кандидат попросил вернуться позже{r.postponed_until ? ` — после ${formatDate(r.postponed_until)}` : ''}.</p>}
+      {r?.decision === 'postponed' && <p className="text-sm text-muted-foreground">Кандидат попросил вернуться позже{r.postponed_until ? `, после ${formatDate(r.postponed_until)}` : ''}.</p>}
       {inv.candidate_contacts && <ContactList contacts={inv.candidate_contacts} note={r?.channel ? `просит связаться: ${contactChannelLabel[r.channel]}${r.comment ? ` · «${r.comment}»` : ''}` : undefined} />}
       {(actions.stages.length > 0 || actions.withdraw) && (
         <div className="flex flex-wrap gap-2">
