@@ -13,7 +13,7 @@ let memory: MockDb | null = null
 let memoryOnly = false
 
 /** Тесты: хранить только в памяти. */
-export function useMemoryStorage(): void {
+export function enableMemoryStorage(): void {
   memoryOnly = true
   memory = null
 }

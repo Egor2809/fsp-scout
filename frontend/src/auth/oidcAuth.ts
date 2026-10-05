@@ -17,7 +17,10 @@ export class OidcAuthProvider implements AuthProvider {
   private session: AuthSession | null = null
   private listeners = new Set<(s: AuthSession | null) => void>()
 
-  constructor(private readonly settings: OidcSettings) {
+  private readonly settings: OidcSettings
+
+  constructor(settings: OidcSettings) {
+    this.settings = settings
     const origin = window.location.origin
     this.manager = new UserManager({
       authority: settings.authority,

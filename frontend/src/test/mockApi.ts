@@ -2,7 +2,7 @@ import { setupServer } from 'msw/node'
 import { encodeDevToken } from '@/auth/jwt'
 import { statefulHandlers } from '@/mocks/handlers'
 import { setMockLatency } from '@/mocks/http'
-import { resetMemoryDb, useMemoryStorage } from '@/mocks/db/store'
+import { resetMemoryDb, enableMemoryStorage } from '@/mocks/db/store'
 
 export const ORIGIN = 'http://localhost:3000'
 
@@ -12,7 +12,7 @@ export function createMockServer() {
   return {
     server,
     start: () => {
-      useMemoryStorage()
+      enableMemoryStorage()
       resetMemoryDb()
       server.listen({ onUnhandledFrame: 'error' })
     },
