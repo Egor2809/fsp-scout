@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
-export type FontPairId = 'serif' | 'literata' | 'future' | 'jura' | 'wix'
+export type FontPairId = 'serif' | 'sber' | 'literata' | 'future' | 'jura' | 'wix'
 
 export interface FontPair {
   id: FontPairId
@@ -17,6 +17,13 @@ export const FONT_PAIRS: FontPair[] = [
     display: 'Source Serif 4, 260, оптический размер display',
     text: 'Wix Madefor Text 400',
     note: 'Тонкая антиква в крупных заголовках, гротеск в тексте. Оптический размер включается сам: чем крупнее кегль, тем контрастнее штрихи.',
+  },
+  {
+    id: 'sber',
+    name: 'СберИндекс',
+    display: 'Oranienbaum 400',
+    text: 'Ysabeau Office 400, цифры Martian Mono',
+    note: 'Набор из проекта СберИндекс: контрастная антиква в заголовках, гуманистический гротеск в тексте, широкий моноширинный для цифр.',
   },
   {
     id: 'literata',

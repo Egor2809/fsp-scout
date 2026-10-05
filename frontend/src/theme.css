@@ -84,11 +84,26 @@
 [data-font='serif'] {
   --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+  --font-data: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --display-weight: 260;
   --display-tracking: -0.012em;
   --display-variation: normal;
   --heading-weight: 600;
   --heading-tracking: -0.01em;
+  --heading-variation: normal;
+  --text-variation: normal;
+}
+[data-font='sber'] {
+  /* Пара из проекта СберИндекс: Oranienbaum (антиква, одно начертание 400, тонкая за счёт контраста),
+     Ysabeau Office (гуманистический гротеск), Martian Mono (цифры и код) */
+  --font-text: 'Ysabeau Office Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Oranienbaum', Georgia, 'Times New Roman', serif;
+  --font-data: 'Martian Mono Variable', 'JetBrains Mono Variable', ui-monospace, Menlo, monospace;
+  --display-weight: 400;
+  --display-tracking: -0.01em;
+  --display-variation: normal;
+  --heading-weight: 600;
+  --heading-tracking: -0.005em;
   --heading-variation: normal;
   --text-variation: normal;
 }
@@ -194,7 +209,7 @@
 
 @theme inline {
   --font-sans: var(--font-text);
-  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-mono: var(--font-data);
   --font-heading: var(--font-display);
 
   --color-background: var(--background);

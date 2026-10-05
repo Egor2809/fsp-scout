@@ -9,6 +9,9 @@
 @import '@fontsource-variable/literata/opsz.css';
 @import '@fontsource-variable/jura/index.css';
 @import '@fontsource-variable/jetbrains-mono/index.css';
+@import '@fontsource/oranienbaum/400.css';
+@import '@fontsource-variable/ysabeau-office/wght.css';
+@import '@fontsource-variable/martian-mono/wght.css';
 @import './theme.css';
 
 @custom-variant dark (&:is(.dark *));
