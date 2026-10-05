@@ -1,7 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
-@import '@fontsource-variable/inter/index.css';
+@import '@fontsource-variable/golos-text/index.css';
+@import '@fontsource-variable/tektur/standard.css';
 @import '@fontsource-variable/jetbrains-mono/index.css';
 @import './theme.css';
 
@@ -19,13 +20,13 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: 'cv11', 'ss01';
   }
+  /* h1 страниц — дисплейный Tektur (см. .display); секции — Golos Text */
   h1,
   h2,
   h3,
   h4 {
-    @apply font-heading tracking-tight text-balance;
+    @apply tracking-tight text-balance;
   }
   a {
     @apply text-link underline-offset-4;
@@ -56,6 +57,39 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted-foreground);
+  }
+  /* Дисплей: Tektur, плотный трекинг. Капс + сжатая ширина — для коротких заголовков (.display-caps) */
+  .display {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.08;
+  }
+  .display-caps {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-stretch: 82%;
+    letter-spacing: -0.015em;
+    line-height: 0.92;
+    text-transform: uppercase;
+  }
+  /* Синее полотно табло с лёгким шумом (feTurbulence, opacity 0.08) */
+  .canvas-board {
+    position: relative;
+    isolation: isolate;
+    background-color: var(--canvas);
+    color: var(--canvas-foreground);
+  }
+  .canvas-board::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+    opacity: 0.08;
+    mix-blend-mode: screen;
   }
   .text-pretty {
     text-wrap: pretty;

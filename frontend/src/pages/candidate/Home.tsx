@@ -25,6 +25,7 @@ export default function CandidateHome() {
             <PageHeader
               motif
               eyebrow="Кабинет кандидата"
+              meta={new Date().toLocaleDateString('ru-RU')}
               title={`Здравствуйте, ${p.full_name.split(' ')[0]}`}
               description={p.visibility === 'visible' ? 'Профиль виден работодателям анонимно. Контакты откроются только по вашему согласию.' : 'Профиль сейчас скрыт из подбора — проверьте согласия и настройки приватности.'}
               actions={
@@ -39,13 +40,13 @@ export default function CandidateHome() {
                 <CategoryTag category={p.standing?.category} size="lg" />
                 {p.standing && (
                   <div>
-                    <p className="font-heading text-4xl font-semibold text-brand-accent">{formatPercentile(p.standing.percentile)}</p>
+                    <p className="num text-4xl font-semibold text-brand-accent">{formatPercentile(p.standing.percentile)}</p>
                     <p className="text-sm text-muted-foreground">в категории · подтверждено {formatDate(p.standing.confirmed_at)}</p>
                   </div>
                 )}
               </div>
             </PageHeader>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-y-3 border-y py-3 md:grid-cols-4 [&>*]:border-l [&>*]:px-4">
               <Stat label="Активные инвайты" value={active.length} accent={active.length > 0} />
               <Stat label="Ожидания" value={formatSalaryRangeShort(p.salary_expectation)} />
               <Stat label="Статус поиска" value={<AvailabilityTag availability={p.availability} />} />

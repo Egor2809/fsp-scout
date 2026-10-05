@@ -72,14 +72,21 @@ function ResultRow({ item, searchId, selected, onSelect }: { item: SearchResultI
         aria-pressed={selected}
         onClick={onSelect}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onSelect())}
-        className={cn('grid cursor-pointer gap-2 rounded-xl border bg-card p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50', selected ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/40')}
+        className={cn(
+          'grid cursor-pointer grid-cols-[3.25rem_1fr] gap-x-3 py-3.5 pr-2 pl-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset',
+          selected ? 'bg-accent shadow-[inset_3px_0_0_var(--primary)]' : 'hover:bg-muted/60',
+        )}
       >
+        <span className={cn('num row-span-3 pt-0.5 text-[1.625rem] leading-none font-bold tracking-tight', selected ? 'text-link' : 'text-muted-foreground/80')} aria-label={`Место ${item.rank}`}>
+          {String(item.rank).padStart(2, '0')}
+        </span>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="num w-6 text-sm text-muted-foreground">#{item.rank}</span>
-          <span className="font-heading font-semibold">{c.alias}</span>
+          <span className="font-semibold">{c.alias}</span>
           <CategoryTag category={c.category} />
           {c.fsp?.has_history && <FspBadge level={c.fsp.max_level} />}
-          <span className="num ml-auto text-sm">{formatPercentile(c.percentile)}</span>
+          <span className="num ml-auto text-sm font-semibold" title={formatPercentile(c.percentile)}>
+            P{c.percentile ?? '—'}
+          </span>
           <Button
             variant="ghost"
             size="icon"
@@ -96,7 +103,7 @@ function ResultRow({ item, searchId, selected, onSelect }: { item: SearchResultI
           {formatYears(c.experience_years)} · ожидания <span className="num">{formatSalaryRangeShort(c.salary_expectation)}</span>
           {c.city ? ` · ${c.city}` : ''}
         </p>
-        <ExplanationChips chips={item.explanation.chips} />
+        <ExplanationChips chips={item.explanation.chips} className="mt-2" />
       </div>
     </li>
   )
@@ -109,7 +116,7 @@ export default function SearchPage() {
   const [selected, setSelected] = useState<string | null>(null)
   return (
     <>
-      <PageHeader eyebrow="Подборка" title={search.data?.title ?? 'Подборка'} description="Каждый кандидат — с объяснением: что совпало, что подтверждено тестом и где расхождения." />
+      <PageHeader eyebrow="Подборка" meta={results.data ? `v${results.data.version} · ${results.data.total} в таблице` : undefined} title={search.data?.title ?? 'Подборка'} description="Каждый кандидат — с объяснением: что совпало, что подтверждено тестом и где расхождения." />
       <QueryView query={results}>
         {(res) => {
           const current = res.items.find((i) => i.candidate.id === selected) ?? res.items[0]
@@ -120,7 +127,12 @@ export default function SearchPage() {
                 <p className="text-sm text-muted-foreground">
                   Найдено <b className="num text-foreground">{res.total}</b> · версия {res.version}
                 </p>
-                <ol className="grid gap-2">
+                <div className="eyebrow grid grid-cols-[3.25rem_1fr_auto] gap-x-3 border-b-2 border-foreground px-3 pb-1.5" aria-hidden>
+                  <span>Место</span>
+                  <span>Кандидат · почему в подборке</span>
+                  <span className="pr-12">Перц.</span>
+                </div>
+                <ol className="-mt-3 grid divide-y divide-border border-b">
                   {res.items.map((item) => (
                     <ResultRow key={item.candidate.id} item={item} searchId={searchId} selected={current?.candidate.id === item.candidate.id} onSelect={() => setSelected(item.candidate.id)} />
                   ))}

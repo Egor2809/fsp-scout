@@ -19,7 +19,7 @@ export default function EmployerHome() {
   const invitations = useListCompanyInvitations({ status: ['accepted', 'interview', 'offer'] })
   return (
     <div className="grid gap-5">
-      <PageHeader motif eyebrow="Кабинет работодателя" title={`Здравствуйте, ${session?.displayName.split(' ')[0] ?? ''}`} description="Опишите, кого ищете, — подберём кандидатов с подтверждённым грейдом и объясним выбор." actions={<NewNeedButton />} />
+      <PageHeader motif eyebrow="Кабинет работодателя" meta={new Date().toLocaleDateString('ru-RU')} title={`Здравствуйте, ${session?.displayName.split(' ')[0] ?? ''}`} description="Опишите, кого ищете, — подберём кандидатов с подтверждённым грейдом и объясним выбор." actions={<NewNeedButton />} />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="Осталось инвайтов" value={quota.data ? `${quota.data.remaining}/${quota.data.limit}` : '…'} accent hint={quota.data ? `до ${formatDate(quota.data.period_end)}` : undefined} />
         <Stat label="Отправлено за 30 дней" value={stats.data?.funnel.sent ?? '…'} />

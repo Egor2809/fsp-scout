@@ -32,18 +32,18 @@ export default function Landing() {
         </div>
       </header>
       <main className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:py-16">
-        <section className="relative overflow-hidden rounded-2xl border bg-surface/50 p-6 sm:p-10">
-          <ConnectLines />
+        <section className="canvas-board overflow-hidden rounded-lg p-6 sm:p-10">
+          <ConnectLines className="text-white opacity-[0.2] dark:opacity-[0.2]" />
           <div className="relative">
-            <p className="eyebrow mb-3">Обратный найм в ИТ</p>
-            <h1 className="text-3xl leading-tight font-semibold sm:text-5xl">
-              Компании приходят <span className="text-brand-accent">к вам</span>
+            <p className="eyebrow mb-4 text-white/85">Обратный найм в ИТ</p>
+            <h1 className="display-caps text-[2.25rem] sm:text-[3.75rem]">
+              Компании приходят <span className="underline decoration-brand-accent decoration-[0.12em] underline-offset-[0.12em]">к вам</span>
             </h1>
-            <p className="mt-4 max-w-lg text-muted-foreground text-pretty">
+            <p className="mt-5 max-w-lg text-white/85 text-pretty">
               Пройдите адаптивный тест один раз — и получайте инвайты с вилкой от работодателей. Профиль анонимен, контакты открываются только после вашего согласия.
               Победы на соревнованиях ФСП усиливают карточку.
             </p>
-            <ul className="mt-6 grid gap-2 text-sm">
+            <ul className="mt-6 grid gap-2 text-sm text-white">
               <li>· Категория «Backend · Middle» и перцентиль вместо резюме</li>
               <li>· Вилка в каждом инвайте обязательна</li>
               <li>· Работодатель видит, почему вы в подборке</li>
@@ -51,13 +51,13 @@ export default function Landing() {
           </div>
         </section>
         <section className="grid content-start gap-4">
-          <h2 className="text-xl font-semibold">Войти в демо</h2>
+          <h2 className="display-caps text-xl">Войти в демо</h2>
           {DEMO_PERSONAS.map((p) => (
             <button
               key={p.key}
               type="button"
               onClick={() => void go(provider.login({ personaKey: p.key }))}
-              className="group flex items-start gap-3 rounded-xl border bg-card p-4 text-left transition-colors outline-none hover:border-primary/50 hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="group flex items-start gap-3 rounded-lg border bg-card p-4 text-left transition-colors outline-none hover:border-primary/50 hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-link">{p.role === 'employer' ? <IconBuilding /> : <IconUser />}</span>
               <span className="grid min-w-0 flex-1 gap-0.5">
@@ -70,7 +70,7 @@ export default function Landing() {
             </button>
           ))}
           <form
-            className="grid gap-3 rounded-xl border bg-card p-4"
+            className="grid gap-3 rounded-lg border bg-card p-4"
             onSubmit={(e) => {
               e.preventDefault()
               if (name.trim().length < 2 || !/^\S+@\S+\.\S+$/.test(email)) {

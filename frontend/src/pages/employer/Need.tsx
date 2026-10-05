@@ -121,7 +121,7 @@ function NeedForm({ need, onConfirmed }: { need: Need; onConfirmed: () => void }
 function CategoryCard({ rec, onPick, pending }: { rec: CategoryRecommendation; onPick: () => void; pending: boolean }) {
   const r = rec.radar
   return (
-    <article className="grid gap-3 rounded-xl border bg-card p-4">
+    <article className="grid gap-3 rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-heading text-lg font-semibold">{rec.category.label}</h3>
         <Tag tone={rec.kind === 'primary' ? 'primary' : 'neutral'}>{rec.kind === 'primary' ? 'точное совпадение' : 'смежная'}</Tag>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessage } from '@/api/problem'
+import { ConnectLines } from '@/components/brand'
 import { cn } from '@/lib/utils'
 
 /** Ошибка: тёмно-красный с иконкой (не фирменный красный ФСП). */
@@ -50,13 +51,14 @@ export function EmptyState({
   className?: string
 }) {
   return (
-    <Empty className={cn('rounded-lg border border-dashed bg-surface/40', className)}>
-      <EmptyHeader>
+    <Empty className={cn('relative overflow-hidden rounded-lg border border-dashed bg-surface/40', className)}>
+      <ConnectLines className="opacity-[0.1] dark:opacity-[0.14]" />
+      <EmptyHeader className="relative">
         <EmptyMedia variant="icon">{icon ?? <IconInbox />}</EmptyMedia>
-        <EmptyTitle className="font-heading">{title}</EmptyTitle>
+        <EmptyTitle className="font-heading font-bold tracking-tight uppercase">{title}</EmptyTitle>
         {description && <EmptyDescription>{description}</EmptyDescription>}
       </EmptyHeader>
-      {action && <EmptyContent>{action}</EmptyContent>}
+      {action && <EmptyContent className="relative">{action}</EmptyContent>}
     </Empty>
   )
 }

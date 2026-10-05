@@ -20,7 +20,7 @@ function VacancyItem({ v }: { v: Vacancy }) {
   const apply = useApplyToVacancy()
   const qc = useQueryClient()
   return (
-    <article className="grid gap-3 rounded-xl border bg-card p-4">
+    <article className="grid gap-3 rounded-lg border bg-card p-4">
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-sm text-muted-foreground">{v.company.name}</p>

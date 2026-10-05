@@ -48,7 +48,7 @@ export function ConsentsForm({ onDone, submitLabel = 'Продолжить' }: {
             }}
           >
             {state.documents.map((d) => (
-              <label key={d.type} htmlFor={`consent-${d.type}`} className={cn('flex cursor-pointer gap-3 rounded-xl border bg-card p-4', given(d.type) && 'border-primary/40')}>
+              <label key={d.type} htmlFor={`consent-${d.type}`} className={cn('flex cursor-pointer gap-3 rounded-lg border bg-card p-4', given(d.type) && 'border-primary/40')}>
                 <Checkbox id={`consent-${d.type}`} checked={given(d.type)} onCheckedChange={(v) => setDraft((s) => ({ ...s, [d.type]: v === true }))} className="mt-0.5" />
                 <span className="grid gap-1">
                   <span className="flex flex-wrap items-center gap-2 font-medium">
@@ -173,7 +173,7 @@ export function GradePicker() {
       {(el) => (
         <div className="grid gap-4">
           {el.active_test_id && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary/5 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/40 bg-primary/5 p-4">
               <span>У вас есть незавершённый тест.</span>
               <Button onClick={() => navigate(`/c/test/${el.active_test_id}`)}>
                 <IconPlayerPlay data-icon="inline-start" /> Продолжить
@@ -193,7 +193,7 @@ export function GradePicker() {
                   disabled={!can}
                   onClick={() => setSelected(g)}
                   className={cn(
-                    'grid gap-1 rounded-xl border bg-card p-4 text-left transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60',
+                    'grid gap-1 rounded-lg border bg-card p-4 text-left transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60',
                     selected === g ? 'border-primary ring-1 ring-primary' : can && 'hover:border-primary/50',
                   )}
                 >

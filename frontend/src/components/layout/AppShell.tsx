@@ -115,7 +115,7 @@ function NavList({ groups, onNavigate }: { groups: { title: string; items: NavIt
               className={({ isActive }) =>
                 cn(
                   'group flex h-9 items-center gap-2.5 rounded-md px-2.5 text-sm no-underline outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50',
-                  isActive ? 'bg-accent font-medium text-link' : 'text-foreground/80 hover:bg-muted hover:text-foreground',
+                  isActive ? 'bg-accent font-medium text-link shadow-[inset_2px_0_0_var(--primary)] dark:shadow-[inset_2px_0_0_var(--link)]' : 'text-foreground/80 hover:bg-muted hover:text-foreground',
                 )
               }
             >
@@ -256,11 +256,15 @@ export function AppShell({ role }: { role: 'candidate' | 'employer' }) {
   )
 }
 
+/** Короткий заголовок (≤ 22 символов) — капсом, как табло; длинный — обычным регистром. */
+const SHORT_TITLE = 22
+
 export function PageHeader({
   eyebrow,
   title,
   description,
   actions,
+  meta,
   motif = false,
   children,
 }: {
@@ -268,17 +272,28 @@ export function PageHeader({
   title: ReactNode
   description?: ReactNode
   actions?: ReactNode
+  /** Моно-подпись справа от бирки: счётчик, дата. */
+  meta?: ReactNode
   motif?: boolean
   children?: ReactNode
 }) {
+  const short = typeof title === 'string' && title.length <= SHORT_TITLE
   return (
-    <header className={cn('relative mb-6', motif && 'overflow-hidden rounded-xl border bg-surface/50 p-5 sm:p-6')}>
+    <header className={cn('relative mb-6 border-b pb-5', motif && 'overflow-hidden rounded-lg border bg-surface/50 p-5 sm:p-6')}>
       {motif && <ConnectLines />}
       <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          {eyebrow && <p className="eyebrow mb-1.5">{eyebrow}</p>}
-          <h1 className="text-2xl font-semibold sm:text-[1.75rem]">{title}</h1>
-          {description && <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground text-pretty">{description}</p>}
+          {(eyebrow || meta) && (
+            <p className="eyebrow mb-2 flex flex-wrap items-center gap-x-2">
+              {eyebrow && <span>{eyebrow}</span>}
+              {eyebrow && meta && (
+                <span aria-hidden className="inline-block h-px w-5 bg-border" />
+              )}
+              {meta && <span className="num text-foreground">{meta}</span>}
+            </p>
+          )}
+          <h1 className={cn(short ? 'display-caps text-[1.75rem] sm:text-[2.25rem]' : 'display text-[1.5rem] sm:text-[1.875rem]')}>{title}</h1>
+          {description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground text-pretty">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
       </div>
@@ -286,4 +301,3 @@ export function PageHeader({
     </header>
   )
 }
-

@@ -34,7 +34,7 @@ function Applications({ vacancyId }: { vacancyId: string }) {
         ) : (
           <div className="grid gap-3">
             {list.map((a) => (
-              <article key={a.id} className="grid gap-3 rounded-xl border p-4">
+              <article key={a.id} className="grid gap-3 rounded-lg border p-4">
                 <CandidateHeadline card={a.candidate} right={<ApplicationStatusBadge status={a.status} />} />
                 <ExplanationChips chips={a.explanation.chips} />
                 {a.cover_letter && <p className="text-sm whitespace-pre-line">{a.cover_letter}</p>}
@@ -73,7 +73,7 @@ export default function EmployerVacancies() {
               <ul className="grid content-start gap-2">
                 {list.map((v) => (
                   <li key={v.id}>
-                    <button type="button" onClick={() => setSelected(v.id)} className={cn('grid w-full gap-1 rounded-xl border bg-card p-4 text-left', current.id === v.id ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/40')}>
+                    <button type="button" onClick={() => setSelected(v.id)} className={cn('grid w-full gap-1 rounded-lg border bg-card p-4 text-left', current.id === v.id ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/40')}>
                       <span className="flex flex-wrap items-center gap-2">
                         <span className="font-semibold">{v.title}</span>
                         <Tag tone={v.status === 'published' ? 'success' : 'muted'}>{vacancyStatusLabel[v.status]}</Tag>

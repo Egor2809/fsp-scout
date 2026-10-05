@@ -53,7 +53,7 @@ export function ApplicationStatusBadge({ status }: { status: ApplicationStatus }
   return <Tag tone={APP_TONE[status]}>{applicationStatusLabel[status]}</Tag>
 }
 
-/** Категория «Backend · Middle» — моно, как бирка из брендбука. */
+/** Категория «Backend · Middle» — дисплейный Tektur капсом, как номер на майке. */
 export function CategoryTag({ category, size = 'sm', className }: { category: Category | null | undefined; size?: 'sm' | 'lg'; className?: string }) {
   if (!category) {
     return <Tag tone="muted">Грейд не подтверждён</Tag>
@@ -61,8 +61,8 @@ export function CategoryTag({ category, size = 'sm', className }: { category: Ca
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-md bg-foreground font-mono font-semibold whitespace-nowrap text-background',
-        size === 'lg' ? 'h-9 px-3 text-base' : 'h-6 px-2 text-xs',
+        'inline-flex items-center rounded-md bg-foreground font-heading font-bold tracking-[-0.01em] whitespace-nowrap text-background uppercase',
+        size === 'lg' ? 'h-9 px-3 text-[0.9375rem]' : 'h-6 px-2 text-[0.6875rem]',
         className,
       )}
     >
@@ -108,6 +108,52 @@ export function FspBadge({ level, label, className }: { level?: FspLevel | null;
       <IconMedal aria-hidden className="size-3.5 text-brand-accent" />
       {label ?? (level ? `ФСП · ${fspLevelLabel[level].toLowerCase()}` : 'ФСП')}
     </span>
+  )
+}
+
+/**
+ * ФСП-индекс отдельным красным бейджем. Белый на #EC1D35 — 4.4:1, поэтому
+ * цифра и подпись крупные и жирные (≥ 14pt bold — «крупный текст» по WCAG).
+ */
+export function FspIndexBadge({ index, className }: { index: number; className?: string }) {
+  return (
+    <span
+      className={cn('inline-flex h-8 items-center gap-1.5 rounded-md bg-brand-accent px-2.5 text-[1.1875rem] leading-none font-bold text-white', className)}
+      aria-label={`Индекс ФСП ${index}`}
+    >
+      <IconMedal aria-hidden className="size-4.5" />
+      <span className="num">{index}</span>
+    </span>
+  )
+}
+
+/** Уровень навыка → условная шкала, если тест не дал числовой оценки. */
+const LEVEL_SCORE = { basic: 45, confident: 70, advanced: 88 } as const
+
+/** Подтверждённые навыки как стат-бары игрока: название, полоса, число. */
+export function SkillStatBars({ skills, limit = 5, className }: { skills: CandidateSkill[]; limit?: number; className?: string }) {
+  const top = [...skills]
+    .sort((a, b) => Number(b.verified) - Number(a.verified) || (b.score ?? LEVEL_SCORE[b.level]) - (a.score ?? LEVEL_SCORE[a.level]))
+    .slice(0, limit)
+  if (!top.length) return null
+  return (
+    <ul className={cn('grid gap-1.5', className)} aria-label="Ключевые навыки">
+      {top.map((s) => {
+        const v = Math.round(s.score ?? LEVEL_SCORE[s.level])
+        return (
+          <li key={s.skill_id} className="grid grid-cols-[minmax(0,7.5rem)_1fr_2rem] items-center gap-2.5 text-xs">
+            <span className={cn('flex min-w-0 items-center gap-1 truncate', !s.verified && 'text-muted-foreground')} title={`${skillSourceLabel[s.source]} · ${skillLevelLabel[s.level]}`}>
+              {s.verified && <IconRosetteDiscountCheckFilled aria-label="подтверждён" className="size-3.5 shrink-0 text-primary dark:text-link" />}
+              <span className="truncate">{s.name}</span>
+            </span>
+            <span className="h-1.5 overflow-hidden rounded-[2px] bg-muted" aria-hidden>
+              <span className={cn('block h-full', s.verified ? 'bg-primary' : 'bg-muted-foreground/45')} style={{ width: `${v}%` }} />
+            </span>
+            <span className="num text-right font-semibold">{v}</span>
+          </li>
+        )
+      })}
+    </ul>
   )
 }
 

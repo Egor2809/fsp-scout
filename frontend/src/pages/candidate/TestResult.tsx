@@ -4,11 +4,11 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { useGetTestResult, useStartTest } from '@/api/generated/endpoints/assessment/assessment'
 import { errorMessage } from '@/api/problem'
 import { Section } from '@/components/candidate'
-import { PageHeader } from '@/components/layout/AppShell'
+import { ConnectLines } from '@/components/brand'
 import { InlineError, QueryView } from '@/components/states'
-import { CategoryTag, SkillList, Stat, Tag } from '@/components/tags'
+import { SkillList, Stat, Tag } from '@/components/tags'
 import { Button } from '@/components/ui/button'
-import { formatDate, formatPercentile } from '@/lib/format'
+import { formatDate } from '@/lib/format'
 import { gradeLabel, specializationLabel, testOutcomeLabel } from '@/lib/labels'
 import { retakeDatesAfter } from '@/lib/retake'
 
@@ -29,22 +29,47 @@ export default function TestResult() {
         const canStartSuggested = s.grade && (!s.available_at || new Date(s.available_at) <= new Date())
         return (
           <div className="grid gap-5">
-            <PageHeader
-              motif
-              eyebrow={`Тест · ${specializationLabel[r.specialization]} · заявлено ${gradeLabel[r.declared_grade]}`}
-              title={r.outcome === 'failed' ? 'Грейд пока не подтверждён' : 'Грейд подтверждён'}
-              description={`${testOutcomeLabel[r.outcome]} · ${r.items_answered} заданий за ${Math.round(r.duration_sec / 60)} мин · точность оценки ${CONFIDENCE[r.confidence]}`}
-            >
-              <div className="flex flex-wrap items-end gap-6">
-                {r.category && <CategoryTag category={r.category} size="lg" />}
-                {r.percentile !== null && (
-                  <div>
-                    <p className="font-heading text-4xl font-semibold text-brand-accent sm:text-5xl">{formatPercentile(r.percentile)}</p>
-                    <p className="text-sm text-muted-foreground">среди кандидатов категории</p>
-                  </div>
-                )}
+            {/* Табло: синее полотно ФСП с шумом, категория гигантским дисплеем, перцентиль — моно */}
+            <header className="canvas-board -mx-4 -mt-6 overflow-hidden px-4 pt-8 pb-10 sm:-mx-6 sm:px-8 sm:pt-12 sm:pb-14">
+              <ConnectLines variant="b" className="text-white opacity-[0.14] dark:opacity-[0.14]" />
+              <div className="relative grid gap-8">
+                <p className="eyebrow flex flex-wrap gap-x-3 gap-y-1 text-white/85">
+                  <span>Тест · {specializationLabel[r.specialization]}</span>
+                  <span>· заявлено {gradeLabel[r.declared_grade]}</span>
+                  <span className="num">· {formatDate(r.finished_at)}</span>
+                </p>
+                <div className="grid gap-3">
+                  <p className="text-sm font-medium text-white/85">{testOutcomeLabel[r.outcome]}</p>
+                  <h1 className="display-caps text-[clamp(2.75rem,9vw,7.5rem)] break-words text-white">{r.category ? r.category.label : 'Без категории'}</h1>
+                </div>
+                <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 border-t border-white/30 pt-6">
+                  {r.percentile !== null ? (
+                    <div className="flex items-end gap-4">
+                      <span className="num text-[clamp(4.5rem,14vw,10rem)] leading-[0.8] font-bold tracking-tighter">{r.percentile}</span>
+                      <span className="grid gap-1 pb-1 text-sm text-white/85">
+                        <span className="eyebrow text-white">перцентиль</span>
+                        среди кандидатов категории
+                      </span>
+                    </div>
+                  ) : (
+                    <span />
+                  )}
+                  {/* Стат-полоса табло: равные ячейки с вертикальными разделителями (приём swimclub.co) */}
+                  <dl className="grid grid-cols-3 text-white">
+                    {[
+                      ['заданий', r.items_answered, true],
+                      ['минут', Math.round(r.duration_sec / 60), true],
+                      ['точность', CONFIDENCE[r.confidence], false],
+                    ].map(([label, value, isNum]) => (
+                      <div key={String(label)} className="grid content-end gap-1.5 border-l border-white/30 px-4 sm:px-6">
+                        <dt className="eyebrow text-white/85">{label}</dt>
+                        <dd className={isNum ? 'num text-[2rem] leading-none font-bold' : 'font-heading text-xl leading-none font-bold uppercase'}>{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
               </div>
-            </PageHeader>
+            </header>
 
             <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
               <div className="grid content-start gap-5">
@@ -61,8 +86,8 @@ export default function TestResult() {
                             {c.score}% · {c.items} зад.
                           </span>
                         </div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
-                          <div className="h-full rounded-full bg-primary" style={{ width: `${c.score}%` }} />
+                        <div className="h-1.5 overflow-hidden rounded-[2px] bg-muted" aria-hidden>
+                          <div className="h-full bg-primary" style={{ width: `${c.score}%` }} />
                         </div>
                       </li>
                     ))}

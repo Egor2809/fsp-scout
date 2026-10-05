@@ -3,14 +3,12 @@ import { Link } from 'react-router'
 import { IconDatabaseSearch } from '@tabler/icons-react'
 import { useListCandidates } from '@/api/generated/endpoints/candidates/candidates'
 import type { Grade, Specialization, WorkFormat } from '@/api/generated/model'
-import { CandidateHeadline } from '@/components/candidate'
+import { PlayerCard } from '@/components/candidate'
 import { ChipMultiSelect, SelectField, SkillPicker } from '@/components/fields'
 import { PageHeader } from '@/components/layout/AppShell'
 import { EmptyState, QueryView } from '@/components/states'
-import { SkillList } from '@/components/tags'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { formatPercentile, formatSalaryRangeShort } from '@/lib/format'
 import { GRADES, SPECIALIZATIONS, WORK_FORMATS, gradeLabel, specializationLabel, workFormatLabel } from '@/lib/labels'
 
 type Sort = 'strength' | 'percentile' | 'recent'
@@ -35,8 +33,8 @@ export default function Candidates() {
   })
   return (
     <>
-      <PageHeader eyebrow="Банк кандидатов" title="Все кандидаты с подтверждённым грейдом" description="Анонимные карточки. Контакты — после принятия инвайта." />
-      <div className="mb-5 grid gap-3 rounded-xl border bg-card p-4">
+      <PageHeader eyebrow="Банк кандидатов" meta={query.data ? `${query.data.total} в банке` : undefined} title="Все кандидаты с подтверждённым грейдом" description="Анонимные карточки. Контакты — после принятия инвайта." />
+      <div className="mb-5 grid gap-3 rounded-lg border bg-card p-4">
         <div className="flex flex-wrap gap-3">
           <div className="w-52">
             <SelectField ariaLabel="Специализация" placeholder="Все специализации" value={spec} onChange={(v) => (setSpec(v), setPage(1))} options={SPECIALIZATIONS.map((s) => ({ value: s, label: specializationLabel[s] }))} />
@@ -62,11 +60,9 @@ export default function Candidates() {
                 Найдено <b className="num text-foreground">{res.total}</b>
               </p>
               <div className="grid gap-3 lg:grid-cols-2">
-                {res.items.map((c) => (
-                  <Link key={c.id} to={`/e/candidates/${c.id}`} className="grid gap-3 rounded-xl border bg-card p-4 text-foreground no-underline hover:border-primary/40">
-                    <CandidateHeadline card={c} right={<span className="num text-sm">{formatPercentile(c.percentile)}</span>} />
-                    <SkillList skills={c.skills} limit={6} />
-                    <p className="num text-sm text-muted-foreground">ожидания {formatSalaryRangeShort(c.salary_expectation)}</p>
+                {res.items.map((c, i) => (
+                  <Link key={c.id} to={`/e/candidates/${c.id}`} className="group rounded-lg text-foreground no-underline outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                    <PlayerCard card={c} rank={(res.page - 1) * res.page_size + i + 1} className="h-full transition-colors group-hover:border-primary/50" />
                   </Link>
                 ))}
               </div>

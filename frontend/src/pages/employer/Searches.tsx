@@ -32,7 +32,7 @@ export default function Searches() {
                 const v = s.versions.find((x) => x.version === s.current_version)
                 return (
                   <li key={s.id}>
-                    <Link to={`/e/searches/${s.id}`} className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4 text-foreground no-underline hover:border-primary/40">
+                    <Link to={`/e/searches/${s.id}`} className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-4 text-foreground no-underline hover:border-primary/40">
                       <span className="font-heading font-semibold">{s.title}</span>
                       <Tag>v{s.current_version}</Tag>
                       <span className="text-sm text-muted-foreground">обновлена {formatDate(s.updated_at)}</span>

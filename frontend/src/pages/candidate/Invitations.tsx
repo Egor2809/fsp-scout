@@ -146,7 +146,7 @@ function InvitationItem({ inv }: { inv: Invitation }) {
   }, [inv.id, inv.status, view, refresh])
   const actions = candidateActions(inv.status)
   return (
-    <article className="grid gap-3 rounded-xl border bg-card p-4 sm:p-5">
+    <article className="grid gap-3 rounded-lg border bg-card p-4 sm:p-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="grid gap-1">
           <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

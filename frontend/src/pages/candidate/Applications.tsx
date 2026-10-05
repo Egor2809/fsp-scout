@@ -23,7 +23,7 @@ export default function Applications() {
           ) : (
             <div className="grid gap-3">
               {list.map((a) => (
-                <article key={a.id} className="grid gap-2 rounded-xl border bg-card p-4">
+                <article key={a.id} className="grid gap-2 rounded-lg border bg-card p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <p className="text-sm text-muted-foreground">{a.vacancy.company.name}</p>

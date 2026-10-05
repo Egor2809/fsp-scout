@@ -23,7 +23,7 @@ function Row({ inv }: { inv: Invitation }) {
   const actions = employerActions(inv.status)
   const r = inv.response
   return (
-    <article className="grid gap-3 rounded-xl border bg-card p-4">
+    <article className="grid gap-3 rounded-lg border bg-card p-4">
       <header className="flex flex-wrap items-center gap-2">
         <Link to={`/e/candidates/${inv.candidate.id}`} className="font-heading font-semibold">
           {inv.candidate.alias}

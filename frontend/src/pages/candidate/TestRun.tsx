@@ -12,7 +12,6 @@ import { DifficultyMeter, Tag } from '@/components/tags'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import { Progress } from '@/components/ui/progress'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { formatCountdown } from '@/lib/format'
@@ -29,26 +28,53 @@ function useCountdown(deadline: string | undefined): number | null {
   return Math.max(0, Math.round((new Date(deadline).getTime() - now) / 1000))
 }
 
+/** Прогресс как беговая дорожка: по сегменту на задание, таймер — табло в углу. */
 function ProgressBar({ progress, left }: { progress: TestProgress; left: number | null }) {
   const total = progress.adaptive_max + progress.practice_total
   const done = progress.adaptive_answered + progress.practice_answered
+  const lanes = [
+    ...Array.from({ length: progress.adaptive_max }, (_, i) => ({ done: i < progress.adaptive_answered, optional: i >= progress.adaptive_min, current: progress.block === 'adaptive' && i === progress.adaptive_answered })),
+    ...Array.from({ length: progress.practice_total }, (_, i) => ({ done: i < progress.practice_answered, optional: false, current: progress.block === 'practice' && i === progress.practice_answered })),
+  ]
   return (
-    <div className="sticky top-14 z-10 -mx-4 mb-6 grid gap-2 border-b bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <span>
-          <span className="eyebrow mr-2">{testBlockLabel[progress.block]}</span>
-          <span className="num">
-            задание {progress.answered + 1} · адаптивная часть {progress.adaptive_answered}/{progress.adaptive_min}–{progress.adaptive_max}
+    <div className="sticky top-14 z-10 -mx-4 mb-6 grid gap-2.5 border-b bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+      <div className="flex items-end justify-between gap-3">
+        <div className="grid min-w-0 gap-0.5">
+          <span className="eyebrow">{testBlockLabel[progress.block]}</span>
+          <span className="num text-sm">
+            <b className="text-base">{String(progress.answered + 1).padStart(2, '0')}</b>
+            <span className="text-muted-foreground"> / адаптивная часть {progress.adaptive_answered}/{progress.adaptive_min}–{progress.adaptive_max}</span>
           </span>
-        </span>
+        </div>
         {left !== null && (
-          <span className={cn('num inline-flex items-center gap-1 font-semibold', left < 120 && 'text-destructive')} role="timer" aria-label="Осталось времени">
+          <span
+            className={cn('num inline-flex items-center gap-1.5 rounded-md bg-foreground px-2.5 py-1 text-xl leading-none font-bold text-background', left < 120 && 'bg-destructive text-white dark:text-background')}
+            role="timer"
+            aria-label="Осталось времени"
+          >
             <IconClock className="size-4" aria-hidden />
             {formatCountdown(left)}
           </span>
         )}
       </div>
-      <Progress value={Math.min(100, (done / Math.max(1, total)) * 100)} aria-label="Прогресс теста" />
+      <div
+        role="progressbar"
+        aria-label="Прогресс теста"
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={done}
+        className="flex h-2 gap-[3px]"
+      >
+        {lanes.map((l, i) => (
+          <span
+            key={i}
+            className={cn(
+              'min-w-0 flex-1 rounded-[1px]',
+              l.done ? 'bg-primary dark:bg-link' : l.current ? 'bg-primary/35 ring-1 ring-primary ring-inset dark:ring-link' : l.optional ? 'bg-border/50' : 'bg-border',
+            )}
+          />
+        ))}
+      </div>
     </div>
   )
 }
@@ -98,7 +124,7 @@ function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem
           <Tag>{item.competency.name}</Tag>
           <DifficultyMeter level={item.difficulty_level} />
         </div>
-        <h1 id="item-title" className="text-xl font-semibold">
+        <h1 id="item-title" className="display text-[1.375rem]">
           {item.title}
         </h1>
         <p className="whitespace-pre-line text-pretty">{item.prompt}</p>
@@ -227,9 +253,9 @@ export default function TestRun() {
             {step.status === 'item' && step.item ? (
               <ItemView key={step.item.instance_id} testId={testId} item={step.item} onAnswered={() => void next.refetch()} />
             ) : (
-              <div className="grid justify-items-start gap-4 rounded-xl border bg-card p-6">
+              <div className="grid justify-items-start gap-4 rounded-lg border bg-card p-6">
                 <IconFlag className="size-8 text-link" aria-hidden />
-                <h1 className="text-xl font-semibold">Все задания пройдены</h1>
+                <h1 className="display-caps text-[1.75rem]">Все задания пройдены</h1>
                 <p className="text-muted-foreground">Завершите тест, чтобы увидеть категорию, перцентиль и подтверждённые навыки.</p>
                 {finish.isError && <ErrorBanner error={finish.error} />}
                 <Button onClick={doFinish} disabled={finish.isPending}>

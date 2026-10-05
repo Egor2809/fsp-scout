@@ -57,7 +57,7 @@ export default function CandidateProfile() {
         </QueryView>
         <QueryView query={preview}>
           {(card) => (
-            <div className="rounded-xl border border-dashed p-4">
+            <div className="rounded-lg border border-dashed p-4">
               <p className="eyebrow mb-3">Так вас видит работодатель</p>
               <CandidateCardView card={card} />
             </div>
