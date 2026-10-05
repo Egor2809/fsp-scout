@@ -1,0 +1,971 @@
+import type { CodeLanguage, ItemType, Specialization } from '@/api/generated/model'
+
+/**
+ * Демо-банк экземпляров для мок-движка CAT. На бэкенде задания генерируются из семейств
+ * с параметрами (SOLUTION.md, 4.1); здесь — откалиброванные экземпляры с параметрами 2PL.
+ */
+export interface BankItem {
+  id: string
+  specs: (Specialization | 'general')[]
+  competency: string
+  type: Exclude<ItemType, 'code' | 'open_text'>
+  a: number
+  b: number
+  title: string
+  prompt: string
+  code?: { language: CodeLanguage; source: string }
+  options?: { id: string; text: string }[]
+  /** Для choice — id вариантов; для short_answer — допустимые ответы (сравнение без регистра и лишних пробелов) */
+  correct: string[]
+  skills: string[]
+}
+
+export interface PracticeItem {
+  id: string
+  spec: Specialization
+  competency: string
+  type: 'code' | 'open_text'
+  title: string
+  prompt: string
+  code?: { language: CodeLanguage; source: string }
+  language: CodeLanguage | null
+  starter: string | null
+  publicTests: { name: string; input: string; expected: string }[] | null
+  maxLength: number | null
+  skills: string[]
+}
+
+export const ITEM_BANK: BankItem[] = [
+  // ───────────── Backend ─────────────
+  {
+    id: 'be-py-sort',
+    specs: ['backend'],
+    competency: 'backend.languages',
+    type: 'short_answer',
+    a: 1.1,
+    b: -1.6,
+    title: 'Что выведет программа?',
+    prompt: 'Введите вывод программы целиком.',
+    code: { language: 'python', source: 'items = [3, 1, 2]\nitems.sort()\nprint(items[-1])' },
+    correct: ['3'],
+    skills: ['python'],
+  },
+  {
+    id: 'be-http-idempotent',
+    specs: ['backend', 'general'],
+    competency: 'backend.messaging',
+    type: 'multiple_choice',
+    a: 1.0,
+    b: -1.3,
+    title: 'Идемпотентные методы',
+    prompt: 'Какие HTTP-методы идемпотентны по спецификации? Отметьте все верные.',
+    options: [
+      { id: 'get', text: 'GET' },
+      { id: 'post', text: 'POST' },
+      { id: 'put', text: 'PUT' },
+      { id: 'delete', text: 'DELETE' },
+    ],
+    correct: ['get', 'put', 'delete'],
+    skills: ['rest'],
+  },
+  {
+    id: 'be-sql-groupby',
+    specs: ['backend', 'general'],
+    competency: 'backend.databases',
+    type: 'single_choice',
+    a: 1.3,
+    b: -1.0,
+    title: 'Количество заказов по клиентам',
+    prompt: 'Какой запрос вернёт число заказов у каждого клиента из таблицы `orders(id, customer_id, total)`?',
+    options: [
+      { id: 'a', text: 'SELECT customer_id, COUNT(*) FROM orders GROUP BY customer_id;' },
+      { id: 'b', text: 'SELECT customer_id, COUNT(*) FROM orders;' },
+      { id: 'c', text: 'SELECT COUNT(customer_id) FROM orders GROUP BY id;' },
+      { id: 'd', text: 'SELECT customer_id, SUM(id) FROM orders GROUP BY customer_id;' },
+    ],
+    correct: ['a'],
+    skills: ['sql'],
+  },
+  {
+    id: 'be-py-mutable-default',
+    specs: ['backend'],
+    competency: 'backend.languages',
+    type: 'short_answer',
+    a: 1.2,
+    b: -0.6,
+    title: 'Что выведет программа?',
+    prompt: 'Введите вывод программы.',
+    code: {
+      language: 'python',
+      source: 'def add(item, bucket=[]):\n    bucket.append(item)\n    return bucket\n\nadd(1)\nadd(2)\nprint(len(add(3)))',
+    },
+    correct: ['3'],
+    skills: ['python'],
+  },
+  {
+    id: 'be-idempotency-key',
+    specs: ['backend', 'general'],
+    competency: 'backend.architecture',
+    type: 'single_choice',
+    a: 1.5,
+    b: -0.3,
+    title: 'Повтор оплаты после таймаута',
+    prompt: 'Клиент повторяет POST-запрос оплаты, не дождавшись ответа. Как надёжнее всего защититься от двойного списания?',
+    options: [
+      { id: 'a', text: 'Ключ идемпотентности в заголовке запроса и уникальный индекс по нему в БД' },
+      { id: 'b', text: 'Увеличить таймаут клиента до 60 секунд' },
+      { id: 'c', text: 'Перевести оплату на метод GET' },
+      { id: 'd', text: 'Логировать все входящие запросы' },
+    ],
+    correct: ['a'],
+    skills: ['rest', 'system_design'],
+  },
+  {
+    id: 'be-go-slice-append',
+    specs: ['backend'],
+    competency: 'backend.languages',
+    type: 'short_answer',
+    a: 1.4,
+    b: 0.0,
+    title: 'Что выведет программа?',
+    prompt: 'Введите вывод программы (значения через пробел).',
+    code: {
+      language: 'go',
+      source: 'a := make([]int, 2, 3)\nb := append(a, 7)\nb[0] = 5\nfmt.Println(a[0], len(a))',
+    },
+    correct: ['5 2'],
+    skills: ['go'],
+  },
+  {
+    id: 'be-sql-index',
+    specs: ['backend'],
+    competency: 'backend.databases',
+    type: 'single_choice',
+    a: 1.3,
+    b: 0.2,
+    title: 'Индекс под запрос',
+    prompt:
+      'Таблица `payments` — 40 млн строк. Частый запрос:\n\n`WHERE merchant_id = $1 AND created_at >= $2 ORDER BY created_at DESC LIMIT 50`\n\nКакой индекс подойдёт лучше всего?',
+    options: [
+      { id: 'a', text: 'B-tree (merchant_id, created_at DESC)' },
+      { id: 'b', text: 'B-tree (created_at)' },
+      { id: 'c', text: 'Два отдельных индекса: (merchant_id) и (created_at)' },
+      { id: 'd', text: 'Hash-индекс по created_at' },
+    ],
+    correct: ['a'],
+    skills: ['postgresql', 'sql'],
+  },
+  {
+    id: 'be-py-chunks-bug',
+    specs: ['backend'],
+    competency: 'backend.reliability',
+    type: 'single_choice',
+    a: 1.6,
+    b: 0.4,
+    title: 'Найдите ошибку',
+    prompt: 'Функция должна делить список на куски по `n` элементов. Что с ней не так?',
+    code: {
+      language: 'python',
+      source: 'def chunks(xs, n):\n    for i in range(0, len(xs) - n, n):\n        yield xs[i:i + n]',
+    },
+    options: [
+      { id: 'a', text: 'Теряется последний кусок: верхняя граница range должна быть len(xs)' },
+      { id: 'b', text: 'Срез xs[i:i + n] выходит за границы и бросает IndexError' },
+      { id: 'c', text: 'yield нельзя использовать внутри цикла for' },
+      { id: 'd', text: 'Шаг range должен быть равен 1' },
+    ],
+    correct: ['a'],
+    skills: ['python'],
+  },
+  {
+    id: 'be-kafka-partitions',
+    specs: ['backend', 'general'],
+    competency: 'backend.messaging',
+    type: 'short_answer',
+    a: 1.2,
+    b: 0.6,
+    title: 'Консьюмеры и партиции',
+    prompt: 'Консьюмер-группа из 6 инстансов читает топик Kafka с 4 партициями. Сколько инстансов будут простаивать? Введите число.',
+    correct: ['2'],
+    skills: ['kafka'],
+  },
+  {
+    id: 'be-lost-update',
+    specs: ['backend'],
+    competency: 'backend.databases',
+    type: 'single_choice',
+    a: 1.5,
+    b: 0.8,
+    title: 'Параллельные переводы',
+    prompt:
+      'Два параллельных перевода с одного счёта читают баланс (`SELECT balance`), считают новое значение в коде и записывают его (`UPDATE ... SET balance = $1`). Уровень изоляции — READ COMMITTED. Какая аномалия возможна?',
+    options: [
+      { id: 'a', text: 'Потерянное обновление (lost update)' },
+      { id: 'b', text: 'Грязное чтение (dirty read)' },
+      { id: 'c', text: 'Аномалий не будет: PostgreSQL сам сериализует записи' },
+      { id: 'd', text: 'Взаимная блокировка гарантирована' },
+    ],
+    correct: ['a'],
+    skills: ['postgresql'],
+  },
+  {
+    id: 'be-py-asyncio',
+    specs: ['backend'],
+    competency: 'backend.languages',
+    type: 'short_answer',
+    a: 1.3,
+    b: 0.9,
+    title: 'Что выведет программа?',
+    prompt: 'Введите вывод программы.',
+    code: {
+      language: 'python',
+      source:
+        'import asyncio\n\nasync def job(n):\n    await asyncio.sleep(0.1)\n    return n * 2\n\nasync def main():\n    results = await asyncio.gather(job(1), job(2), job(3))\n    print(sum(results))\n\nasyncio.run(main())',
+    },
+    correct: ['12'],
+    skills: ['python'],
+  },
+  {
+    id: 'be-go-race',
+    specs: ['backend'],
+    competency: 'backend.reliability',
+    type: 'single_choice',
+    a: 1.4,
+    b: 1.0,
+    title: 'Счётчик в горутинах',
+    prompt: 'Что можно сказать о выводе этой программы?',
+    code: {
+      language: 'go',
+      source:
+        'var counter int\nvar wg sync.WaitGroup\nfor i := 0; i < 1000; i++ {\n    wg.Add(1)\n    go func() {\n        defer wg.Done()\n        counter++\n    }()\n}\nwg.Wait()\nfmt.Println(counter)',
+    },
+    options: [
+      { id: 'a', text: 'Всегда 1000' },
+      { id: 'b', text: 'Не больше 1000 и может меняться от запуска к запуску — гонка данных' },
+      { id: 'c', text: 'Всегда 0: горутины не успеют стартовать' },
+      { id: 'd', text: 'Программа не скомпилируется' },
+    ],
+    correct: ['b'],
+    skills: ['go'],
+  },
+  {
+    id: 'be-outbox',
+    specs: ['backend'],
+    competency: 'backend.architecture',
+    type: 'single_choice',
+    a: 1.3,
+    b: 1.2,
+    title: 'Событие после коммита',
+    prompt:
+      'После коммита заказа в PostgreSQL нужно отправить событие в Kafka и не потерять его, если сервис упадёт между коммитом и отправкой. Что выбрать?',
+    options: [
+      { id: 'a', text: 'Transactional outbox: событие пишется в таблицу в той же транзакции, отдельный процесс публикует его' },
+      { id: 'b', text: 'Отправлять событие в Kafka до коммита транзакции' },
+      { id: 'c', text: 'Отправлять после коммита в том же обработчике с тремя ретраями' },
+      { id: 'd', text: 'Двухфазный коммит XA между PostgreSQL и Kafka' },
+    ],
+    correct: ['a'],
+    skills: ['kafka', 'microservices', 'system_design'],
+  },
+  {
+    id: 'be-sql-window',
+    specs: ['backend'],
+    competency: 'backend.databases',
+    type: 'single_choice',
+    a: 1.2,
+    b: 1.5,
+    title: 'Два последних платежа каждого мерчанта',
+    prompt: 'Какой запрос вернёт по 2 последних платежа для каждого мерчанта?',
+    options: [
+      {
+        id: 'a',
+        text: 'SELECT * FROM (SELECT p.*, ROW_NUMBER() OVER (PARTITION BY merchant_id ORDER BY created_at DESC) AS rn FROM payments p) t WHERE rn <= 2;',
+      },
+      { id: 'b', text: 'SELECT * FROM payments ORDER BY created_at DESC LIMIT 2;' },
+      { id: 'c', text: 'SELECT merchant_id, MAX(created_at) FROM payments GROUP BY merchant_id LIMIT 2;' },
+      { id: 'd', text: 'SELECT *, RANK() OVER (ORDER BY created_at) AS r FROM payments WHERE r <= 2;' },
+    ],
+    correct: ['a'],
+    skills: ['sql', 'postgresql'],
+  },
+  {
+    id: 'be-little-law',
+    specs: ['backend'],
+    competency: 'backend.architecture',
+    type: 'short_answer',
+    a: 1.1,
+    b: 1.8,
+    title: 'Размер пула соединений',
+    prompt:
+      'Сервис обрабатывает 1200 запросов в секунду, среднее время обработки — 50 мс, и всё это время запрос держит одно соединение с БД. Сколько соединений в среднем занято одновременно (закон Литтла)? Введите число.',
+    correct: ['60'],
+    skills: ['system_design', 'postgresql'],
+  },
+  {
+    id: 'be-redis-lock',
+    specs: ['backend'],
+    competency: 'backend.reliability',
+    type: 'single_choice',
+    a: 1.0,
+    b: 2.2,
+    title: 'Распределённая блокировка',
+    prompt: 'Блокировка на Redis через `SET key token NX PX 30000`. Что может привести к тому, что два процесса будут считать себя владельцами одновременно?',
+    options: [
+      { id: 'a', text: 'Пауза GC у владельца дольше TTL: ключ истёк, блокировку взял другой' },
+      { id: 'b', text: 'Использование флага NX' },
+      { id: 'c', text: 'Слишком короткое имя ключа' },
+      { id: 'd', text: 'Проверка владельца через GET перед удалением' },
+    ],
+    correct: ['a'],
+    skills: ['redis', 'system_design'],
+  },
+
+  // ───────────── Frontend ─────────────
+  {
+    id: 'fe-typeof-null',
+    specs: ['frontend'],
+    competency: 'frontend.core',
+    type: 'short_answer',
+    a: 1.0,
+    b: -1.5,
+    title: 'Что выведет код?',
+    prompt: 'Введите вывод в консоль.',
+    code: { language: 'javascript', source: 'console.log(typeof null)' },
+    correct: ['object'],
+    skills: ['javascript'],
+  },
+  {
+    id: 'fe-falsy',
+    specs: ['frontend'],
+    competency: 'frontend.core',
+    type: 'multiple_choice',
+    a: 1.1,
+    b: -1.2,
+    title: 'Ложные значения',
+    prompt: 'Какие значения в JavaScript ложные (falsy)? Отметьте все верные.',
+    options: [
+      { id: 'zero', text: '0' },
+      { id: 'empty', text: "''" },
+      { id: 'arr', text: '[]' },
+      { id: 'null', text: 'null' },
+      { id: 'str0', text: "'0'" },
+    ],
+    correct: ['zero', 'empty', 'null'],
+    skills: ['javascript'],
+  },
+  {
+    id: 'fe-flex',
+    specs: ['frontend'],
+    competency: 'frontend.layout',
+    type: 'single_choice',
+    a: 1.0,
+    b: -0.9,
+    title: 'Flex-контейнер',
+    prompt: 'Какое объявление делает элемент flex-контейнером?',
+    options: [
+      { id: 'a', text: 'display: flex' },
+      { id: 'b', text: 'position: flex' },
+      { id: 'c', text: 'flex: 1' },
+      { id: 'd', text: 'align-items: flex' },
+    ],
+    correct: ['a'],
+    skills: ['html_css'],
+  },
+  {
+    id: 'fe-array-ref',
+    specs: ['frontend'],
+    competency: 'frontend.core',
+    type: 'short_answer',
+    a: 1.2,
+    b: -0.4,
+    title: 'Что выведет код?',
+    prompt: 'Введите вывод в консоль.',
+    code: { language: 'javascript', source: 'const a = [1, 2, 3]\nconst b = a\nb.push(4)\nconsole.log(a.length)' },
+    correct: ['4'],
+    skills: ['javascript'],
+  },
+  {
+    id: 'fe-effect-loop',
+    specs: ['frontend'],
+    competency: 'frontend.frameworks',
+    type: 'single_choice',
+    a: 1.5,
+    b: 0.0,
+    title: 'Бесконечный рендер',
+    prompt: 'Компонент бесконечно отправляет запросы. Почему?',
+    code: {
+      language: 'javascript',
+      source:
+        'function Profile({ id }) {\n  const [user, setUser] = useState(null)\n  useEffect(() => {\n    fetchUser(id).then(setUser)\n  })\n  return <Card user={user} />\n}',
+    },
+    options: [
+      { id: 'a', text: 'У useEffect нет массива зависимостей: эффект срабатывает после каждого рендера, а setUser вызывает новый' },
+      { id: 'b', text: 'useState нельзя инициализировать значением null' },
+      { id: 'c', text: 'fetchUser должен вызываться вне компонента' },
+      { id: 'd', text: 'Компонент Card не обёрнут в React.memo' },
+    ],
+    correct: ['a'],
+    skills: ['react'],
+  },
+  {
+    id: 'fe-event-loop',
+    specs: ['frontend'],
+    competency: 'frontend.core',
+    type: 'short_answer',
+    a: 1.4,
+    b: 0.3,
+    title: 'Порядок вывода',
+    prompt: 'В каком порядке появятся числа? Введите их через пробел.',
+    code: {
+      language: 'javascript',
+      source: "console.log(1)\nsetTimeout(() => console.log(2), 0)\nPromise.resolve().then(() => console.log(3))\nconsole.log(4)",
+    },
+    correct: ['1 4 3 2'],
+    skills: ['javascript'],
+  },
+  {
+    id: 'fe-as-const',
+    specs: ['frontend'],
+    competency: 'frontend.core',
+    type: 'single_choice',
+    a: 1.2,
+    b: 0.5,
+    title: 'Тип в TypeScript',
+    prompt: 'Какой тип выведет TypeScript для `x`?',
+    code: { language: 'typescript', source: "const x = [1, 'a'] as const" },
+    options: [
+      { id: 'a', text: "readonly [1, 'a']" },
+      { id: 'b', text: '(string | number)[]' },
+      { id: 'c', text: "[number, string]" },
+      { id: 'd', text: 'readonly (string | number)[]' },
+    ],
+    correct: ['a'],
+    skills: ['typescript'],
+  },
+  {
+    id: 'fe-a11y-icon',
+    specs: ['frontend'],
+    competency: 'frontend.layout',
+    type: 'single_choice',
+    a: 1.2,
+    b: 0.8,
+    title: 'Кнопка-иконка',
+    prompt: 'Кнопка содержит только иконку. Что нужно, чтобы её назначение понял скринридер?',
+    options: [
+      { id: 'a', text: 'aria-label с назначением кнопки' },
+      { id: 'b', text: 'Атрибут title' },
+      { id: 'c', text: 'role="img" на кнопке' },
+      { id: 'd', text: 'tabindex="-1"' },
+    ],
+    correct: ['a'],
+    skills: ['a11y'],
+  },
+  {
+    id: 'fe-keys',
+    specs: ['frontend'],
+    competency: 'frontend.frameworks',
+    type: 'single_choice',
+    a: 1.3,
+    b: 0.9,
+    title: 'Индекс как key',
+    prompt: 'В списке с полями ввода строки можно удалять. Что будет, если использовать индекс массива как `key`?',
+    options: [
+      { id: 'a', text: 'Состояние строк (введённый текст) может «переехать» к соседним элементам' },
+      { id: 'b', text: 'React выбросит ошибку при рендере' },
+      { id: 'c', text: 'Ничего: индекс — рекомендуемый key' },
+      { id: 'd', text: 'Список перестанет обновляться' },
+    ],
+    correct: ['a'],
+    skills: ['react'],
+  },
+  {
+    id: 'fe-virtualization',
+    specs: ['frontend'],
+    competency: 'frontend.performance',
+    type: 'single_choice',
+    a: 1.3,
+    b: 1.1,
+    title: 'Длинный список',
+    prompt: 'Список из 10 000 строк тормозит при прокрутке. Что даст наибольший эффект?',
+    options: [
+      { id: 'a', text: 'Виртуализация: рендерить только видимые строки' },
+      { id: 'b', text: 'React.memo на каждой строке' },
+      { id: 'c', text: 'Заменить map на цикл for' },
+      { id: 'd', text: 'Убрать key у строк' },
+    ],
+    correct: ['a'],
+    skills: ['web_performance', 'react'],
+  },
+  {
+    id: 'fe-var-closure',
+    specs: ['frontend'],
+    competency: 'frontend.core',
+    type: 'short_answer',
+    a: 1.2,
+    b: 1.4,
+    title: 'Замыкания и var',
+    prompt: 'Что выведет код? Введите значения через пробел.',
+    code: { language: 'javascript', source: 'for (var i = 0; i < 3; i++) {\n  setTimeout(() => console.log(i), 0)\n}' },
+    correct: ['3 3 3'],
+    skills: ['javascript'],
+  },
+  {
+    id: 'fe-inp',
+    specs: ['frontend'],
+    competency: 'frontend.performance',
+    type: 'single_choice',
+    a: 1.0,
+    b: 1.8,
+    title: 'Core Web Vitals',
+    prompt: 'Какая метрика Core Web Vitals отвечает за отзывчивость интерфейса на действия пользователя?',
+    options: [
+      { id: 'a', text: 'INP (Interaction to Next Paint)' },
+      { id: 'b', text: 'LCP (Largest Contentful Paint)' },
+      { id: 'c', text: 'CLS (Cumulative Layout Shift)' },
+      { id: 'd', text: 'TTFB (Time to First Byte)' },
+    ],
+    correct: ['a'],
+    skills: ['web_performance'],
+  },
+
+  // ───────────── QA ─────────────
+  {
+    id: 'qa-boundaries',
+    specs: ['qa'],
+    competency: 'qa.design',
+    type: 'single_choice',
+    a: 1.2,
+    b: -1.0,
+    title: 'Граничные значения',
+    prompt: 'Поле «Возраст» принимает целые числа от 18 до 65 включительно. Какой набор значений проверяет границы минимально и полно?',
+    options: [
+      { id: 'a', text: '17, 18, 65, 66' },
+      { id: 'b', text: '18, 65' },
+      { id: 'c', text: '0, 40, 100' },
+      { id: 'd', text: '17, 66' },
+    ],
+    correct: ['a'],
+    skills: ['test_design'],
+  },
+  {
+    id: 'qa-201',
+    specs: ['qa', 'general'],
+    competency: 'qa.automation',
+    type: 'short_answer',
+    a: 1.0,
+    b: 0.2,
+    title: 'Код ответа',
+    prompt: 'POST /orders успешно создал заказ. Какой HTTP-статус ожидается по REST-соглашениям? Введите число.',
+    correct: ['201'],
+    skills: ['api_testing'],
+  },
+  {
+    id: 'qa-flaky',
+    specs: ['qa'],
+    competency: 'qa.automation',
+    type: 'single_choice',
+    a: 1.3,
+    b: 0.9,
+    title: 'Нестабильный тест',
+    prompt: 'UI-тест падает в CI примерно 1 раз из 20 запусков. Что сделать первым делом?',
+    options: [
+      { id: 'a', text: 'Собрать артефакты падений (логи, трассы, скриншоты) и найти источник недетерминизма' },
+      { id: 'b', text: 'Добавить три автоматических перезапуска' },
+      { id: 'c', text: 'Увеличить все ожидания до 30 секунд' },
+      { id: 'd', text: 'Отключить тест' },
+    ],
+    correct: ['a'],
+    skills: ['playwright', 'ci_cd'],
+  },
+  {
+    id: 'qa-pairwise',
+    specs: ['qa'],
+    competency: 'qa.design',
+    type: 'short_answer',
+    a: 1.1,
+    b: 1.5,
+    title: 'Попарное тестирование',
+    prompt: 'У формы 3 параметра, у каждого по 3 значения. Сколько тестов минимально нужно для покрытия всех пар значений (pairwise)? Введите число.',
+    correct: ['9'],
+    skills: ['test_design'],
+  },
+
+  // ───────────── DevOps ─────────────
+  {
+    id: 'do-kubectl-all',
+    specs: ['devops'],
+    competency: 'devops.orchestration',
+    type: 'single_choice',
+    a: 1.0,
+    b: -0.8,
+    title: 'Поды во всех неймспейсах',
+    prompt: 'Какая команда покажет поды во всех неймспейсах кластера?',
+    options: [
+      { id: 'a', text: 'kubectl get pods -A' },
+      { id: 'b', text: 'kubectl get pods --all' },
+      { id: 'c', text: 'kubectl list pods' },
+      { id: 'd', text: 'kubectl describe namespaces' },
+    ],
+    correct: ['a'],
+    skills: ['kubernetes'],
+  },
+  {
+    id: 'do-crashloop',
+    specs: ['devops'],
+    competency: 'devops.observability',
+    type: 'single_choice',
+    a: 1.3,
+    b: 0.3,
+    title: 'CrashLoopBackOff',
+    prompt: 'Под в состоянии CrashLoopBackOff. С чего начать разбор?',
+    options: [
+      { id: 'a', text: 'kubectl logs <pod> --previous — логи упавшего контейнера' },
+      { id: 'b', text: 'Удалить под и надеяться на перезапуск' },
+      { id: 'c', text: 'Увеличить число реплик' },
+      { id: 'd', text: 'Перезагрузить ноду' },
+    ],
+    correct: ['a'],
+    skills: ['kubernetes'],
+  },
+  {
+    id: 'do-readiness',
+    specs: ['devops'],
+    competency: 'devops.orchestration',
+    type: 'single_choice',
+    a: 1.2,
+    b: 1.0,
+    title: 'Rolling update',
+    prompt: 'При rolling update новые поды никогда не проходят readinessProbe. Что произойдёт?',
+    options: [
+      { id: 'a', text: 'Выкатка зависнет, старые поды продолжат обслуживать трафик' },
+      { id: 'b', text: 'Kubernetes удалит все старые поды и сервис ляжет' },
+      { id: 'c', text: 'Трафик пойдёт на новые поды без проверки' },
+      { id: 'd', text: 'Деплой автоматически откатится на прошлую ревизию' },
+    ],
+    correct: ['a'],
+    skills: ['kubernetes', 'ci_cd'],
+  },
+  {
+    id: 'do-slo',
+    specs: ['devops', 'general'],
+    competency: 'devops.observability',
+    type: 'short_answer',
+    a: 1.1,
+    b: 1.6,
+    title: 'Бюджет ошибок',
+    prompt: 'SLO доступности — 99,9% за 30 дней. Сколько минут простоя допустимо за период? Введите число (можно с одним знаком после запятой).',
+    correct: ['43.2', '43,2', '43'],
+    skills: ['prometheus'],
+  },
+
+  // ───────────── Mobile ─────────────
+  {
+    id: 'mo-keychain',
+    specs: ['mobile'],
+    competency: 'mobile.ios',
+    type: 'single_choice',
+    a: 1.1,
+    b: -0.7,
+    title: 'Хранение токена',
+    prompt: 'Где на iOS безопаснее всего хранить токен авторизации?',
+    options: [
+      { id: 'a', text: 'Keychain' },
+      { id: 'b', text: 'UserDefaults' },
+      { id: 'c', text: 'Файл в Documents' },
+      { id: 'd', text: 'Глобальная переменная' },
+    ],
+    correct: ['a'],
+    skills: ['swift'],
+  },
+  {
+    id: 'mo-main-thread',
+    specs: ['mobile'],
+    competency: 'mobile.android',
+    type: 'single_choice',
+    a: 1.2,
+    b: 0.4,
+    title: 'Сеть в главном потоке',
+    prompt: 'Почему на Android нельзя выполнять сетевой запрос в главном потоке?',
+    options: [
+      { id: 'a', text: 'Он блокирует UI; система бросает NetworkOnMainThreadException' },
+      { id: 'b', text: 'Главный поток не имеет доступа к сети по разрешениям' },
+      { id: 'c', text: 'Так можно, если запрос короткий' },
+      { id: 'd', text: 'Главный поток работает только с базой данных' },
+    ],
+    correct: ['a'],
+    skills: ['android_sdk', 'kotlin'],
+  },
+  {
+    id: 'mo-flutter-build',
+    specs: ['mobile'],
+    competency: 'mobile.cross',
+    type: 'single_choice',
+    a: 1.1,
+    b: 1.2,
+    title: 'Flutter: build()',
+    prompt: 'Когда Flutter вызывает build() у StatefulWidget?',
+    options: [
+      { id: 'a', text: 'После setState, изменения зависимостей или пересоздания родителя' },
+      { id: 'b', text: 'Ровно один раз при создании виджета' },
+      { id: 'c', text: 'Только при повороте экрана' },
+      { id: 'd', text: 'Каждые 16 мс независимо от изменений' },
+    ],
+    correct: ['a'],
+    skills: ['flutter'],
+  },
+
+  // ───────────── Data/ML ─────────────
+  {
+    id: 'dm-imbalanced',
+    specs: ['data_ml'],
+    competency: 'data.ml',
+    type: 'single_choice',
+    a: 1.2,
+    b: -0.6,
+    title: 'Несбалансированные классы',
+    prompt: 'Бинарная классификация, положительных примеров 1%. Какую метрику НЕ стоит брать основной?',
+    options: [
+      { id: 'a', text: 'Accuracy' },
+      { id: 'b', text: 'PR-AUC' },
+      { id: 'c', text: 'F1 по положительному классу' },
+      { id: 'd', text: 'Recall при фиксированной precision' },
+    ],
+    correct: ['a'],
+    skills: ['ml'],
+  },
+  {
+    id: 'dm-timeseries',
+    specs: ['data_ml'],
+    competency: 'data.ml',
+    type: 'single_choice',
+    a: 1.3,
+    b: 0.5,
+    title: 'Валидация на временных рядах',
+    prompt: 'Модель прогнозирует спрос по дням. Как правильно валидировать?',
+    options: [
+      { id: 'a', text: 'Разбиение по времени: обучаемся на прошлом, проверяем на будущем' },
+      { id: 'b', text: 'Случайный K-fold по всем дням' },
+      { id: 'c', text: 'Проверка на обучающей выборке' },
+      { id: 'd', text: 'Leave-one-out по случайным дням' },
+    ],
+    correct: ['a'],
+    skills: ['ml', 'pandas'],
+  },
+  {
+    id: 'dm-leakage',
+    specs: ['data_ml'],
+    competency: 'data.engineering',
+    type: 'single_choice',
+    a: 1.1,
+    b: 1.3,
+    title: 'Подозрительно высокое качество',
+    prompt: 'ROC-AUC на валидации 0,99, а в проде модель работает плохо. Признак «дата закрытия заявки» есть в обучении. Как называется проблема?',
+    options: [
+      { id: 'a', text: 'Утечка целевой переменной (target leakage)' },
+      { id: 'b', text: 'Недообучение' },
+      { id: 'c', text: 'Мультиколлинеарность' },
+      { id: 'd', text: 'Дисбаланс классов' },
+    ],
+    correct: ['a'],
+    skills: ['ml'],
+  },
+
+  // ───────────── Аналитик ─────────────
+  {
+    id: 'an-bpmn',
+    specs: ['analyst'],
+    competency: 'analyst.modeling',
+    type: 'single_choice',
+    a: 1.0,
+    b: -0.8,
+    title: 'Нотация процесса',
+    prompt: 'Какая нотация предназначена для моделирования бизнес-процессов с участниками и событиями?',
+    options: [
+      { id: 'a', text: 'BPMN' },
+      { id: 'b', text: 'ER-диаграмма' },
+      { id: 'c', text: 'Диаграмма классов UML' },
+      { id: 'd', text: 'Диаграмма Ганта' },
+    ],
+    correct: ['a'],
+    skills: ['bpmn'],
+  },
+  {
+    id: 'an-measurable',
+    specs: ['analyst', 'general'],
+    competency: 'analyst.requirements',
+    type: 'single_choice',
+    a: 1.2,
+    b: 0.3,
+    title: 'Качество требования',
+    prompt: 'Что не так с требованием «Система должна работать быстро»?',
+    options: [
+      { id: 'a', text: 'Его нельзя проверить: нет измеримого критерия (например, p95 < 300 мс при 500 RPS)' },
+      { id: 'b', text: 'Оно функциональное, а должно быть нефункциональным' },
+      { id: 'c', text: 'Требования к скорости не пишут в ТЗ' },
+      { id: 'd', text: 'Всё в порядке' },
+    ],
+    correct: ['a'],
+    skills: ['requirements'],
+  },
+  {
+    id: 'an-api-cancel',
+    specs: ['analyst'],
+    competency: 'analyst.data',
+    type: 'single_choice',
+    a: 1.1,
+    b: 1.1,
+    title: 'Отмена заказа в API',
+    prompt: 'Отмену заказа может отправить и мобильное приложение, и колл-центр, причём повторно. Что обязательно описать в спецификации метода?',
+    options: [
+      { id: 'a', text: 'Идемпотентность и допустимые переходы статусов (что вернуть, если заказ уже отменён или доставлен)' },
+      { id: 'b', text: 'Только формат ответа 200' },
+      { id: 'c', text: 'Цвет кнопки отмены' },
+      { id: 'd', text: 'Название таблицы в БД' },
+    ],
+    correct: ['a'],
+    skills: ['openapi_spec', 'requirements'],
+  },
+]
+
+export const PRACTICE_ITEMS: PracticeItem[] = [
+  {
+    id: 'pr-be-dedupe',
+    spec: 'backend',
+    competency: 'backend.reliability',
+    type: 'code',
+    title: 'Повторы в потоке платежей',
+    prompt:
+      'Платёжный шлюз может доставлять одно событие несколько раз. Напишите функцию `dedupe(events)`, которая возвращает список `id` событий без повторов в порядке первого появления.\n\nКаждое событие — словарь вида `{"id": "p1", "amount": 100}`.',
+    language: 'python',
+    starter: 'def dedupe(events):\n    # верните список id без повторов в порядке первого появления\n    pass\n',
+    publicTests: [
+      { name: 'повторы', input: 'dedupe([{"id": "a"}, {"id": "b"}, {"id": "a"}])', expected: "['a', 'b']" },
+      { name: 'пустой поток', input: 'dedupe([])', expected: '[]' },
+      { name: 'порядок', input: 'dedupe([{"id": "c"}, {"id": "a"}, {"id": "c"}, {"id": "b"}])', expected: "['c', 'a', 'b']" },
+    ],
+    maxLength: null,
+    skills: ['python'],
+  },
+  {
+    id: 'pr-fe-groupby',
+    spec: 'frontend',
+    competency: 'frontend.core',
+    type: 'code',
+    title: 'Группировка заказов',
+    prompt:
+      'Напишите функцию `groupBy(items, key)`, которая возвращает объект: ключ — значение поля `key`, значение — массив элементов с этим значением (в исходном порядке).',
+    language: 'javascript',
+    starter: 'function groupBy(items, key) {\n  // ваш код\n}\n',
+    publicTests: [
+      { name: 'два статуса', input: "groupBy([{s:'new'},{s:'paid'},{s:'new'}], 's')", expected: "{ new: [{s:'new'},{s:'new'}], paid: [{s:'paid'}] }" },
+      { name: 'пустой массив', input: "groupBy([], 's')", expected: '{}' },
+    ],
+    maxLength: null,
+    skills: ['javascript'],
+  },
+  {
+    id: 'pr-dm-precision',
+    spec: 'data_ml',
+    competency: 'data.ml',
+    type: 'code',
+    title: 'Precision@k',
+    prompt: 'Напишите функцию `precision_at_k(recommended, relevant, k)`: доля релевантных среди первых `k` рекомендаций.',
+    language: 'python',
+    starter: 'def precision_at_k(recommended, relevant, k):\n    pass\n',
+    publicTests: [
+      { name: 'половина', input: "precision_at_k(['a','b','c','d'], {'a','c'}, 4)", expected: '0.5' },
+      { name: 'k=1', input: "precision_at_k(['x','a'], {'a'}, 1)", expected: '0.0' },
+    ],
+    maxLength: null,
+    skills: ['python', 'ml'],
+  },
+  {
+    id: 'pr-qa-plan',
+    spec: 'qa',
+    competency: 'qa.design',
+    type: 'open_text',
+    title: 'Тест-план формы оплаты',
+    prompt:
+      'Форма оплаты картой: номер, срок, CVC, сумма, кнопка «Оплатить». Составьте короткий тест-план: ключевые проверки, граничные значения, негативные сценарии и что автоматизировать в первую очередь.',
+    language: null,
+    starter: null,
+    publicTests: null,
+    maxLength: 1500,
+    skills: ['test_design'],
+  },
+  {
+    id: 'pr-do-log',
+    spec: 'devops',
+    competency: 'devops.observability',
+    type: 'open_text',
+    title: 'Разбор лога',
+    prompt: 'Под платёжного сервиса перезапускается каждые 2 минуты. Определите причину по фрагменту и предложите исправление.',
+    code: {
+      language: 'text',
+      source:
+        'Last State: Terminated\n  Reason: OOMKilled\n  Exit Code: 137\nLimits:\n  memory: 256Mi\nRequests:\n  memory: 128Mi\n[app] heap grows: 210Mi -> 248Mi after batch import',
+    },
+    language: null,
+    starter: null,
+    publicTests: null,
+    maxLength: 1500,
+    skills: ['kubernetes', 'prometheus'],
+  },
+  {
+    id: 'pr-mo-offline',
+    spec: 'mobile',
+    competency: 'mobile.cross',
+    type: 'open_text',
+    title: 'Офлайн-режим',
+    prompt: 'Как вы реализуете офлайн-режим списка заказов с последующей синхронизацией? Опишите хранение, конфликты и UX.',
+    language: null,
+    starter: null,
+    publicTests: null,
+    maxLength: 1500,
+    skills: ['flutter'],
+  },
+  {
+    id: 'pr-an-cancel',
+    spec: 'analyst',
+    competency: 'analyst.requirements',
+    type: 'open_text',
+    title: 'Требования к отмене заказа',
+    prompt: 'Опишите требования к функции отмены заказа: акторы, статусы, правила возврата денег, нефункциональные требования.',
+    language: null,
+    starter: null,
+    publicTests: null,
+    maxLength: 1500,
+    skills: ['requirements'],
+  },
+]
+
+/** Банк для специализации: свои задания + общие (для демо-банков). */
+export function bankFor(spec: Specialization): BankItem[] {
+  const own = ITEM_BANK.filter((i) => i.specs.includes(spec))
+  if (own.length >= 12) return own
+  const general = ITEM_BANK.filter((i) => i.specs.includes('general') && !i.specs.includes(spec))
+  return [...own, ...general]
+}
+
+export function practiceFor(spec: Specialization): PracticeItem | null {
+  return PRACTICE_ITEMS.find((p) => p.spec === spec) ?? null
+}
+
+function normalizeText(value: string): string {
+  return value.trim().toLowerCase().replace(/[;,]+\s*/g, ' ').replace(/\s+/g, ' ')
+}
+
+function parseNumber(value: string): number | null {
+  const v = value.trim().replace(',', '.')
+  return /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : null
+}
+
+/** Короткий ответ: числа сравниваются численно, текст — без регистра и лишних разделителей. */
+export function isShortAnswerCorrect(answer: string, accepted: readonly string[]): boolean {
+  const num = parseNumber(answer)
+  return accepted.some((ok) => {
+    const okNum = parseNumber(ok)
+    if (num !== null && okNum !== null) return Math.abs(num - okNum) < 1e-9
+    return normalizeText(answer) === normalizeText(ok)
+  })
+}
