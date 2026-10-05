@@ -32,7 +32,7 @@ function Specimen({ pair, active, onApply }: { pair: FontPair; active: boolean; 
           <p className="eyebrow">
             Заголовки: {pair.display} · текст: {pair.text}
           </p>
-          <h2 id={`pair-${pair.id}`} className="display text-[1.75rem]">
+          <h2 id={`pair-${pair.id}`} className="display text-[2rem]">
             {pair.name}
           </h2>
           <p className="text-sm text-muted-foreground">{pair.note}</p>
@@ -78,7 +78,7 @@ function Specimen({ pair, active, onApply }: { pair: FontPair; active: boolean; 
                   <span className="font-semibold">Кандидат #3F2A</span>
                   <span className="inline-flex h-6 items-center rounded-md bg-foreground px-2 font-heading text-xs font-semibold text-background">Backend · Middle</span>
                 </div>
-                <p className="font-heading text-[1.25rem] leading-tight font-semibold tracking-[-0.015em]">Go, PostgreSQL, Kafka</p>
+                <p className="font-heading text-[1.25rem] leading-tight font-semibold">Go, PostgreSQL, Kafka</p>
                 <p className="text-sm text-muted-foreground">3 года в финтехе · гибрид, Москва · готов к переезду</p>
               </div>
               <div className="grid justify-items-end">
@@ -114,7 +114,7 @@ function Specimen({ pair, active, onApply }: { pair: FontPair; active: boolean; 
 
         <Fragment label="Абзац текста">
           <div className="grid max-w-[62ch] gap-3">
-            <h3 className="display text-[1.375rem]">Как работает тест</h3>
+            <h3 className="text-[1.375rem] leading-tight">Как работает тест</h3>
             <p>
               Адаптивный тест по модели IRT (2PL): каждое следующее задание подбирается под текущую оценку уровня, поэтому 12–20 заданий дают точность длинного экзамена. После каждого ответа
               пересчитываем оценку θ и её погрешность.
@@ -195,7 +195,7 @@ export default function Fonts() {
           <p className="eyebrow">Типографика</p>
           <h1 className="display-xl text-[2.5rem] sm:text-[3.25rem]">Шрифты Скаута</h1>
           <p className="text-muted-foreground">
-            Четыре пары на фрагментах интерфейса. Выбранная пара применяется ко всему сайту и сохраняется в браузере. Цифры и код везде набраны JetBrains Mono.
+            Пять пар на фрагментах интерфейса. Выбранная пара применяется ко всему сайту и сохраняется в браузере. Цифры и код везде набраны JetBrains Mono.
           </p>
         </div>
         {FONT_PAIRS.map((p) => (

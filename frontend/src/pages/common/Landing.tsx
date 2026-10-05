@@ -51,7 +51,7 @@ export default function Landing() {
           </div>
         </section>
         <section className="grid content-start gap-4">
-          <h2 className="display text-xl">Войти в демо</h2>
+          <h2 className="text-xl">Войти в демо</h2>
           {DEMO_PERSONAS.map((p) => (
             <button
               key={p.key}

@@ -74,38 +74,66 @@
   color-scheme: light;
 }
 
-/* Пары шрифтов. По умолчанию Wix Madefor; атрибут data-font работает и на <html>, и на обёртке (образцы на /fonts) */
+/*
+ * Пары шрифтов. По умолчанию антиква Source Serif 4 + Wix Madefor Text.
+ * Атрибут data-font работает и на <html>, и на обёртке (образцы на /fonts).
+ * --display-weight: тонкое начертание только для крупного текста (.display, .display-xl, от 28px).
+ * --heading-weight: заголовки секций и мелкие подписи, не тоньше 500. Текст всегда 400.
+ */
 :root,
-[data-font='wix'] {
-  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Wix Madefor Display Variable', 'Wix Madefor Text Variable', ui-sans-serif, system-ui, sans-serif;
-  --display-weight: 650;
-  --display-tracking: -0.022em;
-  --display-variation: normal;
-  --text-variation: normal;
-}
-[data-font='geologica'] {
-  --font-text: 'Geologica Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Geologica Variable', ui-sans-serif, system-ui, sans-serif;
-  --display-weight: 600;
-  --display-tracking: -0.028em;
-  --display-variation: 'SHRP' 28;
-  --text-variation: 'SHRP' 0;
-}
-[data-font='commissioner'] {
-  --font-text: 'Commissioner Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Commissioner Variable', ui-sans-serif, system-ui, sans-serif;
-  --display-weight: 620;
-  --display-tracking: -0.026em;
-  --display-variation: normal;
-  --text-variation: normal;
-}
 [data-font='serif'] {
   --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
-  --display-weight: 560;
+  --display-weight: 260;
+  --display-tracking: -0.012em;
+  --display-variation: normal;
+  --heading-weight: 600;
+  --heading-tracking: -0.01em;
+  --heading-variation: normal;
+  --text-variation: normal;
+}
+[data-font='literata'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Literata Variable', Georgia, 'Times New Roman', serif;
+  --display-weight: 240;
   --display-tracking: -0.018em;
   --display-variation: normal;
+  --heading-weight: 600;
+  --heading-tracking: -0.012em;
+  --heading-variation: normal;
+  --text-variation: normal;
+}
+[data-font='wix'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Wix Madefor Display Variable', 'Wix Madefor Text Variable', ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 400;
+  --display-tracking: -0.024em;
+  --display-variation: normal;
+  --heading-weight: 650;
+  --heading-tracking: -0.018em;
+  --heading-variation: normal;
+  --text-variation: normal;
+}
+[data-font='future'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Geologica Variable', ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 200;
+  --display-tracking: -0.01em;
+  --display-variation: 'SHRP' 100;
+  --heading-weight: 560;
+  --heading-tracking: -0.014em;
+  --heading-variation: 'SHRP' 40;
+  --text-variation: normal;
+}
+[data-font='jura'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Jura Variable', ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 300;
+  --display-tracking: 0.005em;
+  --display-variation: normal;
+  --heading-weight: 600;
+  --heading-tracking: 0;
+  --heading-variation: normal;
   --text-variation: normal;
 }
 [data-font] {

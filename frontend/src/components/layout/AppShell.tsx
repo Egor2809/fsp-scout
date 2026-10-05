@@ -291,7 +291,7 @@ export function PageHeader({
               {meta && <span className="num text-foreground">{meta}</span>}
             </p>
           )}
-          <h1 className="display text-[1.625rem] sm:text-[2rem]">{title}</h1>
+          <h1 className="display text-[1.75rem] sm:text-[2.25rem]">{title}</h1>
           {description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground text-pretty">{description}</p>}
         </div>
         {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}

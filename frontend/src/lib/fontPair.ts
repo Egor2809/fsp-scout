@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react'
 
-export type FontPairId = 'wix' | 'geologica' | 'commissioner' | 'serif'
+export type FontPairId = 'serif' | 'literata' | 'future' | 'jura' | 'wix'
 
 export interface FontPair {
   id: FontPairId
@@ -12,36 +12,43 @@ export interface FontPair {
 
 export const FONT_PAIRS: FontPair[] = [
   {
+    id: 'serif',
+    name: 'Source Serif',
+    display: 'Source Serif 4, 260, оптический размер display',
+    text: 'Wix Madefor Text 400',
+    note: 'Тонкая антиква в крупных заголовках, гротеск в тексте. Оптический размер включается сам: чем крупнее кегль, тем контрастнее штрихи.',
+  },
+  {
+    id: 'literata',
+    name: 'Literata',
+    display: 'Literata, 240, оптический размер display',
+    text: 'Wix Madefor Text 400',
+    note: 'Антиква с более мягкими засечками и широкой кириллицей. Теплее и «книжнее», чем Source Serif.',
+  },
+  {
+    id: 'future',
+    name: 'Геологика, острая',
+    display: 'Geologica 200, острота 100',
+    text: 'Wix Madefor Text 400',
+    note: 'Футуристичный вариант: тонкий гротеск с заострёнными окончаниями в крупных заголовках, спокойный текст.',
+  },
+  {
+    id: 'jura',
+    name: 'Jura',
+    display: 'Jura 300',
+    text: 'Wix Madefor Text 400',
+    note: 'Футуристичный вариант: монолинейный шрифт с квадратными овалами. Самое тонкое начертание у Jura 300.',
+  },
+  {
     id: 'wix',
     name: 'Wix Madefor',
-    display: 'Wix Madefor Display',
-    text: 'Wix Madefor Text',
-    note: 'Ровный гротеск с отдельными версиями для заголовков и для текста. Мелкий кегль и таблицы читаются легко.',
-  },
-  {
-    id: 'geologica',
-    name: 'Геологика',
-    display: 'Geologica, острота 28',
-    text: 'Geologica, острота 0',
-    note: 'Гротеск с осью остроты: в заголовках она 28 из 100, в тексте выключена.',
-  },
-  {
-    id: 'commissioner',
-    name: 'Commissioner',
-    display: 'Commissioner 620',
-    text: 'Commissioner 400',
-    note: 'Тёплый гротеск с чуть более широкими пропорциями. Декоративные оси выключены.',
-  },
-  {
-    id: 'serif',
-    name: 'Антиква и гротеск',
-    display: 'Source Serif 4',
-    text: 'Wix Madefor Text',
-    note: 'Антиква с оптическими размерами в заголовках, гротеск Wix в остальном тексте.',
+    display: 'Wix Madefor Display 400',
+    text: 'Wix Madefor Text 400',
+    note: 'Один гротеск с отдельными версиями для заголовков и текста. Самый нейтральный вариант.',
   },
 ]
 
-export const DEFAULT_FONT_PAIR: FontPairId = 'wix'
+export const DEFAULT_FONT_PAIR: FontPairId = 'serif'
 const KEY = 'scout.fontPair'
 const listeners = new Set<() => void>()
 

@@ -132,7 +132,7 @@ function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem
           <Tag>{item.competency.name}</Tag>
           <DifficultyMeter level={item.difficulty_level} />
         </div>
-        <h1 id="item-title" className="display text-[1.375rem]">
+        <h1 id="item-title" className="text-[1.375rem] leading-tight">
           {item.title}
         </h1>
         <p className="whitespace-pre-line text-pretty">{item.prompt}</p>

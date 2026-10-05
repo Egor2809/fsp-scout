@@ -5,8 +5,9 @@
 @import '@fontsource-variable/wix-madefor-display/index.css';
 @import '@fontsource-variable/wix-madefor-text/index.css';
 @import '@fontsource-variable/geologica/shrp.css';
-@import '@fontsource-variable/commissioner/index.css';
 @import '@fontsource-variable/source-serif-4/opsz.css';
+@import '@fontsource-variable/literata/opsz.css';
+@import '@fontsource-variable/jura/index.css';
 @import '@fontsource-variable/jetbrains-mono/index.css';
 @import './theme.css';
 
@@ -30,15 +31,15 @@
     line-height: 1.5;
     font-variation-settings: var(--text-variation);
   }
-  /* Заголовки: дисплейная гарнитура пары, плотный трекинг, баланс строк */
+  /* Заголовки секций: гарнитура заголовков пары, но не тоньше 500, потому что кегль мелкий */
   h1,
   h2,
   h3,
   h4 {
     font-family: var(--font-display);
-    font-weight: var(--display-weight);
-    font-variation-settings: var(--display-variation);
-    letter-spacing: var(--display-tracking);
+    font-weight: var(--heading-weight);
+    font-variation-settings: var(--heading-variation);
+    letter-spacing: var(--heading-tracking);
     text-wrap: balance;
   }
   p,
@@ -83,7 +84,7 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-  /* Дисплей: гарнитура заголовков активной пары. Крупный кегль, плотнее трекинг */
+  /* Дисплей: тонкое начертание пары. Только для кегля от 28px, мельче берите обычный h1–h4 */
   .display {
     font-family: var(--font-display);
     font-weight: var(--display-weight);
@@ -103,8 +104,8 @@
   /* Капс: только короткие подписи; капсу нужна разрядка, а не сжатие */
   .display-caps {
     font-family: var(--font-display);
-    font-weight: var(--display-weight);
-    font-variation-settings: var(--display-variation);
+    font-weight: var(--heading-weight);
+    font-variation-settings: var(--heading-variation);
     letter-spacing: 0.04em;
     line-height: 1;
     text-transform: uppercase;
