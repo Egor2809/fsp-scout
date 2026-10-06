@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { IconPlayerPlay, IconStarFilled } from '@tabler/icons-react'
+import { IconPlayerPlay } from '@tabler/icons-react'
 import { useGetMyConsents, useUpdateMyConsents } from '@/api/generated/endpoints/me/me'
 import { useCreateSurvey, useGetMyTestEligibility, useStartTest } from '@/api/generated/endpoints/assessment/assessment'
 import type { ConsentType, Grade, Industry, Specialization, WorkFormat } from '@/api/generated/model'
@@ -53,7 +53,7 @@ export function ConsentsForm({ onDone, submitLabel = 'Продолжить' }: {
                 <span className="grid gap-1">
                   <span className="flex flex-wrap items-center gap-2 font-medium">
                     {d.title}
-                    {d.required ? <Tag tone="primary">обязательно</Tag> : <Tag>по желанию</Tag>}
+                    {d.required && <Tag tone="primary">обязательно</Tag>}
                   </span>
                   <span className="text-sm text-muted-foreground">{d.summary}</span>
                 </span>
@@ -138,7 +138,7 @@ export function SurveyForm({ onDone }: { onDone: () => void }) {
           <Input id="sv-years" inputMode="decimal" className="num" value={years} onChange={(e) => setYears(e.target.value)} placeholder="2.5" aria-invalid={(touched && !!errors.years) || undefined} />
         </FormField>
       </div>
-      <FormField label="Основной стек" required error={show(errors.stack)} hint="Навыки из справочника, ищутся и по синонимам: «постгрес», «k8s»">
+      <FormField label="Основной стек" required error={show(errors.stack)} hint="Ищется и по синонимам: «постгрес», «k8s»">
         <SkillPicker ariaLabel="Основной стек" value={stack} onChange={setStack} specialization={specialization} />
       </FormField>
       <FormField label="Формат работы" required error={show(errors.formats)}>
@@ -153,7 +153,7 @@ export function SurveyForm({ onDone }: { onDone: () => void }) {
           Готов к переезду
         </label>
       </div>
-      <SalaryRangeField label="Ожидания, ₽ в месяц на руки" value={salary} onChange={setSalary} error={touched ? errors.salary : null} hint="Работодатель не увидит эти цифры. Инвайт с вилкой ниже ожиданий до вас не дойдёт" />
+      <SalaryRangeField label="Ожидания, ₽ в месяц на руки" value={salary} onChange={setSalary} error={touched ? errors.salary : null} hint="Работодатель не увидит эти цифры" />
       {create.isError && <ErrorBanner error={create.error} />}
       <Button type="submit" disabled={create.isPending} className="justify-self-start">
         Сохранить и выбрать грейд
@@ -200,9 +200,7 @@ export function GradePicker() {
                   <span className="flex items-center gap-2 font-heading text-lg font-semibold">
                     {gradeLabel[g]}
                     {ge?.recommended && (
-                      <Tag tone="primary" icon={<IconStarFilled className="size-3" />}>
-                        рекомендуем
-                      </Tag>
+                      <Tag tone="primary">рекомендуем</Tag>
                     )}
                     {el.current_grade === g && <Tag tone="success">текущий</Tag>}
                   </span>
@@ -227,7 +225,7 @@ export function GradePicker() {
             <IconPlayerPlay data-icon="inline-start" />
             Начать тест{selected ? ` на ${gradeLabel[selected]}` : ''}
           </Button>
-          <p className="text-xs text-muted-foreground">~25 минут: адаптивная часть (задания подстраиваются под ответы) и одна практическая задача. Отвлекаться можно, но время идёт.</p>
+          <p className="text-xs text-muted-foreground">Около 25 минут</p>
         </div>
       )}
     </QueryView>

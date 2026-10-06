@@ -15,18 +15,18 @@ export default function History() {
   const grades = useGetMyGradeHistory()
   return (
     <>
-      <PageHeader eyebrow="Тесты и грейды" title="История тестов" description="Грейд меняется не чаще раза в 90 дней. Тот же грейд можно пересдать через 30 дней." />
-      <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
-        <div className="grid content-start gap-5">
+      <PageHeader title="История тестов" />
+      <div className="grid gap-16 lg:grid-cols-[1.2fr_1fr]">
+        <div className="grid content-start gap-12">
           <Section title="Попытки">
             <QueryView query={tests}>
               {(list) =>
                 list.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Тестов пока не было.</p>
                 ) : (
-                  <ul className="grid gap-2">
+                  <ul className="grid divide-y border-y">
                     {list.map((t) => (
-                      <li key={t.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
+                      <li key={t.id} className="flex flex-wrap items-center gap-2 py-3.5 text-sm">
                         <span className="font-medium">{categoryLabel(t.specialization, t.declared_grade)}</span>
                         <span className="text-muted-foreground">{formatDate(t.finished_at ?? t.started_at)}</span>
                         {t.outcome && <Tag tone={t.outcome === 'failed' ? 'warning' : 'success'}>{testOutcomeLabel[t.outcome]}</Tag>}

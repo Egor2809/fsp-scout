@@ -8,7 +8,7 @@ import { Section } from '@/components/candidate'
 import { PageHeader } from '@/components/layout/AppShell'
 import { CategoryTag, InvitationStatusBadge, Stat } from '@/components/tags'
 import { Button } from '@/components/ui/button'
-import { formatDate, formatShare } from '@/lib/format'
+import { formatDate } from '@/lib/format'
 import { NewNeedButton } from './Searches'
 
 export default function EmployerHome() {
@@ -18,17 +18,15 @@ export default function EmployerHome() {
   const searches = useListSearches()
   const invitations = useListCompanyInvitations({ status: ['accepted', 'interview', 'offer'] })
   return (
-    <div className="grid gap-5">
-      <PageHeader motif eyebrow="Кабинет работодателя" meta={new Date().toLocaleDateString('ru-RU')} title={`Здравствуйте, ${session?.displayName.split(' ')[0] ?? ''}`} description="Опишите, кого ищете. Мы подберём кандидатов с подтверждённым грейдом и объясним выбор." actions={<NewNeedButton />} />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Осталось инвайтов" value={quota.data ? `${quota.data.remaining}/${quota.data.limit}` : '…'} accent hint={quota.data ? `до ${formatDate(quota.data.period_end)}` : undefined} />
-        <Stat label="Отправлено за 30 дней" value={stats.data?.funnel.sent ?? '…'} />
-        <Stat label="Приняли" value={stats.data?.funnel.accepted ?? '…'} />
-        <Stat label="Конверсия" value={stats.data ? formatShare(stats.data.acceptance_rate) : '…'} />
+    <div className="grid gap-12">
+      <PageHeader title={`Здравствуйте, ${session?.displayName.split(' ')[0] ?? ''}`} actions={<NewNeedButton />} />
+      <div className="flex flex-wrap gap-12">
+        <Stat label="Осталось инвайтов" value={quota.data ? `${quota.data.remaining}/${quota.data.limit}` : '…'} accent />
+        <Stat label="Приняли за 30 дней" value={stats.data?.funnel.accepted ?? '…'} />
       </div>
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-12 lg:grid-cols-2">
         <Section
-          title="Приняли инвайт, контакты открыты"
+          title="Приняли инвайт"
           actions={
             <Button asChild variant="ghost" size="sm">
               <Link to="/e/invitations">
@@ -40,9 +38,9 @@ export default function EmployerHome() {
           {(invitations.data ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">Пока никто не принял инвайт.</p>
           ) : (
-            <ul className="grid gap-2">
+            <ul className="grid divide-y border-y">
               {invitations.data!.slice(0, 5).map((i) => (
-                <li key={i.id} className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
+                <li key={i.id} className="flex flex-wrap items-center gap-2 py-3.5 text-sm">
                   <span className="font-medium">{i.candidate_contacts?.full_name ?? i.candidate.alias}</span>
                   <CategoryTag category={i.candidate.category} />
                   <span className="ml-auto">
@@ -57,10 +55,10 @@ export default function EmployerHome() {
           {(searches.data ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">Подборок пока нет.</p>
           ) : (
-            <ul className="grid gap-2">
+            <ul className="grid divide-y border-y">
               {searches.data!.slice(0, 5).map((s) => (
                 <li key={s.id}>
-                  <Link to={`/e/searches/${s.id}`} className="flex items-center gap-2 rounded-lg border p-3 text-sm text-foreground no-underline hover:bg-accent">
+                  <Link to={`/e/searches/${s.id}`} className="flex items-center gap-2 py-3.5 text-sm text-foreground no-underline hover:text-link">
                     <span className="font-medium">{s.title}</span>
                     <span className="ml-auto text-muted-foreground">{formatDate(s.updated_at)}</span>
                   </Link>

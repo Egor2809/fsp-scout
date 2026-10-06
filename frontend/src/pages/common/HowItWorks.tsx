@@ -27,7 +27,7 @@ export default function HowItWorks() {
   const best = ITEMS.reduce((acc, it) => (fisherInformation(theta, it.a, it.b) > fisherInformation(theta, acc.a, acc.b) ? it : acc), ITEMS[0]!)
   return (
     <div className="grid gap-5">
-      <PageHeader motif eyebrow="Методика" title="Как работает тест" description="Адаптивный тест по модели IRT (2PL): каждое следующее задание подбирается под текущую оценку уровня, поэтому 12–20 заданий дают точность длинного экзамена." />
+      <PageHeader title="Как работает тест" />
       <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
         <Section title="Вероятность верного ответа">
           <div className="h-72" role="img" aria-label="Кривые вероятности верного ответа для трёх заданий разной сложности">

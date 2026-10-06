@@ -34,9 +34,9 @@ export default function Candidates() {
   })
   return (
     <>
-      <PageHeader eyebrow="Банк кандидатов" meta={query.data ? `${query.data.total} в банке` : undefined} title="Все кандидаты с подтверждённым грейдом" description="Анонимные карточки. Контакты откроются после принятия инвайта." />
-      <div className="mb-5 grid gap-3 rounded-lg border bg-card p-4">
-        <div className="flex flex-wrap gap-3">
+      <PageHeader meta={query.data?.total} title="Банк кандидатов" />
+      <div className="mb-10 grid gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <div className="w-52">
             <SelectField ariaLabel="Специализация" placeholder="Все специализации" value={spec} onChange={(v) => (setSpec(v), setPage(1))} options={SPECIALIZATIONS.map((s) => ({ value: s, label: specializationLabel[s] }))} />
           </div>
@@ -47,9 +47,14 @@ export default function Candidates() {
             <Switch checked={fspOnly} onCheckedChange={(v) => (setFspOnly(v), setPage(1))} /> С историей ФСП
           </label>
         </div>
+        <details className="group">
+          <summary className="cursor-pointer list-none text-sm font-medium text-link [&::-webkit-details-marker]:hidden">Ещё фильтры</summary>
+          <div className="mt-4 grid gap-3">
         <ChipMultiSelect ariaLabel="Грейд" options={GRADES.map((g) => ({ value: g, label: gradeLabel[g] }))} value={grades} onChange={(v) => (setGrades(v), setPage(1))} />
         <ChipMultiSelect ariaLabel="Формат" options={WORK_FORMATS.map((f) => ({ value: f, label: workFormatLabel[f] }))} value={formats} onChange={(v) => (setFormats(v), setPage(1))} />
         <SkillPicker ariaLabel="Навыки" value={skills} onChange={(v) => (setSkills(v), setPage(1))} specialization={spec} placeholder="Навык" />
+          </div>
+        </details>
       </div>
       <QueryView query={query}>
         {(res) =>
@@ -57,10 +62,7 @@ export default function Candidates() {
             <EmptyState icon={<IconDatabaseSearch />} title="Никого не нашли" description="Ослабьте фильтры." />
           ) : (
             <>
-              <p className="mb-3 text-sm text-muted-foreground">
-                Найдено <b className="num text-foreground">{res.total}</b>
-              </p>
-              <div className="grid gap-3 lg:grid-cols-2">
+              <div className="grid gap-5 lg:grid-cols-2">
                 {res.items.map((c, i) => (
                   <FadeIn key={c.id} index={i} className="grid">
                     <Link to={`/e/candidates/${c.id}`} className="group lift rounded-lg text-foreground no-underline outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
@@ -70,12 +72,12 @@ export default function Candidates() {
                 ))}
               </div>
               {res.total > res.page * res.page_size && (
-                <Button variant="outline" className="mt-4" onClick={() => setPage(page + 1)}>
+                <Button variant="outline" className="mt-8" onClick={() => setPage(page + 1)}>
                   Следующая страница
                 </Button>
               )}
               {page > 1 && (
-                <Button variant="ghost" className="mt-4 ml-2" onClick={() => setPage(page - 1)}>
+                <Button variant="ghost" className="mt-8 ml-2" onClick={() => setPage(page - 1)}>
                   Назад
                 </Button>
               )}

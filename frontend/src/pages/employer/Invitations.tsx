@@ -2,16 +2,16 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { IconMail } from '@tabler/icons-react'
-import { useGetInvitationStats, useListCompanyInvitations, useUpdateInvitationStage, useWithdrawInvitation } from '@/api/generated/endpoints/invitations/invitations'
+import { useListCompanyInvitations, useUpdateInvitationStage, useWithdrawInvitation } from '@/api/generated/endpoints/invitations/invitations'
 import type { Invitation, InvitationStatus } from '@/api/generated/model'
 import { invalidatePaths } from '@/api/queryClient'
 import { ContactList } from '@/components/candidate'
 import { SelectField } from '@/components/fields'
 import { PageHeader } from '@/components/layout/AppShell'
 import { EmptyState, ErrorBanner, QueryView } from '@/components/states'
-import { CategoryTag, InvitationStatusBadge, Stat } from '@/components/tags'
+import { CategoryTag, InvitationStatusBadge } from '@/components/tags'
 import { Button } from '@/components/ui/button'
-import { formatDate, formatPercentile, formatSalaryRange, formatShare } from '@/lib/format'
+import { formatDate, formatSalaryRange } from '@/lib/format'
 import { INVITATION_STATUS_META, employerActions, stageActionLabel } from '@/lib/invitationStatus'
 import { contactChannelLabel, declineReasonLabel } from '@/lib/labels'
 
@@ -23,23 +23,22 @@ function Row({ inv }: { inv: Invitation }) {
   const actions = employerActions(inv.status)
   const r = inv.response
   return (
-    <article className="grid gap-3 rounded-lg border bg-card p-4">
+    <article className="grid gap-4 py-6">
       <header className="flex flex-wrap items-center gap-2">
         <Link to={`/e/candidates/${inv.candidate.id}`} className="font-heading font-semibold">
           {inv.candidate.alias}
         </Link>
         <CategoryTag category={inv.candidate.category} />
-        <span className="num text-sm text-muted-foreground">{formatPercentile(inv.candidate.percentile)}</span>
         <span className="ml-auto">
           <InvitationStatusBadge status={inv.status} viewer="employer" />
         </span>
       </header>
       <p className="text-sm">
-        <b>{inv.title}</b> · <span className="num">{formatSalaryRange(inv.salary)}</span> · отправлен {formatDate(inv.sent_at ?? inv.created_at)} · ответ до {formatDate(inv.expires_at)}
+        <b>{inv.title}</b> · <span className="num">{formatSalaryRange(inv.salary)}</span> <span className="text-muted-foreground">· ответ до {formatDate(inv.expires_at)}</span>
       </p>
       {r?.decision === 'declined' && (
-        <p className="rounded-lg bg-surface/60 p-3 text-sm">
-          Причина отказа: <b>{r.reason ? declineReasonLabel[r.reason] : 'не указана'}</b>
+        <p className="text-sm text-muted-foreground">
+          Причина отказа: <b className="text-foreground">{r.reason ? declineReasonLabel[r.reason] : 'не указана'}</b>
           {r.comment ? `: «${r.comment}»` : ''}
         </p>
       )}
@@ -69,19 +68,10 @@ const FILTERS: InvitationStatus[] = ['sent', 'viewed', 'postponed', 'accepted', 
 export default function EmployerInvitations() {
   const [status, setStatus] = useState<InvitationStatus | 'all'>('all')
   const query = useListCompanyInvitations(status === 'all' ? undefined : { status: [status] })
-  const stats = useGetInvitationStats({ days: 30 })
   return (
     <>
-      <PageHeader eyebrow="Инвайты" title="Отправленные инвайты" description="Контакты кандидата появляются здесь сразу после принятия инвайта." />
-      {stats.data && (
-        <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat label="Отправлено за 30 дней" value={stats.data.funnel.sent} />
-          <Stat label="Приняли" value={stats.data.funnel.accepted} />
-          <Stat label="Конверсия" value={formatShare(stats.data.acceptance_rate)} accent />
-          <Stat label="Частая причина отказа" value={stats.data.decline_reasons[0] ? declineReasonLabel[stats.data.decline_reasons[0].reason] : '—'} />
-        </div>
-      )}
-      <div className="mb-4 w-56">
+      <PageHeader title="Отправленные инвайты" />
+      <div className="mb-6 w-56">
         <SelectField<InvitationStatus | 'all'> ariaLabel="Статус" value={status} onChange={setStatus} options={[{ value: 'all', label: 'Все статусы' }, ...FILTERS.map((s) => ({ value: s, label: INVITATION_STATUS_META[s].label }))]} />
       </div>
       <QueryView query={query}>
@@ -89,7 +79,7 @@ export default function EmployerInvitations() {
           list.length === 0 ? (
             <EmptyState icon={<IconMail />} title="Инвайтов нет" description="Соберите подборку и пригласите подходящих кандидатов." />
           ) : (
-            <div className="grid gap-3">
+            <div className="grid max-w-3xl divide-y border-y">
               {list.map((inv) => (
                 <Row key={inv.id} inv={inv} />
               ))}

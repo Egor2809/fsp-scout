@@ -15,15 +15,15 @@ export default function Applications() {
   const qc = useQueryClient()
   return (
     <>
-      <PageHeader eyebrow="Отклики" title="Мои отклики" />
+      <PageHeader title="Мои отклики" />
       <QueryView query={query}>
         {(list) =>
           list.length === 0 ? (
             <EmptyState icon={<IconSend />} title="Откликов пока нет" description="Найдите вакансию в разделе «Вакансии»." />
           ) : (
-            <div className="grid gap-3">
+            <div className="grid max-w-3xl divide-y border-y">
               {list.map((a) => (
-                <article key={a.id} className="grid gap-2 rounded-lg border bg-card p-4">
+                <article key={a.id} className="grid gap-2 py-6">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <p className="text-sm text-muted-foreground">{a.vacancy.company.name}</p>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { IconArrowRight, IconUsers } from '@tabler/icons-react'
+import { IconArrowRight } from '@tabler/icons-react'
 import { useConfirmNeed, useGetNeed, useGetNeedCategories } from '@/api/generated/endpoints/needs/needs'
 import { useCreateSearch } from '@/api/generated/endpoints/searches/searches'
 import type { CategoryRecommendation, ConfirmedNeed, Grade, Industry, Need, Specialization, WorkFormat } from '@/api/generated/model'
@@ -36,7 +36,7 @@ function NeedForm({ need, onConfirmed }: { need: Need; onConfirmed: () => void }
 
   return (
     <form
-      className="grid gap-5"
+      className="grid max-w-2xl gap-6"
       noValidate
       onSubmit={(e) => {
         e.preventDefault()
@@ -56,10 +56,10 @@ function NeedForm({ need, onConfirmed }: { need: Need; onConfirmed: () => void }
         )
       }}
     >
-      <blockquote className="rounded-lg border-l-4 border-primary bg-surface/60 p-3 text-sm text-muted-foreground">{need.raw_text}</blockquote>
+      <blockquote className="max-w-prose border-l-2 border-primary pl-4 text-sm text-muted-foreground">{need.raw_text}</blockquote>
       {need.parsed.unrecognized.length > 0 && (
         <p className="text-sm text-muted-foreground">
-          Не распознали: {need.parsed.unrecognized.map((u) => `«${u}»`).join(', ')}. Если это важно, добавьте вручную.
+          Не распознали: {need.parsed.unrecognized.map((u) => `«${u}»`).join(', ')}
         </p>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -70,7 +70,7 @@ function NeedForm({ need, onConfirmed }: { need: Need; onConfirmed: () => void }
           <SelectField id="nd-grade" value={grade} onChange={setGrade} options={GRADES.map((g) => ({ value: g, label: gradeLabel[g] }))} />
         </FormField>
       </div>
-      <FormField label="Обязательные навыки" required hint="Нажмите на навык, чтобы сделать его желательным" error={touched && must.length === 0 ? 'Нужен хотя бы один навык' : null}>
+      <FormField label="Обязательные навыки" required hint="Клик по навыку переносит его в желательные" error={touched && must.length === 0 ? 'Нужен хотя бы один навык' : null}>
         <SkillPicker
           ariaLabel="Обязательные навыки"
           value={must}
@@ -84,7 +84,7 @@ function NeedForm({ need, onConfirmed }: { need: Need; onConfirmed: () => void }
           }}
         />
       </FormField>
-      <FormField label="Желательные навыки" hint="Нажмите, чтобы сделать обязательным">
+      <FormField label="Желательные навыки">
         <SkillPicker
           ariaLabel="Желательные навыки"
           value={nice}
@@ -109,7 +109,7 @@ function NeedForm({ need, onConfirmed }: { need: Need; onConfirmed: () => void }
           <SelectField id="nd-ind" value={industry} onChange={setIndustry} options={INDUSTRIES.map((i) => ({ value: i, label: industryLabel[i] }))} />
         </FormField>
       </div>
-      <SalaryRangeField value={salary} onChange={setSalary} error={touched || salary.from !== null ? salaryError : null} hint="Вилка обязательна: без неё нельзя отправить инвайт" />
+      <SalaryRangeField value={salary} onChange={setSalary} error={touched || salary.from !== null ? salaryError : null} />
       {confirm.isError && <ErrorBanner error={confirm.error} />}
       <Button type="submit" disabled={confirm.isPending} className="justify-self-start">
         Подтвердить и показать категории
@@ -121,29 +121,24 @@ function NeedForm({ need, onConfirmed }: { need: Need; onConfirmed: () => void }
 function CategoryCard({ rec, onPick, pending }: { rec: CategoryRecommendation; onPick: () => void; pending: boolean }) {
   const r = rec.radar
   return (
-    <article className="grid gap-3 rounded-lg border bg-card p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <article className="grid gap-4 py-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-heading text-lg font-semibold">{rec.category.label}</h3>
-        <Tag tone={rec.kind === 'primary' ? 'primary' : 'neutral'}>{rec.kind === 'primary' ? 'точное совпадение' : 'смежная'}</Tag>
+        <p className="flex items-baseline gap-1.5">
+          <span className="num text-2xl font-semibold">{rec.candidate_count}</span>
+          <span className="text-sm text-muted-foreground">{plural(rec.candidate_count, ['кандидат', 'кандидата', 'кандидатов'])}</span>
+        </p>
       </div>
-      <p className="flex items-baseline gap-2">
-        <IconUsers className="size-4 self-center text-link" aria-hidden />
-        <span className="num text-2xl font-semibold">{rec.candidate_count}</span>
-        <span className="text-sm text-muted-foreground">{plural(rec.candidate_count, ['кандидат', 'кандидата', 'кандидатов'])}</span>
-        {rec.median_expectation && <span className="num ml-auto text-sm text-muted-foreground">медиана {formatMoney(rec.median_expectation)}</span>}
-      </p>
-      <p className="text-sm text-muted-foreground">{rec.reason}</p>
-      <div className="grid gap-1.5">
+      <div className="grid gap-2">
         <div className="flex h-2 overflow-hidden rounded-full bg-muted" aria-hidden>
           <div className="bg-muted-foreground/40" style={{ width: `${r.share_below * 100}%` }} />
           <div className="bg-primary" style={{ width: `${r.share_within * 100}%` }} />
           <div className="bg-foreground/70" style={{ width: `${r.share_above * 100}%` }} />
         </div>
-        <p className="num text-xs text-muted-foreground">
-          ниже вилки {formatShare(r.share_below)} · в вилке {formatShare(r.share_within)} · выше {formatShare(r.share_above)}
-        </p>
-        <p className="text-sm">
-          <Tag tone={VERDICT_TONE[r.verdict]}>{r.verdict === 'below_market' ? 'ниже рынка' : r.verdict === 'in_market' ? 'в рынке' : 'выше рынка'}</Tag> {r.message}
+        <p className="num flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <Tag tone={VERDICT_TONE[r.verdict]}>{r.verdict === 'below_market' ? 'вилка ниже рынка' : r.verdict === 'in_market' ? 'вилка в рынке' : 'вилка выше рынка'}</Tag>
+          в вилке {formatShare(r.share_within)}
+          {rec.median_expectation ? ` · медиана ${formatMoney(rec.median_expectation)}` : ''}
         </p>
       </div>
       <Button onClick={onPick} disabled={pending || rec.candidate_count === 0} className="justify-self-start">
@@ -182,10 +177,10 @@ function Categories({ need, confirmed }: { need: Need; confirmed: ConfirmedNeed 
       { onSuccess: (s) => navigate(`/e/searches/${s.id}`) },
     )
   return (
-    <Section title="Рекомендованные категории">
+    <Section title="Категории">
       <QueryView query={cats} skeleton={<SkeletonCards count={2} />}>
         {(data) => (
-          <div className="grid gap-3">
+          <div className="grid divide-y border-y">
             {data.items.map((rec) => (
               <CategoryCard key={rec.category.label} rec={rec} pending={create.isPending} onPick={() => pick(rec)} />
             ))}
@@ -202,14 +197,12 @@ export default function NeedPage() {
   const query = useGetNeed(needId)
   return (
     <>
-      <PageHeader eyebrow="Потребность" title="Проверьте параметры" description="Мы разобрали текст на чипы. Поправьте, если нужно, и подтвердите. Вилка обязательна." />
+      <PageHeader title="Проверьте параметры" />
       <QueryView query={query}>
         {(need) => (
-          <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
-            <Section title="Параметры">
-              <NeedForm key={need.updated_at} need={need} onConfirmed={() => void query.refetch()} />
-            </Section>
-            {need.confirmed ? <Categories need={need} confirmed={need.confirmed} /> : <p className="text-sm text-muted-foreground xl:pt-4">После подтверждения покажем подходящие категории, число кандидатов и как ваша вилка выглядит на рынке.</p>}
+          <div className="grid gap-16 xl:grid-cols-[1.2fr_1fr]">
+            <NeedForm key={need.updated_at} need={need} onConfirmed={() => void query.refetch()} />
+            {need.confirmed && <Categories need={need} confirmed={need.confirmed} />}
           </div>
         )}
       </QueryView>

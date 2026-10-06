@@ -5,14 +5,14 @@ import { IconBookmark, IconBookmarkFilled, IconChevronRight, IconUsersGroup } fr
 import { useAddToShortlist, useGetSearch, useGetSearchResults, useRefineSearch, useRemoveFromShortlist } from '@/api/generated/endpoints/searches/searches'
 import type { Search, SearchResultItem } from '@/api/generated/model'
 import { invalidatePaths } from '@/api/queryClient'
-import { ExplanationChips, Section, WhyPanel } from '@/components/candidate'
+import { WhyPanel } from '@/components/candidate'
 import { FormField, SkillPicker } from '@/components/fields'
 import { PageHeader } from '@/components/layout/AppShell'
 import { EmptyState, ErrorBanner, QueryView } from '@/components/states'
-import { CategoryTag, FspBadge, Tag } from '@/components/tags'
+import { FspIndexBadge, Tag } from '@/components/tags'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { formatPercentile, formatSalaryRangeShort, formatYears } from '@/lib/format'
+import { formatSalaryRangeShort } from '@/lib/format'
 import { FadeIn } from '@/components/motion'
 import { cn } from '@/lib/utils'
 
@@ -23,8 +23,9 @@ function Refine({ search }: { search: Search }) {
   const refine = useRefineSearch()
   const qc = useQueryClient()
   return (
-    <Section title="Уточнить подборку">
-      <div className="grid gap-3">
+    <details className="group">
+      <summary className="cursor-pointer list-none text-sm font-medium text-link [&::-webkit-details-marker]:hidden">Уточнить подборку</summary>
+      <div className="mt-4 grid gap-4">
         <FormField label="Обязательные навыки">
           <SkillPicker ariaLabel="Обязательные навыки" value={must} onChange={setMust} specialization={current.filters.specialization} />
         </FormField>
@@ -39,7 +40,6 @@ function Refine({ search }: { search: Search }) {
           >
             Применить
           </Button>
-          <span className="text-xs text-muted-foreground">Шорт-лист сохранится</span>
         </div>
         {refine.isError && <ErrorBanner error={refine.error} />}
         <ol className="flex flex-wrap gap-1.5" aria-label="Версии подборки">
@@ -52,8 +52,16 @@ function Refine({ search }: { search: Search }) {
           ))}
         </ol>
       </div>
-    </Section>
+    </details>
   )
+}
+
+function topSkills(skills: SearchResultItem['candidate']['skills']) {
+  return [...skills]
+    .sort((a, b) => Number(b.verified) - Number(a.verified))
+    .slice(0, 3)
+    .map((s) => s.name)
+    .join(', ')
 }
 
 function ResultRow({ item, index, searchId, selected, onSelect }: { item: SearchResultItem; index: number; searchId: string; selected: boolean; onSelect: () => void }) {
@@ -74,20 +82,17 @@ function ResultRow({ item, index, searchId, selected, onSelect }: { item: Search
         onClick={onSelect}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onSelect())}
         className={cn(
-          'grid cursor-pointer grid-cols-[3.25rem_1fr] gap-x-3 py-3.5 pr-2 pl-3 transition-colors duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset',
+          'grid cursor-pointer grid-cols-[3.25rem_1fr] gap-x-3 py-5 pr-2 pl-3 transition-colors duration-150 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset',
           selected ? 'bg-accent shadow-[inset_3px_0_0_var(--primary)]' : 'hover:bg-muted/60',
         )}
       >
-        <span className={cn('num row-span-3 pt-0.5 text-[1.625rem] leading-none font-bold tracking-tight', selected ? 'text-link' : 'text-muted-foreground/80')} aria-label={`Место ${item.rank}`}>
+        <span className={cn('num row-span-2 pt-0.5 text-[1.625rem] leading-none font-bold tracking-tight', selected ? 'text-link' : 'text-muted-foreground/70')} aria-label={`Место ${item.rank}`}>
           {String(item.rank).padStart(2, '0')}
         </span>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-semibold">{c.alias}</span>
-          <CategoryTag category={c.category} />
-          {c.fsp?.has_history && <FspBadge level={c.fsp.max_level} />}
-          <span className="num ml-auto text-sm font-semibold" title={formatPercentile(c.percentile)}>
-            P{c.percentile ?? '—'}
-          </span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="font-heading font-semibold">{c.category?.label ?? 'Без категории'}</span>
+          {c.fsp?.has_history && <FspIndexBadge index={c.fsp.index} className="h-6 px-2 text-sm" />}
+          <span className="num ml-auto text-sm text-muted-foreground">{formatSalaryRangeShort(c.salary_expectation)}</span>
           <Button
             variant="ghost"
             size="icon"
@@ -100,11 +105,9 @@ function ResultRow({ item, index, searchId, selected, onSelect }: { item: Search
             {item.shortlisted ? <IconBookmarkFilled className="text-link" /> : <IconBookmark />}
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {formatYears(c.experience_years)} · ожидания <span className="num">{formatSalaryRangeShort(c.salary_expectation)}</span>
-          {c.city ? ` · ${c.city}` : ''}
+        <p className="truncate text-sm text-muted-foreground">
+          {c.alias} · {topSkills(c.skills)}
         </p>
-        <ExplanationChips chips={item.explanation.chips} className="mt-2" />
       </div>
     </FadeIn>
   )
@@ -117,35 +120,25 @@ export default function SearchPage() {
   const [selected, setSelected] = useState<string | null>(null)
   return (
     <>
-      <PageHeader eyebrow="Подборка" meta={results.data ? `v${results.data.version} · ${results.data.total} в таблице` : undefined} title={search.data?.title ?? 'Подборка'} description="У каждого кандидата есть объяснение: что совпало, что подтверждено тестом и где расхождения." />
+      <PageHeader meta={results.data?.total} title={search.data?.title ?? 'Подборка'} />
       <QueryView query={results}>
         {(res) => {
           const current = res.items.find((i) => i.candidate.id === selected) ?? res.items[0]
           if (!res.items.length) return <EmptyState icon={<IconUsersGroup />} title="Никого не нашли" description="Ослабьте обязательные навыки или расширьте формат." />
           return (
-            <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
-              <div className="grid content-start gap-3">
-                <p className="text-sm text-muted-foreground">
-                  Найдено <b className="num text-foreground">{res.total}</b> · версия {res.version}
-                </p>
-                <div className="eyebrow grid grid-cols-[3.25rem_1fr_auto] gap-x-3 border-b-2 border-foreground px-3 pb-1.5" aria-hidden>
-                  <span>Место</span>
-                  <span>Кандидат · почему в подборке</span>
-                  <span className="pr-12">Перц.</span>
-                </div>
-                <ol className="-mt-3 grid divide-y divide-border border-b">
-                  {res.items.map((item, i) => (
-                    <ResultRow key={item.candidate.id} item={item} index={i} searchId={searchId} selected={current?.candidate.id === item.candidate.id} onSelect={() => setSelected(item.candidate.id)} />
-                  ))}
-                </ol>
-              </div>
-              <div className="grid content-start gap-4 lg:sticky lg:top-20 lg:self-start">
+            <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr]">
+              <ol className="grid content-start divide-y divide-border border-y">
+                {res.items.map((item, i) => (
+                  <ResultRow key={item.candidate.id} item={item} index={i} searchId={searchId} selected={current?.candidate.id === item.candidate.id} onSelect={() => setSelected(item.candidate.id)} />
+                ))}
+              </ol>
+              <div className="grid content-start gap-8 lg:sticky lg:top-24 lg:self-start">
                 {current && (
                   <>
                     <WhyPanel explanation={current.explanation} />
-                    <Button asChild>
+                    <Button asChild className="justify-self-start">
                       <Link to={`/e/candidates/${current.candidate.id}?search=${searchId}`}>
-                        Открыть карточку {current.candidate.alias} <IconChevronRight data-icon="inline-end" />
+                        Открыть карточку <IconChevronRight data-icon="inline-end" />
                       </Link>
                     </Button>
                   </>

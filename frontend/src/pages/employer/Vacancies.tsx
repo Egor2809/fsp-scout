@@ -11,8 +11,8 @@ import { PageHeader } from '@/components/layout/AppShell'
 import { EmptyState, QueryView } from '@/components/states'
 import { ApplicationStatusBadge, Tag } from '@/components/tags'
 import { Button } from '@/components/ui/button'
-import { formatDate, formatSalaryRange } from '@/lib/format'
-import { categoryLabel, vacancyStatusLabel } from '@/lib/labels'
+import { formatSalaryRange } from '@/lib/format'
+import { vacancyStatusLabel } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
 const NEXT: Partial<Record<EmployerApplication['status'], { status: 'viewed' | 'interview' | 'offer' | 'hired' | 'rejected'; label: string }[]>> = {
@@ -32,12 +32,12 @@ function Applications({ vacancyId }: { vacancyId: string }) {
         list.length === 0 ? (
           <p className="text-sm text-muted-foreground">Откликов пока нет.</p>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid divide-y border-y">
             {list.map((a) => (
-              <article key={a.id} className="grid gap-3 rounded-lg border p-4">
+              <article key={a.id} className="grid gap-4 py-6">
                 <CandidateHeadline card={a.candidate} right={<ApplicationStatusBadge status={a.status} />} />
                 <ExplanationChips chips={a.explanation.chips} />
-                {a.cover_letter && <p className="text-sm whitespace-pre-line">{a.cover_letter}</p>}
+                {a.cover_letter && <p className="max-w-prose text-sm whitespace-pre-line">{a.cover_letter}</p>}
                 <ContactsBlock card={a.candidate} />
                 <div className="flex flex-wrap items-center gap-2">
                   {(NEXT[a.status] ?? []).map((n) => (
@@ -63,32 +63,29 @@ export default function EmployerVacancies() {
   const [selected, setSelected] = useState<string | null>(null)
   return (
     <>
-      <PageHeader eyebrow="Вакансии" title="Вакансии и отклики" description="Отклик раскрывает контакты кандидата сразу." />
+      <PageHeader title="Вакансии и отклики" />
       <QueryView query={query}>
         {(list) => {
           if (!list.length) return <EmptyState icon={<IconBriefcase />} title="Вакансий нет" />
           const current = list.find((v) => v.id === selected) ?? list[0]!
           return (
-            <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr]">
-              <ul className="grid content-start gap-2">
+            <div className="grid gap-12 lg:grid-cols-[1fr_1.6fr]">
+              <ul className="grid content-start gap-1">
                 {list.map((v) => (
                   <li key={v.id}>
-                    <button type="button" onClick={() => setSelected(v.id)} className={cn('grid w-full gap-1 rounded-lg border bg-card p-4 text-left', current.id === v.id ? 'border-primary ring-1 ring-primary' : 'hover:border-primary/40')}>
+                    <button type="button" onClick={() => setSelected(v.id)} className={cn('grid w-full gap-1 rounded-lg px-4 py-3.5 text-left transition-colors', current.id === v.id ? 'bg-accent shadow-[inset_3px_0_0_var(--primary)]' : 'hover:bg-muted/60')}>
                       <span className="flex flex-wrap items-center gap-2">
                         <span className="font-semibold">{v.title}</span>
                         <Tag tone={v.status === 'published' ? 'success' : 'muted'}>{vacancyStatusLabel[v.status]}</Tag>
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        {categoryLabel(v.specialization, v.grade)} · <span className="num">{formatSalaryRange(v.salary)}</span>
-                      </span>
-                      <span className="num text-xs text-muted-foreground">
-                        откликов {v.applications_count ?? 0} · {v.published_at ? `с ${formatDate(v.published_at)}` : 'не опубликована'}
+                        <span className="num">{formatSalaryRange(v.salary)}</span> · откликов <span className="num">{v.applications_count ?? 0}</span>
                       </span>
                     </button>
                   </li>
                 ))}
               </ul>
-              <Section title={`Отклики · ${current.title}`}>
+              <Section title="Отклики">
                 <Applications key={current.id} vacancyId={current.id} />
               </Section>
             </div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { IconBuilding, IconCheck, IconClockPause, IconMail, IconRosetteDiscountCheckFilled, IconX } from '@tabler/icons-react'
+import { IconCheck, IconMail, IconRosetteDiscountCheckFilled } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import {
   useAcceptInvitation,
@@ -14,15 +14,15 @@ import { invalidatePaths } from '@/api/queryClient'
 import { FormField, SelectField } from '@/components/fields'
 import { PageHeader } from '@/components/layout/AppShell'
 import { EmptyState, ErrorBanner, QueryView } from '@/components/states'
-import { InvitationStatusBadge, Tag } from '@/components/tags'
+import { InvitationStatusBadge } from '@/components/tags'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
-import { formatDate, formatRelativeDays, formatSalaryRange } from '@/lib/format'
+import { formatRelativeDays, formatSalaryRange } from '@/lib/format'
 import { ACCEPTED_INVITATION_STATUSES, ACTIVE_INVITATION_STATUSES, candidateActions } from '@/lib/invitationStatus'
-import { CONTACT_CHANNELS, DECLINE_REASONS, contactChannelLabel, declineReasonLabel, industryLabel, workFormatLabel } from '@/lib/labels'
+import { CONTACT_CHANNELS, DECLINE_REASONS, contactChannelLabel, declineReasonLabel, workFormatLabel } from '@/lib/labels'
 
 function useRefresh() {
   const qc = useQueryClient()
@@ -45,7 +45,7 @@ function AcceptDialog({ inv, open, onOpenChange }: { inv: Invitation; open: bool
           <FormField label="Как с вами связаться" htmlFor="acc-ch">
             <SelectField id="acc-ch" value={channel} onChange={setChannel} options={CONTACT_CHANNELS.map((c) => ({ value: c, label: contactChannelLabel[c] }))} />
           </FormField>
-          <FormField label="Сообщение компании" htmlFor="acc-msg" hint="Например, удобное время для созвона">
+          <FormField label="Сообщение компании" htmlFor="acc-msg">
             <Textarea id="acc-msg" value={message} maxLength={500} onChange={(e) => setMessage(e.target.value)} />
           </FormField>
           {accept.isError && <ErrorBanner error={accept.error} />}
@@ -87,7 +87,7 @@ function DeclineDialog({ inv, open, onOpenChange }: { inv: Invitation; open: boo
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Отклонить инвайт</DialogTitle>
-          <DialogDescription>Причина поможет компании и улучшит следующие подборки. Контакты останутся скрытыми.</DialogDescription>
+          <DialogDescription>Контакты останутся скрытыми.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <RadioGroup value={reason ?? ''} onValueChange={(v) => setReason(v as DeclineReason)} aria-label="Причина отказа" className="grid gap-2">
@@ -146,34 +146,35 @@ function InvitationItem({ inv }: { inv: Invitation }) {
   }, [inv.id, inv.status, view, refresh])
   const actions = candidateActions(inv.status)
   return (
-    <article className="grid gap-3 rounded-lg border bg-card p-4 sm:p-5">
+    <article className="grid gap-4 py-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="grid gap-1">
-          <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <IconBuilding className="size-4" />
-            <span className="font-medium text-foreground">{inv.company.name}</span>
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            {inv.company.name}
             {inv.company.verified && <IconRosetteDiscountCheckFilled className="size-4 text-link" aria-label="Компания проверена" />}
-            <span>· {industryLabel[inv.company.industry]}</span>
           </p>
           <h2 className="text-lg font-semibold">{inv.title}</h2>
         </div>
         <InvitationStatusBadge status={inv.status} viewer="candidate" />
       </header>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+      <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
         <span className="num font-semibold">{formatSalaryRange(inv.salary)}</span>
-        <span>{workFormatLabel[inv.work_format]}</span>
-        {inv.city && <span>{inv.city}</span>}
-        {inv.vacancy && <Tag>по вакансии</Tag>}
-      </div>
-      <p className="text-sm whitespace-pre-line text-pretty">{inv.description}</p>
-      <p className="text-xs text-muted-foreground">
-        Контакт: {inv.contact_person} · {contactChannelLabel[inv.contact.channel]} {ACCEPTED_INVITATION_STATUSES.includes(inv.status) ? inv.contact.value : ''} · получено{' '}
-        {formatDate(inv.sent_at ?? inv.created_at)}
-        {actions.accept ? ` · ответить ${formatRelativeDays(inv.expires_at)}` : ''}
+        <span className="text-muted-foreground">
+          {workFormatLabel[inv.work_format]}
+          {inv.city ? ` · ${inv.city}` : ''}
+        </span>
       </p>
+      <p className="max-w-prose text-sm whitespace-pre-line text-pretty">{inv.description}</p>
+      {ACCEPTED_INVITATION_STATUSES.includes(inv.status) ? (
+        <p className="text-sm text-muted-foreground">
+          {inv.contact_person} · {contactChannelLabel[inv.contact.channel]} {inv.contact.value}
+        </p>
+      ) : actions.accept ? (
+        <p className="text-xs text-muted-foreground">Ответить {formatRelativeDays(inv.expires_at)}</p>
+      ) : null}
       {inv.response?.reason && (
         <p className="text-sm text-muted-foreground">
-          Ваша причина отказа: {declineReasonLabel[inv.response.reason]}
+          Причина отказа: {declineReasonLabel[inv.response.reason]}
           {inv.response.comment ? `: «${inv.response.comment}»` : ''}
         </p>
       )}
@@ -185,8 +186,8 @@ function InvitationItem({ inv }: { inv: Invitation }) {
             </Button>
           )}
           {actions.decline && (
-            <Button variant="outline" onClick={() => setDialog('decline')}>
-              <IconX data-icon="inline-start" /> Отклонить
+            <Button variant="ghost" onClick={() => setDialog('decline')}>
+              Отклонить
             </Button>
           )}
           {actions.postpone && (
@@ -195,7 +196,7 @@ function InvitationItem({ inv }: { inv: Invitation }) {
               disabled={postpone.isPending}
               onClick={() => postpone.mutate({ invitationId: inv.id, data: {} }, { onSuccess: () => void refresh().then(() => toast('Напомним позже')) })}
             >
-              <IconClockPause data-icon="inline-start" /> Не сейчас
+              Не сейчас
             </Button>
           )}
         </div>
@@ -210,7 +211,7 @@ function InvitationItem({ inv }: { inv: Invitation }) {
 function List({ items, empty }: { items: Invitation[]; empty: string }) {
   if (!items.length) return <EmptyState icon={<IconMail />} title={empty} />
   return (
-    <div className="grid gap-3">
+    <div className="grid max-w-3xl divide-y">
       {items.map((i) => (
         <InvitationItem key={i.id} inv={i} />
       ))}
@@ -222,7 +223,7 @@ export default function CandidateInvitations() {
   const query = useListMyInvitations()
   return (
     <>
-      <PageHeader eyebrow="Инвайты" title="Предложения от компаний" description="В каждом инвайте есть вилка. Контакты откроются компании только после того, как вы примете инвайт." />
+      <PageHeader title="Предложения от компаний" />
       <QueryView query={query}>
         {(all) => {
           const active = all.filter((i) => ACTIVE_INVITATION_STATUSES.includes(i.status))
@@ -230,7 +231,7 @@ export default function CandidateInvitations() {
           const archived = all.filter((i) => !active.includes(i) && !accepted.includes(i))
           return (
             <Tabs defaultValue="active">
-              <TabsList className="mb-4 flex-wrap">
+              <TabsList className="mb-2 flex-wrap">
                 <TabsTrigger value="active">Ждут ответа · {active.length}</TabsTrigger>
                 <TabsTrigger value="accepted">Принятые · {accepted.length}</TabsTrigger>
                 <TabsTrigger value="archive">Архив · {archived.length}</TabsTrigger>

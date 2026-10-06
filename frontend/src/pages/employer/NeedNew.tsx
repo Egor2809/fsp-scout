@@ -16,7 +16,7 @@ export default function NeedNew() {
   const navigate = useNavigate()
   return (
     <div className="max-w-3xl">
-      <PageHeader motif eyebrow="Новая потребность" title="Кого ищете?" description="Опишите своими словами: стек, уровень, формат и вилку. Мы разберём текст на параметры, их можно будет поправить." />
+      <PageHeader title="Кого ищете?" />
       <form
         className="grid gap-3"
         onSubmit={(e) => {

@@ -51,16 +51,16 @@ function PrivacyForm({ initial }: { initial: PrivacySettings }) {
           <FormField label="Статус" htmlFor="pr-av">
             <SelectField<Availability> id="pr-av" value={s.availability} onChange={(availability) => setS({ ...s, availability })} options={AVAILABILITIES.map((a) => ({ value: a, label: availabilityLabel[a] }))} />
           </FormField>
-          <FormField label="Нижний порог, ₽" htmlFor="pr-floor" hint="Инвайты с вилкой ниже порога не дойдут. Компании цифру не видят.">
+          <FormField label="Нижний порог, ₽" htmlFor="pr-floor" hint="Инвайты ниже порога не дойдут">
             <MoneyInput id="pr-floor" value={s.salary_floor} onChange={(salary_floor) => setS({ ...s, salary_floor })} />
           </FormField>
         </div>
       </Section>
       <Section title="Что показывать в карточке">
         <div className="divide-y">
-          {toggle('show_fsp', 'Достижения ФСП', 'Уровень и результаты соревнований')}
-          {toggle('show_company_names', 'Названия компаний в опыте', 'Иначе вместо названия будет «Компания скрыта» и отрасль')}
-          {toggle('show_city', 'Город', 'Иначе виден только формат работы')}
+          {toggle('show_fsp', 'Достижения ФСП', 'Уровень и результаты')}
+          {toggle('show_company_names', 'Названия компаний в опыте', 'Иначе «Компания скрыта»')}
+          {toggle('show_city', 'Город', 'Иначе только формат работы')}
         </div>
       </Section>
       {s.hidden_companies.length > 0 && (
@@ -86,7 +86,7 @@ export default function Privacy() {
   const query = useGetMyPrivacy()
   return (
     <>
-      <PageHeader eyebrow="Приватность" title="Кто и что видит" description="Компании видят анонимную карточку. ФИО и контакты откроются, когда вы примете инвайт или откликнетесь." />
+      <PageHeader title="Кто и что видит" />
       <QueryView query={query}>{(data) => <PrivacyForm initial={data} />}</QueryView>
     </>
   )

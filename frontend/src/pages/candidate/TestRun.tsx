@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { IconClock, IconFlag, IconPlayerPlay, IconPlayerSkipForward } from '@tabler/icons-react'
+import { IconClock, IconPlayerPlay, IconPlayerSkipForward } from '@tabler/icons-react'
 import { useFinishTest, useGetNextTestItem, useRunTestCode, useSubmitTestAnswer } from '@/api/generated/endpoints/assessment/assessment'
 import type { Answer, CodeRunResult, TestItem, TestProgress } from '@/api/generated/model'
 import { errorMessage } from '@/api/problem'
@@ -9,7 +9,6 @@ import { invalidatePaths } from '@/api/queryClient'
 import { CodeEditor } from '@/components/CodeEditor'
 import { FadeIn } from '@/components/motion'
 import { ErrorBanner, InlineError, QueryView } from '@/components/states'
-import { DifficultyMeter, Tag } from '@/components/tags'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -38,13 +37,12 @@ function ProgressBar({ progress, left }: { progress: TestProgress; left: number 
     ...Array.from({ length: progress.practice_total }, (_, i) => ({ done: i < progress.practice_answered, optional: false, current: progress.block === 'practice' && i === progress.practice_answered })),
   ]
   return (
-    <div className="sticky top-14 z-10 -mx-4 mb-6 grid gap-2.5 border-b bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+    <div className="sticky top-14 z-10 -mx-4 mb-10 grid gap-3 border-b bg-background/95 px-4 py-4 backdrop-blur sm:-mx-8 sm:px-8">
       <div className="flex items-end justify-between gap-3">
         <div className="grid min-w-0 gap-0.5">
           <span className="eyebrow">{testBlockLabel[progress.block]}</span>
           <span className="num text-sm">
             <b className="text-base">{String(progress.answered + 1).padStart(2, '0')}</b>
-            <span className="text-muted-foreground"> / адаптивная часть {progress.adaptive_answered}/{progress.adaptive_min}–{progress.adaptive_max}</span>
           </span>
         </div>
         {left !== null && (
@@ -126,12 +124,9 @@ function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem
 
   return (
     <FadeIn y={8}>
-    <article className="grid gap-5" aria-labelledby="item-title" onPaste={() => (paste.current += 1)}>
+    <article className="grid gap-8" aria-labelledby="item-title" onPaste={() => (paste.current += 1)}>
       <header className="grid gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Tag>{item.competency.name}</Tag>
-          <DifficultyMeter level={item.difficulty_level} />
-        </div>
+        <p className="text-sm text-muted-foreground">{item.competency.name}</p>
         <h1 id="item-title" className="text-[1.375rem] leading-tight">
           {item.title}
         </h1>
@@ -155,7 +150,7 @@ function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem
       )}
       {item.type === 'multiple_choice' && item.options && (
         <div className="grid gap-2" role="group" aria-label="Несколько вариантов">
-          <p className="text-sm text-muted-foreground">Можно выбрать несколько вариантов.</p>
+          <p className="text-sm text-muted-foreground">Несколько вариантов</p>
           {item.options.map((o) => {
             const on = options.includes(o.id)
             return (
@@ -262,10 +257,8 @@ export default function TestRun() {
             {step.status === 'item' && step.item ? (
               <ItemView key={step.item.instance_id} testId={testId} item={step.item} onAnswered={() => void next.refetch()} />
             ) : (
-              <div className="grid justify-items-start gap-4 rounded-lg border bg-card p-6">
-                <IconFlag className="size-8 text-link" aria-hidden />
+              <div className="grid justify-items-start gap-6 py-6">
                 <h1 className="display text-[1.75rem]">Все задания пройдены</h1>
-                <p className="text-muted-foreground">Завершите тест, чтобы увидеть категорию, перцентиль и подтверждённые навыки.</p>
                 {finish.isError && <ErrorBanner error={finish.error} />}
                 <Button onClick={doFinish} disabled={finish.isPending}>
                   Завершить и посмотреть результат

@@ -10,7 +10,7 @@ import { ExplanationChips } from '@/components/candidate'
 import { SelectField } from '@/components/fields'
 import { PageHeader } from '@/components/layout/AppShell'
 import { EmptyState, InlineError, QueryView } from '@/components/states'
-import { ApplicationStatusBadge, SkillChip } from '@/components/tags'
+import { ApplicationStatusBadge } from '@/components/tags'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatSalaryRange } from '@/lib/format'
@@ -20,7 +20,7 @@ function VacancyItem({ v }: { v: Vacancy }) {
   const apply = useApplyToVacancy()
   const qc = useQueryClient()
   return (
-    <article className="grid gap-3 rounded-lg border bg-card p-4">
+    <article className="grid gap-4 py-8">
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-sm text-muted-foreground">{v.company.name}</p>
@@ -28,19 +28,15 @@ function VacancyItem({ v }: { v: Vacancy }) {
         </div>
         {v.my_application && <ApplicationStatusBadge status={v.my_application.status} />}
       </header>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+      <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
         <span className="num font-semibold">{formatSalaryRange(v.salary)}</span>
-        <span>{categoryLabel(v.specialization, v.grade)}</span>
-        <span>{workFormatLabel[v.work_format]}</span>
-        {v.city && <span>{v.city}</span>}
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {v.must_skills.map((s) => (
-          <SkillChip key={s.id} skill={{ name: s.name, verified: false, level: 'confident', source: 'self' }} />
-        ))}
-      </div>
+        <span className="text-muted-foreground">
+          {categoryLabel(v.specialization, v.grade)} · {workFormatLabel[v.work_format]}
+          {v.city ? ` · ${v.city}` : ''}
+        </span>
+      </p>
+      <p className="line-clamp-2 max-w-prose text-sm text-muted-foreground">{v.description}</p>
       {v.match && <ExplanationChips chips={v.match.chips} />}
-      <p className="line-clamp-3 text-sm text-muted-foreground">{v.description}</p>
       {!v.my_application && (
         <Button
           className="justify-self-start"
@@ -66,8 +62,8 @@ export default function Vacancies() {
   const query = useListVacancies({ specialization: spec ?? undefined, q: q.trim() || undefined })
   return (
     <>
-      <PageHeader eyebrow="Вакансии" title="Открытые вакансии" description="Отклик раскрывает компании ваши контакты, как и принятие инвайта." />
-      <div className="mb-4 flex flex-wrap gap-2">
+      <PageHeader title="Открытые вакансии" />
+      <div className="mb-6 flex flex-wrap gap-2">
         <Input aria-label="Поиск" placeholder="Поиск по названию" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
         <div className="w-52">
           <SelectField ariaLabel="Специализация" value={spec} onChange={setSpec} placeholder="Все специализации" options={SPECIALIZATIONS.map((s) => ({ value: s, label: specializationLabel[s] }))} />
@@ -83,7 +79,7 @@ export default function Vacancies() {
           page.items.length === 0 ? (
             <EmptyState icon={<IconBriefcase />} title="Вакансий не найдено" />
           ) : (
-            <div className="grid gap-3 lg:grid-cols-2">
+            <div className="grid max-w-3xl divide-y border-y">
               {page.items.map((v) => (
                 <VacancyItem key={v.id} v={v} />
               ))}

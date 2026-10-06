@@ -14,11 +14,11 @@ const STEPS: { key: OnboardingStep; label: string }[] = [
   { key: 'test', label: 'Тест' },
 ]
 
-const TITLES: Partial<Record<OnboardingStep, { title: string; description: string }>> = {
-  consents: { title: 'Согласия', description: 'Три отдельных согласия, каждое можно отозвать в настройках. Без первых двух профиль не попадёт в подбор.' },
-  survey: { title: 'Расскажите о себе', description: 'Пять вопросов вместо резюме. По ответам подберём тест и покажем профиль подходящим компаниям.' },
-  grade: { title: 'Выберите грейд для теста', description: 'Тест подтвердит грейд. Если не получится, предложим уровень ниже.' },
-  test: { title: 'Тест', description: 'Продолжите начатый тест.' },
+const TITLES: Partial<Record<OnboardingStep, string>> = {
+  consents: 'Согласия',
+  survey: 'Расскажите о себе',
+  grade: 'Выберите грейд для теста',
+  test: 'Тест',
 }
 
 export default function Onboarding() {
@@ -30,10 +30,10 @@ export default function Onboarding() {
         if (step === 'done') return <Navigate to="/c" replace />
         if (step === 'test' && user.onboarding?.active_test_id) return <Navigate to={`/c/test/${user.onboarding.active_test_id}`} replace />
         const idx = STEPS.findIndex((s) => s.key === step)
-        const t = TITLES[step]!
+        const title = TITLES[step]!
         return (
           <div className="mx-auto max-w-3xl">
-            <ol className="mb-6 flex flex-wrap gap-2" aria-label="Шаги">
+            <ol className="mb-10 flex flex-wrap gap-2" aria-label="Шаги">
               {STEPS.map((s, i) => (
                 <li
                   key={s.key}
@@ -50,7 +50,7 @@ export default function Onboarding() {
                 </li>
               ))}
             </ol>
-            <PageHeader eyebrow={`Шаг ${idx + 1} из ${STEPS.length}`} title={t.title} description={t.description} />
+            <PageHeader title={title} />
             {step === 'consents' && <ConsentsForm onDone={() => void me.refetch()} />}
             {step === 'survey' && <SurveyForm onDone={() => void me.refetch()} />}
             {(step === 'grade' || step === 'test') && <GradePicker />}

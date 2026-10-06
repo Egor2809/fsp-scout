@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { formatDate, validateSalaryRange } from '@/lib/format'
+import { validateSalaryRange } from '@/lib/format'
 import { CONTACT_CHANNELS, WORK_FORMATS, contactChannelLabel, workFormatLabel } from '@/lib/labels'
 
 const BELOW = 'Вилка ниже ожиданий кандидата, инвайт не дойдёт. Поднимите верхнюю границу.'
@@ -62,11 +62,11 @@ export function InviteDialog({ card, open, onOpenChange, source }: { card: Candi
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Инвайт для {card.alias}</DialogTitle>
-          <DialogDescription>Кандидат увидит компанию, задачи и вилку. Его контакты откроются вам, если он примет инвайт.</DialogDescription>
+          <DialogDescription>Контакты откроются, если кандидат примет инвайт.</DialogDescription>
         </DialogHeader>
         <form
           id="invite-form"
-          className="grid gap-4"
+          className="grid gap-5"
           noValidate
           onSubmit={(e) => {
             e.preventDefault()
@@ -97,16 +97,11 @@ export function InviteDialog({ card, open, onOpenChange, source }: { card: Candi
             )
           }}
         >
-          <div className="grid gap-1 rounded-lg bg-surface/60 p-3 text-sm">
-            <span>
-              Компания: <b>{company.data?.name ?? '…'}</b>
-            </span>
-            {q && (
-              <span className="num text-muted-foreground">
-                Осталось инвайтов: <b className="text-foreground">{q.remaining}</b> из {q.limit} до {formatDate(q.period_end)}
-              </span>
-            )}
-          </div>
+          {q && (
+            <p className="num text-sm text-muted-foreground">
+              {company.data?.name ? `${company.data.name} · ` : ''}осталось инвайтов <b className="text-foreground">{q.remaining}</b> из {q.limit}
+            </p>
+          )}
           <FormField label="Позиция" htmlFor="inv-title" required error={touched ? errors.title : null}>
             <Input id="inv-title" value={title} onChange={(e) => setTitle(e.target.value)} />
           </FormField>
@@ -118,7 +113,7 @@ export function InviteDialog({ card, open, onOpenChange, source }: { card: Candi
               setSalary(v)
               if (create.isError) create.reset()
             }}
-            error={salaryError && (touched || salary.from !== null) ? salaryError : below ? { field: 'to', message: BELOW } : null} hint="Точные ожидания кандидата скрыты. Мы проверим только, что вилка не ниже них" />
+            error={salaryError && (touched || salary.from !== null) ? salaryError : below ? { field: 'to', message: BELOW } : null} hint="Проверим, что вилка не ниже скрытых ожиданий кандидата" />
           <div className="grid gap-4 sm:grid-cols-3">
             <FormField label="Формат" htmlFor="inv-fmt">
               <SelectField id="inv-fmt" value={format} onChange={setFormat} options={WORK_FORMATS.map((f) => ({ value: f, label: workFormatLabel[f] }))} />

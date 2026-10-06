@@ -3,7 +3,7 @@ import { CandidateCardView, ContactList, Section } from '@/components/candidate'
 import { PageHeader } from '@/components/layout/AppShell'
 import { QueryView } from '@/components/states'
 import { Tag } from '@/components/tags'
-import { formatDate, formatSalaryRange, formatYears } from '@/lib/format'
+import { formatSalaryRange, formatYears } from '@/lib/format'
 import { industryLabel, specializationLabel, workFormatLabel } from '@/lib/labels'
 
 const VISIBILITY = {
@@ -18,11 +18,11 @@ export default function CandidateProfile() {
   const preview = useGetMyCardPreview()
   return (
     <>
-      <PageHeader eyebrow="Профиль" title="Профиль и карточка" description="Слева ваши данные, справа анонимная карточка. Её видит работодатель, пока вы не приняли инвайт." />
-      <div className="grid gap-5 lg:grid-cols-2">
+      <PageHeader title="Профиль и карточка" />
+      <div className="grid gap-16 lg:grid-cols-2">
         <QueryView query={profile}>
           {(p) => (
-            <div className="grid content-start gap-4">
+            <div className="grid content-start gap-12">
               <Section title="Данные" actions={<Tag tone={VISIBILITY[p.visibility].tone}>{VISIBILITY[p.visibility].text}</Tag>}>
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
                   <dt className="text-muted-foreground">Специализация</dt>
@@ -40,11 +40,9 @@ export default function CandidateProfile() {
                   </dd>
                   <dt className="text-muted-foreground">Ожидания</dt>
                   <dd className="num">{formatSalaryRange(p.salary_expectation)}</dd>
-                  <dt className="text-muted-foreground">Обновлён</dt>
-                  <dd>{formatDate(p.updated_at)}</dd>
                 </dl>
               </Section>
-              <Section title="Контакты (скрыты от компаний)">
+              <Section title="Контакты">
                 <ContactList contacts={{ full_name: p.full_name, email: p.email, phone: p.phone, telegram: p.telegram, preferred_channel: p.telegram ? 'telegram' : 'email' }} />
               </Section>
               {p.about && (
@@ -57,10 +55,9 @@ export default function CandidateProfile() {
         </QueryView>
         <QueryView query={preview}>
           {(card) => (
-            <div className="rounded-lg border border-dashed p-4">
-              <p className="eyebrow mb-3">Так вас видит работодатель</p>
+            <Section title="Так вас видит работодатель">
               <CandidateCardView card={card} />
-            </div>
+            </Section>
           )}
         </QueryView>
       </div>

@@ -6,7 +6,6 @@ import { CandidateCardView, ContactsBlock, FspTimeline, NoFspHistory, Section, W
 import { InviteDialog } from '@/components/InviteDialog'
 import { PageHeader } from '@/components/layout/AppShell'
 import { QueryView } from '@/components/states'
-import { Stat } from '@/components/tags'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/format'
 import { ARCHIVED_INVITATION_STATUSES } from '@/lib/invitationStatus'
@@ -25,13 +24,12 @@ export default function CandidatePage() {
         return (
           <>
             <PageHeader
-              eyebrow={
+              back={
                 <Link to={searchId ? `/e/searches/${searchId}` : '/e/candidates'} className="inline-flex items-center gap-1 no-underline">
                   <IconArrowLeft className="size-3.5" /> {searchId ? 'К подборке' : 'В банк кандидатов'}
                 </Link>
               }
               title="Анонимная карточка"
-              description="Без ФИО, фото и контактов. Только проверяемые сигналы: тест, навыки, ФСП, задания."
               actions={
                 canInvite ? (
                   <Button onClick={() => setOpen(true)}>
@@ -44,18 +42,20 @@ export default function CandidatePage() {
                 )
               }
             />
-            <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-              <div className="grid content-start gap-5">
+            <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr]">
+              <div className="grid content-start gap-12">
                 <CandidateCardView card={c} />
                 <Section title="Соревнования ФСП">{c.fsp?.has_history && c.achievements.length ? <FspTimeline achievements={c.achievements} /> : <NoFspHistory />}</Section>
               </div>
-              <div className="grid content-start gap-4 lg:sticky lg:top-20 lg:self-start">
+              <div className="grid content-start gap-8 lg:sticky lg:top-24 lg:self-start">
                 <ContactsBlock card={c} />
                 {c.explanation && <WhyPanel explanation={c.explanation} />}
-                <div className="grid grid-cols-2 gap-2">
-                  <Stat label="Решено заданий" value={c.task_signal.solved_count} />
-                  <Stat label="Последнее" value={c.task_signal.last_solved_at ? formatDate(c.task_signal.last_solved_at) : '—'} />
-                </div>
+                {c.task_signal.solved_count > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Решено заданий: <span className="num text-foreground">{c.task_signal.solved_count}</span>
+                    {c.task_signal.last_solved_at ? ` · последнее ${formatDate(c.task_signal.last_solved_at)}` : ''}
+                  </p>
+                )}
               </div>
             </div>
             {canInvite && <InviteDialog key={c.id} card={c} open={open} onOpenChange={setOpen} source={searchId ? { type: 'search', id: searchId } : { type: 'bank', id: null }} />}

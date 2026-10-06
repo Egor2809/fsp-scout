@@ -24,7 +24,7 @@ import {
 } from '@tabler/icons-react'
 import { useListMyInvitations } from '@/api/generated/endpoints/invitations/invitations'
 import { useAuth } from '@/auth/context'
-import { ConnectLines, Logo } from '@/components/brand'
+import { Logo } from '@/components/brand'
 import { PageTransition } from '@/components/motion'
 import { Button } from '@/components/ui/button'
 import {
@@ -168,7 +168,10 @@ export function UserMenu() {
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel className="grid">
           <span className="truncate">{session.displayName}</span>
-          <span className="truncate text-xs font-normal text-muted-foreground">{session.email}</span>
+          <span className="truncate text-xs font-normal text-muted-foreground">
+            {session.email}
+            {config.apiMock ? ' · демо-данные' : ''}
+          </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {config.apiMock && (
@@ -229,25 +232,17 @@ export function AppShell({ role }: { role: 'candidate' | 'employer' }) {
           <Link to={role === 'candidate' ? '/c' : '/e'} className="no-underline" aria-label="Скаут, на главную кабинета">
             <Logo />
           </Link>
-          <span className="ml-2 hidden rounded-md border px-2 py-0.5 font-mono text-[0.7rem] tracking-wider text-muted-foreground uppercase sm:inline">
-            {role === 'candidate' ? 'Кандидат' : 'Работодатель'}
-          </span>
-          {config.apiMock && (
-            <span className="hidden rounded-md bg-muted px-2 py-0.5 font-mono text-[0.7rem] text-muted-foreground md:inline" title="Данные из моков MSW по контракту API">
-              демо-данные
-            </span>
-          )}
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
             <UserMenu />
           </div>
         </div>
       </header>
-      <div className="mx-auto flex max-w-[1400px] gap-8 px-4 sm:px-6">
+      <div className="mx-auto flex max-w-[1400px] gap-12 px-4 sm:px-8">
         <aside className="sticky top-14 hidden h-[calc(100svh-3.5rem)] w-56 shrink-0 overflow-y-auto py-6 lg:block">
           <NavList groups={groups} />
         </aside>
-        <main id="main" className="min-w-0 flex-1 py-6 pb-16">
+        <main id="main" className="min-w-0 max-w-5xl flex-1 py-10 pb-24">
           <Suspense key={location.pathname} fallback={<PageFallback />}>
             <PageTransition>
               <Outlet />
@@ -260,43 +255,31 @@ export function AppShell({ role }: { role: 'candidate' | 'employer' }) {
 }
 
 export function PageHeader({
-  eyebrow,
   title,
-  description,
-  actions,
   meta,
-  motif = false,
+  back,
+  actions,
   children,
 }: {
-  eyebrow?: ReactNode
   title: ReactNode
-  description?: ReactNode
-  actions?: ReactNode
-  /** Моно-подпись справа от бирки: счётчик, дата. */
+  /** Одно число рядом с заголовком (например, сколько найдено). */
   meta?: ReactNode
-  motif?: boolean
+  /** Ссылка «назад» над заголовком. */
+  back?: ReactNode
+  actions?: ReactNode
   children?: ReactNode
 }) {
   return (
-    <header className={cn('relative mb-6 border-b pb-5', motif && 'overflow-hidden rounded-lg border bg-surface/50 p-5 sm:p-6')}>
-      {motif && <ConnectLines />}
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          {(eyebrow || meta) && (
-            <p className="eyebrow mb-2 flex flex-wrap items-center gap-x-2">
-              {eyebrow && <span>{eyebrow}</span>}
-              {eyebrow && meta && (
-                <span aria-hidden className="inline-block h-px w-5 bg-border" />
-              )}
-              {meta && <span className="num text-foreground">{meta}</span>}
-            </p>
-          )}
-          <h1 className="display text-[1.75rem] sm:text-[2.25rem]">{title}</h1>
-          {description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground text-pretty">{description}</p>}
-        </div>
+    <header className="mb-10">
+      {back && <div className="mb-3 text-sm">{back}</div>}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <h1 className="display min-w-0 text-[1.75rem] sm:text-[2.25rem]">
+          {title}
+          {meta !== undefined && meta !== null && <span className="num ml-3 text-[0.6em] font-normal text-muted-foreground">{meta}</span>}
+        </h1>
         {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
       </div>
-      {children && <div className="relative mt-4">{children}</div>}
+      {children && <div className="mt-6">{children}</div>}
     </header>
   )
 }

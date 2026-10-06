@@ -11,7 +11,7 @@ export default function Company() {
     <QueryView query={query}>
       {(c) => (
         <div className="max-w-3xl">
-          <PageHeader eyebrow="Профиль компании" title={c.name} description="Это видит кандидат в каждом инвайте." actions={c.verified ? <Tag tone="success">проверена</Tag> : <Tag tone="warning">на проверке</Tag>} />
+          <PageHeader title={c.name} actions={c.verified ? <Tag tone="success">проверена</Tag> : <Tag tone="warning">на проверке</Tag>} />
           <Section title="О компании">
             <p className="mb-4 text-sm whitespace-pre-line">{c.description}</p>
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
