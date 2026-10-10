@@ -23,8 +23,8 @@ docker compose --env-file infra/.env -f infra/compose.yaml logs --tail 100 migra
 Не публикуйте .env или вывод конфигурации, содержащий секреты.
 
 API: http://localhost:8000/api/v1, Keycloak: http://localhost:8080,
-Mailpit: http://localhost:8025. Frontend запускается отдельно, с
-VITE_API_MOCK=false и VITE_AUTH_MODE=oidc. Issuer токенов остаётся публичным
+Mailpit: http://localhost:8025. Frontend включён в Compose на http://localhost:5173,
+с VITE_API_MOCK=false и VITE_AUTH_MODE=oidc. Issuer токенов остаётся публичным
 localhost:8080, а серверный JWKS запрашивается через внутренний хост keycloak.
 Запуск контейнера Keycloak ещё не означает готовность его HTTP API: в первые
 секунды проверка JWT может не пройти, пока Keycloak не завершит запуск.
@@ -50,9 +50,11 @@ OIDC-вход и работу frontend. Валидная конфигураци�
 
 ## Фронтенд и аккаунты
 
-В отдельном терминале из корня проекта:
+Для разработки frontend можно запускать отдельно вместо контейнера.
+Сначала остановите сервис `frontend`, чтобы освободить порт 5173:
 
 ```powershell
+docker compose --env-file infra/.env -f infra/compose.yaml stop frontend
 cd frontend
 npm ci
 npm run dev:real

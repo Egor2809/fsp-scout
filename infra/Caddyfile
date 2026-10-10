@@ -1,0 +1,9 @@
+{$APP_DOMAIN} {
+    encode zstd gzip
+    reverse_proxy frontend:80
+}
+{$AUTH_DOMAIN} {
+    @admin path /admin /admin/*
+    respond @admin 403
+    reverse_proxy keycloak:8080
+}

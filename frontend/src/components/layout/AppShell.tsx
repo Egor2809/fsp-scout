@@ -143,9 +143,11 @@ export function ThemeToggle() {
 }
 
 async function resetDemoData() {
-  const { resetDb } = await import('@/mocks/db/store')
-  resetDb()
-  window.location.assign('/')
+  if (import.meta.env.VITE_API_MOCK !== 'false') {
+    const { resetDb } = await import('@/mocks/db/store')
+    resetDb()
+    window.location.assign('/')
+  }
 }
 
 export function UserMenu() {

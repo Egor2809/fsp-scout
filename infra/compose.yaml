@@ -60,10 +60,10 @@ services:
     environment:
       DATABASE_URL: postgresql://scout:${POSTGRES_PASSWORD}@postgres:5432/scout
       REDIS_URL: redis://redis:6379
-      OIDC_ISSUER: http://localhost:8080/realms/scout
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/scout}
       OIDC_JWKS_URL: http://keycloak:8080/realms/scout/protocol/openid-connect/certs
       OIDC_AUDIENCE: scout-api
-      CORS_ORIGIN: http://localhost:5173
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
       PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8000/api/v1}
       PUBLIC_VERIFICATION_BASE_URL: ${PUBLIC_VERIFICATION_BASE_URL:-http://localhost:5173}
       FSP_WEBHOOK_SECRET: ${FSP_WEBHOOK_SECRET:?Set FSP_WEBHOOK_SECRET}
@@ -99,7 +99,7 @@ services:
       target: runtime
     command: ["node", "dist/worker.js"]
     environment:
-      OIDC_ISSUER: http://localhost:8080/realms/scout
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/scout}
       KEYCLOAK_INTERNAL_BASE_URL: http://keycloak:8080
       KEYCLOAK_REALM: scout
       KEYCLOAK_ERASURE_CLIENT_ID: ${KEYCLOAK_ERASURE_CLIENT_ID:-}
@@ -120,6 +120,15 @@ services:
     mem_limit: 512m
     pids_limit: 32
     stop_grace_period: 30s
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        VITE_OIDC_AUTHORITY: ${OIDC_ISSUER:-http://localhost:8080/realms/scout}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports: ["127.0.0.1:5173:80"]
 volumes:
   postgres:
   redis:

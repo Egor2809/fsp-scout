@@ -1,0 +1,36 @@
+services:
+  keycloak:
+    command: ["start", "--import-realm"]
+    environment:
+      KC_HOSTNAME: https://${AUTH_DOMAIN:?Set AUTH_DOMAIN}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+    volumes:
+      - ./keycloak-public:/opt/keycloak/data/import:ro
+  api:
+    environment:
+      OIDC_ISSUER: https://${AUTH_DOMAIN}/realms/scout
+      CORS_ORIGIN: https://${APP_DOMAIN:?Set APP_DOMAIN}
+      PUBLIC_API_URL: https://${APP_DOMAIN}/api/v1
+      PUBLIC_VERIFICATION_BASE_URL: https://${APP_DOMAIN}
+  worker:
+    environment:
+      OIDC_ISSUER: https://${AUTH_DOMAIN}/realms/scout
+  frontend:
+    build:
+      args:
+        VITE_OIDC_AUTHORITY: https://${AUTH_DOMAIN}/realms/scout
+  edge:
+    image: caddy:2-alpine
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+      AUTH_DOMAIN: ${AUTH_DOMAIN}
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [frontend, keycloak]
+volumes:
+  caddy_data:
+  caddy_config:

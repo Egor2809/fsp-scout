@@ -9,14 +9,14 @@ import { createAuthProvider } from '@/auth'
 import { AuthGate } from '@/auth/AuthGate'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { config } from '@/config'
 import { applyFontPair } from '@/lib/fontPair'
 import { applyTheme } from '@/lib/theme'
 
 async function bootstrap() {
   applyTheme()
   applyFontPair()
-  if (config.apiMock) {
+  // Keep the condition compile-time constant so production builds discard mock answer banks.
+  if (import.meta.env.VITE_API_MOCK !== 'false') {
     const { startMockWorker } = await import('@/mocks/browser')
     await startMockWorker()
   }

@@ -1,0 +1,46 @@
+name: Checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://scout:unused@localhost:5432/scout
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Backend has no lockfile yet. Save one after a verified registry install.
+      - run: npm install --ignore-scripts
+        working-directory: backend
+      - run: npm run prisma:generate
+        working-directory: backend
+      - run: npm run build
+        working-directory: backend
+      - run: npm test
+      - run: npm run test:evaluate
+      - run: npm run check:contract
+      - run: npm run eval
+      - uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-evaluation
+          path: eval/synthetic-report.json
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build:real
+        working-directory: frontend
+      - run: npm test
+        working-directory: frontend
