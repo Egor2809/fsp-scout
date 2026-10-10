@@ -3990,6 +3990,15 @@ components:
               items: { $ref: '#/components/schemas/CandidateCard' }
 
     # ───────────── invitations ─────────────
+    CompanyTrust:
+      type: object
+      description: Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий
+      required: [invitations_90d, acceptance_rate, withdrawn_after_accept]
+      properties:
+        invitations_90d: { type: integer, minimum: 0 }
+        acceptance_rate: { type: number, minimum: 0, maximum: 1 }
+        withdrawn_after_accept: { type: integer, minimum: 0 }
+
     InvitationQuota:
       type: object
       required: [limit, used, remaining, period_start, period_end, acceptance_rate, bonus]
@@ -3997,12 +4006,16 @@ components:
         limit:
           type: integer
           minimum: 0
-          description: Итоговый лимит на неделю (база + бонус)
+          description: Итоговый лимит на неделю (база + бонус − штраф, не меньше 1)
           examples: [22]
         used: { type: integer, minimum: 0, examples: [7] }
         remaining: { type: integer, minimum: 0, examples: [15] }
         period_start: { type: string, format: date-time }
         period_end: { type: string, format: date-time }
+        penalty:
+          type: integer
+          minimum: 0
+          description: Штраф за отзыв приглашений после согласия кандидата (2 за каждый)
         acceptance_rate:
           type: number
           minimum: 0
@@ -4118,6 +4131,7 @@ components:
         work_format: { $ref: '#/components/schemas/WorkFormat' }
         city: { type: [string, 'null'] }
         company: { $ref: '#/components/schemas/CompanyBrief' }
+        company_trust: { $ref: '#/components/schemas/CompanyTrust' }
         contact_person:
           type: string
           examples: ['Ирина Волкова, руководитель подбора']

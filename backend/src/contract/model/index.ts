@@ -40,6 +40,7 @@ export * from './codeSnippet.js';
 export * from './company.js';
 export * from './companyBrief.js';
 export * from './companySize.js';
+export * from './companyTrust.js';
 export * from './companyUpdate.js';
 export * from './companyUpdateSize.js';
 export * from './confirmedNeed.js';

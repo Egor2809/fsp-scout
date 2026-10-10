@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { AuthGuard, type Identity } from '../auth/auth.guard.js';
 import { Database } from '../database/database.service.js';
 import { Problem } from '../common/problem.js';
-import { parse, checkSalary } from '../common/validation.js';
+import { parse, checkOfferSalary } from '../common/validation.js';
 import { quotaPeriod, transition, type InvitationStatus } from '../common/invitation-state.ts';
 import { AcceptInvitationBody, CreateInvitationBody, DeclineInvitationBody, PostponeInvitationBody, PrecheckInvitationBody, UpdateInvitationStageBody, WithdrawInvitationBody, ListCompanyInvitationsQueryParams, ListMyInvitationsQueryParams } from '../contract/schemas.js';
 import { strings } from '../common/query.js';
@@ -41,13 +41,20 @@ export class InvitationsController {
   private async quota(tx: Tx, companyId: string, now: Date) {
     const period = quotaPeriod(now);
     const company = await tx.company.findUniqueOrThrow({ where: { id: companyId } });
-    const recent = await tx.invitation.findMany({ where: { companyId, sentAt: { gte: new Date(now.getTime() - 90 * 86400000) } }, select: { response: true } });
-    const responses = recent.map(x => x.response as Prisma.JsonObject | null).filter(x => x && x.decision !== 'postponed');
-    const rate = responses.length ? responses.filter(x => x?.decision === 'accepted').length / responses.length : 0;
+    const trust = await this.trust(tx, companyId, now);
+    const rate = trust.acceptance_rate;
     const bonus = Math.round(rate * 10);
-    const limit = company.quotaBase + bonus;
+    const penalty = 2 * trust.withdrawn_after_accept;
+    const limit = Math.max(1, company.quotaBase + bonus - penalty);
     const used = await tx.invitation.count({ where: { companyId, sentAt: { gte: period.start, lt: period.end } } });
-    return { limit, used, remaining: Math.max(0, limit - used), period_start: period.start.toISOString(), period_end: period.end.toISOString(), acceptance_rate: Math.round(rate * 100) / 100, bonus };
+    return { limit, used, remaining: Math.max(0, limit - used), period_start: period.start.toISOString(), period_end: period.end.toISOString(), acceptance_rate: Math.round(rate * 100) / 100, bonus, penalty };
+  }
+  private async trust(tx: Tx, companyId: string, now: Date) {
+    const recent = await tx.invitation.findMany({ where: { companyId, sentAt: { gte: new Date(now.getTime() - 90 * 86400000) } }, select: { status: true, response: true } });
+    const responses = recent.map(x => x.response as Prisma.JsonObject | null).filter(x => x && x.decision !== 'postponed');
+    const accepted = responses.filter(x => x?.decision === 'accepted').length;
+    return { invitations_90d: recent.length, acceptance_rate: responses.length ? Math.round(accepted / responses.length * 100) / 100 : 0,
+      withdrawn_after_accept: recent.filter(x => x.status === 'withdrawn' && (x.response as Prisma.JsonObject | null)?.decision === 'accepted').length };
   }
   private async view(inv: Record, role: Identity['role']) {
     const offer = inv.offer as Prisma.JsonObject;
@@ -58,7 +65,7 @@ export class InvitationsController {
       id: inv.id, status: inv.status, title: offer.title, description: offer.description,
       salary: { from: inv.salaryFrom, to: inv.salaryTo }, work_format: offer.work_format,
       city: offer.city ?? null, company: { id: inv.company.id, name: inv.company.name, industry: inv.company.industry, city: inv.company.city, verified: inv.company.verified },
-      contact_person: offer.contact_person, contact: offer.contact, vacancy: inv.vacancy ? { id: inv.vacancy.id, title: inv.vacancy.title,
+      company_trust: await this.trust(this.db, inv.companyId, new Date()), contact_person: offer.contact_person, contact: offer.contact, vacancy: inv.vacancy ? { id: inv.vacancy.id, title: inv.vacancy.title,
         company: { id: inv.vacancy.company.id, name: inv.vacancy.company.name, industry: inv.vacancy.company.industry, city: inv.vacancy.company.city, verified: inv.vacancy.company.verified } } : null,
       candidate: { id: inv.candidateId, alias: `Кандидат #${createHash('sha256').update(`${inv.companyId}:${inv.candidateId}`).digest('hex').slice(0, 8).toUpperCase()}`, category,
         percentile: (profile.standing as Prisma.JsonObject | undefined)?.percentile ?? null },
@@ -86,7 +93,7 @@ export class InvitationsController {
   @HttpCode(200)
   async precheck(@Req() request: Request, @Body() body: unknown) {
     const data = parse(PrecheckInvitationBody, body);
-    checkSalary(data.salary, '/salary');
+    checkOfferSalary(data.salary, '/salary');
     const co = await this.company(request.identity);
     return this.db.$transaction(async tx => {
       await tx.$queryRaw`SELECT id FROM "Company" WHERE id = ${co.id}::uuid FOR UPDATE`;
@@ -104,7 +111,7 @@ export class InvitationsController {
   @Post('invitations')
   async create(@Req() request: Request, @Body() body: unknown) {
     const data = parse(CreateInvitationBody, body);
-    checkSalary(data.salary, '/salary');
+    checkOfferSalary(data.salary, '/salary');
     const co = await this.company(request.identity);
     if (data.source && ((data.source.type === 'bank' && data.source.id !== null) || (data.source.type !== 'bank' && !data.source.id))) throw new Problem(422, 'validation_error', 'Некорректный источник', { errors: [{ pointer: '/source/id', detail: 'Для связанного источника нужен ID, для банка ID должен быть null' }] });
     const vacancyId = data.vacancy_id ?? (data.source?.type === 'vacancy' ? data.source.id : null);

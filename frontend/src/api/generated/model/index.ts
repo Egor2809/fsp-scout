@@ -40,6 +40,7 @@ export * from './codeSnippet';
 export * from './company';
 export * from './companyBrief';
 export * from './companySize';
+export * from './companyTrust';
 export * from './companyUpdate';
 export * from './companyUpdateSize';
 export * from './confirmedNeed';

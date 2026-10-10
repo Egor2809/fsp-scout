@@ -1539,6 +1539,8 @@ export const getInvitationQuotaResponseUsedMin = 0;
 
 export const getInvitationQuotaResponseRemainingMin = 0;
 
+export const getInvitationQuotaResponsePenaltyMin = 0;
+
 export const getInvitationQuotaResponseAcceptanceRateMin = 0;
 export const getInvitationQuotaResponseAcceptanceRateMax = 1;
 
@@ -1547,11 +1549,12 @@ export const getInvitationQuotaResponseBonusMin = 0;
 
 
 export const GetInvitationQuotaResponse = zod.object({
-  "limit": zod.int().min(getInvitationQuotaResponseLimitMin).describe('Итоговый лимит на неделю (база + бонус)'),
+  "limit": zod.int().min(getInvitationQuotaResponseLimitMin).describe('Итоговый лимит на неделю (база + бонус − штраф, не меньше 1)'),
   "used": zod.int().min(getInvitationQuotaResponseUsedMin),
   "remaining": zod.int().min(getInvitationQuotaResponseRemainingMin),
   "period_start": zod.iso.datetime({"offset":true}),
   "period_end": zod.iso.datetime({"offset":true}),
+  "penalty": zod.int().min(getInvitationQuotaResponsePenaltyMin).optional().describe('Штраф за отзыв приглашений после согласия кандидата (2 за каждый)'),
   "acceptance_rate": zod.number().min(getInvitationQuotaResponseAcceptanceRateMin).max(getInvitationQuotaResponseAcceptanceRateMax).describe('Доля принятых инвайтов за 90 дней'),
   "bonus": zod.int().min(getInvitationQuotaResponseBonusMin).describe('Прибавка к базовой квоте за долю принятых')
 })
@@ -3096,6 +3099,13 @@ export const listCompanyInvitationsResponseSalaryFromMax = 10000000;
 export const listCompanyInvitationsResponseSalaryToMin = 10000;
 export const listCompanyInvitationsResponseSalaryToMax = 10000000;
 
+export const listCompanyInvitationsResponseCompanyTrustInvitations90dMin = 0;
+
+export const listCompanyInvitationsResponseCompanyTrustAcceptanceRateMin = 0;
+export const listCompanyInvitationsResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const listCompanyInvitationsResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const listCompanyInvitationsResponseContactValueMin = 3;
 export const listCompanyInvitationsResponseContactValueMax = 120;
 
@@ -3119,6 +3129,11 @@ export const ListCompanyInvitationsResponseItem = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(listCompanyInvitationsResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(listCompanyInvitationsResponseCompanyTrustAcceptanceRateMin).max(listCompanyInvitationsResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(listCompanyInvitationsResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),
@@ -3238,6 +3253,13 @@ export const createInvitationResponseSalaryFromMax = 10000000;
 export const createInvitationResponseSalaryToMin = 10000;
 export const createInvitationResponseSalaryToMax = 10000000;
 
+export const createInvitationResponseCompanyTrustInvitations90dMin = 0;
+
+export const createInvitationResponseCompanyTrustAcceptanceRateMin = 0;
+export const createInvitationResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const createInvitationResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const createInvitationResponseContactValueMin = 3;
 export const createInvitationResponseContactValueMax = 120;
 
@@ -3261,6 +3283,11 @@ export const CreateInvitationResponse = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(createInvitationResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(createInvitationResponseCompanyTrustAcceptanceRateMin).max(createInvitationResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(createInvitationResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),
@@ -3347,6 +3374,8 @@ export const precheckInvitationResponseQuotaUsedMin = 0;
 
 export const precheckInvitationResponseQuotaRemainingMin = 0;
 
+export const precheckInvitationResponseQuotaPenaltyMin = 0;
+
 export const precheckInvitationResponseQuotaAcceptanceRateMin = 0;
 export const precheckInvitationResponseQuotaAcceptanceRateMax = 1;
 
@@ -3360,11 +3389,12 @@ export const PrecheckInvitationResponse = zod.object({
   "already_invited": zod.boolean(),
   "candidate_available": zod.boolean().describe('`false` — кандидат не ищет работу или скрыт'),
   "quota": zod.object({
-  "limit": zod.int().min(precheckInvitationResponseQuotaLimitMin).describe('Итоговый лимит на неделю (база + бонус)'),
+  "limit": zod.int().min(precheckInvitationResponseQuotaLimitMin).describe('Итоговый лимит на неделю (база + бонус − штраф, не меньше 1)'),
   "used": zod.int().min(precheckInvitationResponseQuotaUsedMin),
   "remaining": zod.int().min(precheckInvitationResponseQuotaRemainingMin),
   "period_start": zod.iso.datetime({"offset":true}),
   "period_end": zod.iso.datetime({"offset":true}),
+  "penalty": zod.int().min(precheckInvitationResponseQuotaPenaltyMin).optional().describe('Штраф за отзыв приглашений после согласия кандидата (2 за каждый)'),
   "acceptance_rate": zod.number().min(precheckInvitationResponseQuotaAcceptanceRateMin).max(precheckInvitationResponseQuotaAcceptanceRateMax).describe('Доля принятых инвайтов за 90 дней'),
   "bonus": zod.int().min(precheckInvitationResponseQuotaBonusMin).describe('Прибавка к базовой квоте за долю принятых')
 })
@@ -3425,6 +3455,13 @@ export const listMyInvitationsResponseSalaryFromMax = 10000000;
 export const listMyInvitationsResponseSalaryToMin = 10000;
 export const listMyInvitationsResponseSalaryToMax = 10000000;
 
+export const listMyInvitationsResponseCompanyTrustInvitations90dMin = 0;
+
+export const listMyInvitationsResponseCompanyTrustAcceptanceRateMin = 0;
+export const listMyInvitationsResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const listMyInvitationsResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const listMyInvitationsResponseContactValueMin = 3;
 export const listMyInvitationsResponseContactValueMax = 120;
 
@@ -3448,6 +3485,11 @@ export const ListMyInvitationsResponseItem = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(listMyInvitationsResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(listMyInvitationsResponseCompanyTrustAcceptanceRateMin).max(listMyInvitationsResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(listMyInvitationsResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),
@@ -3522,6 +3564,13 @@ export const getInvitationResponseSalaryFromMax = 10000000;
 export const getInvitationResponseSalaryToMin = 10000;
 export const getInvitationResponseSalaryToMax = 10000000;
 
+export const getInvitationResponseCompanyTrustInvitations90dMin = 0;
+
+export const getInvitationResponseCompanyTrustAcceptanceRateMin = 0;
+export const getInvitationResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const getInvitationResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const getInvitationResponseContactValueMin = 3;
 export const getInvitationResponseContactValueMax = 120;
 
@@ -3545,6 +3594,11 @@ export const GetInvitationResponse = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(getInvitationResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(getInvitationResponseCompanyTrustAcceptanceRateMin).max(getInvitationResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(getInvitationResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),
@@ -3618,6 +3672,13 @@ export const markInvitationViewedResponseSalaryFromMax = 10000000;
 export const markInvitationViewedResponseSalaryToMin = 10000;
 export const markInvitationViewedResponseSalaryToMax = 10000000;
 
+export const markInvitationViewedResponseCompanyTrustInvitations90dMin = 0;
+
+export const markInvitationViewedResponseCompanyTrustAcceptanceRateMin = 0;
+export const markInvitationViewedResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const markInvitationViewedResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const markInvitationViewedResponseContactValueMin = 3;
 export const markInvitationViewedResponseContactValueMax = 120;
 
@@ -3641,6 +3702,11 @@ export const MarkInvitationViewedResponse = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(markInvitationViewedResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(markInvitationViewedResponseCompanyTrustAcceptanceRateMin).max(markInvitationViewedResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(markInvitationViewedResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),
@@ -3724,6 +3790,13 @@ export const acceptInvitationResponseSalaryFromMax = 10000000;
 export const acceptInvitationResponseSalaryToMin = 10000;
 export const acceptInvitationResponseSalaryToMax = 10000000;
 
+export const acceptInvitationResponseCompanyTrustInvitations90dMin = 0;
+
+export const acceptInvitationResponseCompanyTrustAcceptanceRateMin = 0;
+export const acceptInvitationResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const acceptInvitationResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const acceptInvitationResponseContactValueMin = 3;
 export const acceptInvitationResponseContactValueMax = 120;
 
@@ -3747,6 +3820,11 @@ export const AcceptInvitationResponse = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(acceptInvitationResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(acceptInvitationResponseCompanyTrustAcceptanceRateMin).max(acceptInvitationResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(acceptInvitationResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),
@@ -3829,6 +3907,13 @@ export const declineInvitationResponseSalaryFromMax = 10000000;
 export const declineInvitationResponseSalaryToMin = 10000;
 export const declineInvitationResponseSalaryToMax = 10000000;
 
+export const declineInvitationResponseCompanyTrustInvitations90dMin = 0;
+
+export const declineInvitationResponseCompanyTrustAcceptanceRateMin = 0;
+export const declineInvitationResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const declineInvitationResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const declineInvitationResponseContactValueMin = 3;
 export const declineInvitationResponseContactValueMax = 120;
 
@@ -3852,6 +3937,11 @@ export const DeclineInvitationResponse = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(declineInvitationResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(declineInvitationResponseCompanyTrustAcceptanceRateMin).max(declineInvitationResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(declineInvitationResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),
@@ -3929,6 +4019,13 @@ export const postponeInvitationResponseSalaryFromMax = 10000000;
 export const postponeInvitationResponseSalaryToMin = 10000;
 export const postponeInvitationResponseSalaryToMax = 10000000;
 
+export const postponeInvitationResponseCompanyTrustInvitations90dMin = 0;
+
+export const postponeInvitationResponseCompanyTrustAcceptanceRateMin = 0;
+export const postponeInvitationResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const postponeInvitationResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const postponeInvitationResponseContactValueMin = 3;
 export const postponeInvitationResponseContactValueMax = 120;
 
@@ -3952,6 +4049,11 @@ export const PostponeInvitationResponse = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(postponeInvitationResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(postponeInvitationResponseCompanyTrustAcceptanceRateMin).max(postponeInvitationResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(postponeInvitationResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),
@@ -4033,6 +4135,13 @@ export const withdrawInvitationResponseSalaryFromMax = 10000000;
 export const withdrawInvitationResponseSalaryToMin = 10000;
 export const withdrawInvitationResponseSalaryToMax = 10000000;
 
+export const withdrawInvitationResponseCompanyTrustInvitations90dMin = 0;
+
+export const withdrawInvitationResponseCompanyTrustAcceptanceRateMin = 0;
+export const withdrawInvitationResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const withdrawInvitationResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const withdrawInvitationResponseContactValueMin = 3;
 export const withdrawInvitationResponseContactValueMax = 120;
 
@@ -4056,6 +4165,11 @@ export const WithdrawInvitationResponse = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(withdrawInvitationResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(withdrawInvitationResponseCompanyTrustAcceptanceRateMin).max(withdrawInvitationResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(withdrawInvitationResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),
@@ -4138,6 +4252,13 @@ export const updateInvitationStageResponseSalaryFromMax = 10000000;
 export const updateInvitationStageResponseSalaryToMin = 10000;
 export const updateInvitationStageResponseSalaryToMax = 10000000;
 
+export const updateInvitationStageResponseCompanyTrustInvitations90dMin = 0;
+
+export const updateInvitationStageResponseCompanyTrustAcceptanceRateMin = 0;
+export const updateInvitationStageResponseCompanyTrustAcceptanceRateMax = 1;
+
+export const updateInvitationStageResponseCompanyTrustWithdrawnAfterAcceptMin = 0;
+
 export const updateInvitationStageResponseContactValueMin = 3;
 export const updateInvitationStageResponseContactValueMax = 120;
 
@@ -4161,6 +4282,11 @@ export const UpdateInvitationStageResponse = zod.object({
   "city": zod.string().nullable(),
   "verified": zod.boolean().describe('Проверенный работодатель (ИНН/домен почты)')
 }),
+  "company_trust": zod.object({
+  "invitations_90d": zod.int().min(updateInvitationStageResponseCompanyTrustInvitations90dMin),
+  "acceptance_rate": zod.number().min(updateInvitationStageResponseCompanyTrustAcceptanceRateMin).max(updateInvitationStageResponseCompanyTrustAcceptanceRateMax),
+  "withdrawn_after_accept": zod.int().min(updateInvitationStageResponseCompanyTrustWithdrawnAfterAcceptMin)
+}).optional().describe('Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий'),
   "contact_person": zod.string(),
   "contact": zod.object({
   "channel": zod.enum(['email', 'phone', 'telegram']),

@@ -3,6 +3,7 @@
  */
 import type { CandidateContacts } from './candidateContacts.js';
 import type { CompanyBrief } from './companyBrief.js';
+import type { CompanyTrust } from './companyTrust.js';
 import type { InvitationCandidate } from './invitationCandidate.js';
 import type { InvitationContact } from './invitationContact.js';
 import type { InvitationEvent } from './invitationEvent.js';
@@ -23,6 +24,7 @@ export interface Invitation {
   /** @nullable */
   city: string | null;
   company: CompanyBrief;
+  company_trust?: CompanyTrust;
   contact_person: string;
   contact: InvitationContact;
   vacancy: VacancyBrief | null;

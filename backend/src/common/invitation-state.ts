@@ -38,3 +38,6 @@ export function quotaPeriod(now: Date): { start: Date; end: Date } {
   const start = new Date(local.getTime() - offset);
   return { start, end: new Date(start.getTime() + 7 * 86400000) };
 }
+
+export const MAX_OFFER_SPREAD = 1.6;
+export const offerSpreadOk = (salary: { from: number; to: number }) => salary.from <= salary.to && salary.to <= salary.from * MAX_OFFER_SPREAD;

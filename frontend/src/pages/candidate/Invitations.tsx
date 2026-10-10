@@ -154,6 +154,12 @@ function InvitationItem({ inv }: { inv: Invitation }) {
             {inv.company.verified && <IconRosetteDiscountCheckFilled className="size-4 text-link" aria-label="Компания проверена" />}
           </p>
           <h2 className="text-lg font-semibold">{inv.title}</h2>
+          {inv.company_trust && inv.company_trust.invitations_90d > 0 && (
+            <p className="text-xs text-muted-foreground">
+              За 90 дней: {inv.company_trust.invitations_90d} приглашений, принято {Math.round(inv.company_trust.acceptance_rate * 100)}%
+              {inv.company_trust.withdrawn_after_accept > 0 && <span className="text-destructive"> · отозвано после согласия: {inv.company_trust.withdrawn_after_accept}</span>}
+            </p>
+          )}
         </div>
         <InvitationStatusBadge status={inv.status} viewer="candidate" />
       </header>

@@ -9,7 +9,7 @@ import { explain } from '../matching/matching.js';
 import { CreateVacancyBody, UpdateVacancyBody, ListVacanciesQueryParams, ApplyToVacancyBody, UpdateApplicationStatusBody } from '../contract/schemas.js';
 import type { ApplicationStatus, SearchFilters, VacancyInput } from '../contract/model/index.js';
 import { Problem } from '../common/problem.js';
-import { parse, checkSalary } from '../common/validation.js';
+import { parse, checkOfferSalary } from '../common/validation.js';
 import { pagination } from '../common/query.js';
 import { skillRef, SKILL_BY_ID } from '../common/taxonomy-data.js';
 import { applicationTransition } from '../common/application-state.js';
@@ -49,7 +49,7 @@ export class VacanciesController {
   }
   private input(body: unknown, update = false) {
     const data = parse(update ? UpdateVacancyBody : CreateVacancyBody, body);
-    checkSalary(data.salary, '/salary');
+    checkOfferSalary(data.salary, '/salary');
     for (const key of ['must_skills', 'nice_skills'] as const) {
       const ids = data[key];
       const bad = ids.findIndex(id => !SKILL_BY_ID.has(id));

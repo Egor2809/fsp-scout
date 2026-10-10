@@ -4,7 +4,7 @@
 
 export interface InvitationQuota {
   /**
-     * Итоговый лимит на неделю (база + бонус)
+     * Итоговый лимит на неделю (база + бонус − штраф, не меньше 1)
      * @minimum 0
      */
   limit: number;
@@ -14,6 +14,11 @@ export interface InvitationQuota {
   remaining: number;
   period_start: string;
   period_end: string;
+  /**
+     * Штраф за отзыв приглашений после согласия кандидата (2 за каждый)
+     * @minimum 0
+     */
+  penalty?: number;
   /**
      * Доля принятых инвайтов за 90 дней
      * @minimum 0
