@@ -49,7 +49,7 @@ export default function Evaluate() {
   return <main className="mx-auto grid max-w-4xl gap-6 px-4 py-8">
     <Link to="/e">← Кабинет работодателя</Link>
     <h1 className="text-3xl">Проверка подбора</h1>
-    <p className="text-muted-foreground">Введите потребность и собственные резюме. Внешние резюме оцениваются по требованиям и BM25; подтверждённые результаты тестов и достижения ФСП им не приписываются.</p>
+    <p className="text-muted-foreground">Введите потребность и собственные резюме. Внешние резюме оцениваются по навыкам, BM25 и заявленному грейду; подтверждённые результаты тестов и достижения ФСП им не приписываются.</p>
     {config.apiMock && <p role="status">Для проверки нужен реальный API и вход работодателя через OIDC. Мок-режим не измеряет качество поиска.</p>}
     <form className="grid gap-4" onSubmit={e => { e.preventDefault(); void evaluate() }}>
       <label className="grid gap-2">Потребность<Textarea value={need} disabled={busy} onChange={e => setNeed(e.target.value)} required /></label>

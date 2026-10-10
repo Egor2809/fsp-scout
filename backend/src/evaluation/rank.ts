@@ -2,6 +2,8 @@ import type { EvalRankRequest, EvalRankResponse, ExplanationFactor, Grade } from
 import { parseNeed } from '../needs/need-parser.ts';
 const round = (n: number) => Math.round(n * 100) / 100;
 const grades: Grade[] = ['junior', 'middle', 'senior', 'lead'];
+const GRADE_WEIGHT = 25;
+const LEXICAL_WEIGHT = 25;
 const stop = new Set('и в на с по для из от до не или но как что это the a an and or of for to in with is'.split(' '));
 function resumeText(text: string): string {
   try {
@@ -68,13 +70,14 @@ export function rankExternal(input: EvalRankRequest): EvalRankResponse {
       const format = !wanted.work_formats.length || !c.parsed.work_formats.length ? 0.5 : wanted.work_formats.some(f => c.parsed.work_formats.includes(f)) ? 1 : 0;
       const industry = !wanted.industry || !c.parsed.industry ? 0.5 : wanted.industry === c.parsed.industry ? 1 : 0;
       const declared = c.grade ?? c.parsed.grade;
-      const grade = !wanted.grade || !declared ? 0.5 : Math.max(0, 1 - Math.max(0, grades.indexOf(wanted.grade) - grades.indexOf(declared)) * 0.5);
+      const gap = wanted.grade && declared ? grades.indexOf(declared) - grades.indexOf(wanted.grade) : null;
+      const grade = gap === null ? 0.5 : gap >= 0 ? 1 - 0.15 * gap : gap === -1 ? 0.35 : 0;
       const factors: ExplanationFactor[] = [
-        { kind: 'skills_coverage', label: 'Покрытие требований резюме', contribution: round(60 * coverage), polarity: coverage >= 0.7 ? 'positive' : 'neutral', evidence: `${[...weightedSkills.keys()].filter(id => c.skills.has(id)).length} из ${weightedSkills.size} навыков; обязательные имеют вес 2` },
-        { kind: 'semantic', label: 'Лексическая релевантность', contribution: round(25 * lexical), polarity: lexical > 0 ? 'positive' : 'neutral', evidence: 'Нормированный BM25, без эмбеддингов' },
+        { kind: 'skills_coverage', label: 'Покрытие требований резюме', contribution: round((87.5 - LEXICAL_WEIGHT - GRADE_WEIGHT) * coverage), polarity: coverage >= 0.7 ? 'positive' : 'neutral', evidence: `${[...weightedSkills.keys()].filter(id => c.skills.has(id)).length} из ${weightedSkills.size} навыков; обязательные имеют вес 2` },
+        { kind: 'semantic', label: 'Лексическая релевантность', contribution: round(LEXICAL_WEIGHT * lexical), polarity: lexical > 0 ? 'positive' : 'neutral', evidence: 'Нормированный BM25, без эмбеддингов' },
         { kind: 'conditions', label: 'Формат и зарплата', contribution: round(5 * (salary + format)), polarity: salary === 0 || format === 0 ? 'negative' : 'neutral', evidence: 'Неизвестные условия нейтральны; используются только явно извлечённые данные' },
         { kind: 'industry', label: 'Отрасль', contribution: round(2.5 * industry), polarity: industry === 1 ? 'positive' : 'neutral', evidence: 'Из текста, без подтверждения' },
-        { kind: 'conditions', label: 'Заявленный грейд', contribution: round(2.5 * grade), polarity: grade === 0 ? 'negative' : 'neutral', evidence: 'Не является подтверждённой категорией платформы' },
+        { kind: 'conditions', label: 'Заявленный грейд', contribution: round(GRADE_WEIGHT * grade), polarity: grade === 0 ? 'negative' : grade === 1 ? 'positive' : 'neutral', evidence: 'Заявлен в резюме, не является подтверждённой категорией платформы; на грейд ниже — сильный штраф, переквалификация — слабый' },
       ];
       return { candidate_id: c.id, score: round(factors.reduce((sum, f) => sum + f.contribution, 0)), factors };
     }).sort((a, b) => b.score - a.score || a.candidate_id.localeCompare(b.candidate_id)).slice(0, input.top_k ?? 10);
