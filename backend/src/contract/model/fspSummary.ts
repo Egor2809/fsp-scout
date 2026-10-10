@@ -13,7 +13,7 @@ export interface FspSummary {
   index: number;
   /**
      * @minimum 0
-     * @maximum 15
+     * @maximum 30
      */
   bonus: number;
   /** @minimum 0 */

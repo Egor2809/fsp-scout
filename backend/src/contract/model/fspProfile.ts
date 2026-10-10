@@ -21,7 +21,7 @@ export interface FspProfile {
   /**
      * Бонус к силе профиля
      * @minimum 0
-     * @maximum 15
+     * @maximum 30
      */
   bonus: number;
   components: FspIndexComponent[];

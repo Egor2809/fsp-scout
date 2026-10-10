@@ -3394,7 +3394,7 @@ components:
         bonus:
           type: number
           minimum: 0
-          maximum: 15
+          maximum: 30
           description: Бонус к силе профиля
         components:
           type: array
@@ -3409,7 +3409,7 @@ components:
       properties:
         has_history: { type: boolean }
         index: { type: integer, minimum: 0, maximum: 100 }
-        bonus: { type: number, minimum: 0, maximum: 15 }
+        bonus: { type: number, minimum: 0, maximum: 30 }
         achievements_count: { type: integer, minimum: 0 }
         top_achievement:
           oneOf:

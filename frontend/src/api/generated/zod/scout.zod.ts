@@ -468,7 +468,7 @@ export const getMyCardPreviewResponseFspOneIndexMin = 0;
 export const getMyCardPreviewResponseFspOneIndexMax = 100;
 
 export const getMyCardPreviewResponseFspOneBonusMin = 0;
-export const getMyCardPreviewResponseFspOneBonusMax = 15;
+export const getMyCardPreviewResponseFspOneBonusMax = 30;
 
 export const getMyCardPreviewResponseFspOneAchievementsCountMin = 0;
 
@@ -1285,7 +1285,7 @@ export const getMyFspResponseIndexMin = 0;
 export const getMyFspResponseIndexMax = 100;
 
 export const getMyFspResponseBonusMin = 0;
-export const getMyFspResponseBonusMax = 15;
+export const getMyFspResponseBonusMax = 30;
 
 export const getMyFspResponseComponentsItemRelevanceMin = 0;
 export const getMyFspResponseComponentsItemRelevanceMax = 1;
@@ -1352,7 +1352,7 @@ export const linkMyFspResponseIndexMin = 0;
 export const linkMyFspResponseIndexMax = 100;
 
 export const linkMyFspResponseBonusMin = 0;
-export const linkMyFspResponseBonusMax = 15;
+export const linkMyFspResponseBonusMax = 30;
 
 export const linkMyFspResponseComponentsItemRelevanceMin = 0;
 export const linkMyFspResponseComponentsItemRelevanceMax = 1;
@@ -1410,7 +1410,7 @@ export const unlinkMyFspResponseIndexMin = 0;
 export const unlinkMyFspResponseIndexMax = 100;
 
 export const unlinkMyFspResponseBonusMin = 0;
-export const unlinkMyFspResponseBonusMax = 15;
+export const unlinkMyFspResponseBonusMax = 30;
 
 export const unlinkMyFspResponseComponentsItemRelevanceMin = 0;
 export const unlinkMyFspResponseComponentsItemRelevanceMax = 1;
@@ -2408,7 +2408,7 @@ export const getSearchResultsResponseTwoItemsItemCandidateFspOneIndexMin = 0;
 export const getSearchResultsResponseTwoItemsItemCandidateFspOneIndexMax = 100;
 
 export const getSearchResultsResponseTwoItemsItemCandidateFspOneBonusMin = 0;
-export const getSearchResultsResponseTwoItemsItemCandidateFspOneBonusMax = 15;
+export const getSearchResultsResponseTwoItemsItemCandidateFspOneBonusMax = 30;
 
 export const getSearchResultsResponseTwoItemsItemCandidateFspOneAchievementsCountMin = 0;
 
@@ -2765,7 +2765,7 @@ export const listCandidatesResponseTwoItemsItemFspOneIndexMin = 0;
 export const listCandidatesResponseTwoItemsItemFspOneIndexMax = 100;
 
 export const listCandidatesResponseTwoItemsItemFspOneBonusMin = 0;
-export const listCandidatesResponseTwoItemsItemFspOneBonusMax = 15;
+export const listCandidatesResponseTwoItemsItemFspOneBonusMax = 30;
 
 export const listCandidatesResponseTwoItemsItemFspOneAchievementsCountMin = 0;
 
@@ -2917,7 +2917,7 @@ export const getCandidateResponseOneFspOneIndexMin = 0;
 export const getCandidateResponseOneFspOneIndexMax = 100;
 
 export const getCandidateResponseOneFspOneBonusMin = 0;
-export const getCandidateResponseOneFspOneBonusMax = 15;
+export const getCandidateResponseOneFspOneBonusMax = 30;
 
 export const getCandidateResponseOneFspOneAchievementsCountMin = 0;
 
@@ -4644,7 +4644,7 @@ export const listVacancyApplicationsResponseTwoCandidateFspOneIndexMin = 0;
 export const listVacancyApplicationsResponseTwoCandidateFspOneIndexMax = 100;
 
 export const listVacancyApplicationsResponseTwoCandidateFspOneBonusMin = 0;
-export const listVacancyApplicationsResponseTwoCandidateFspOneBonusMax = 15;
+export const listVacancyApplicationsResponseTwoCandidateFspOneBonusMax = 30;
 
 export const listVacancyApplicationsResponseTwoCandidateFspOneAchievementsCountMin = 0;
 
@@ -4964,7 +4964,7 @@ export const updateApplicationStatusResponseTwoCandidateFspOneIndexMin = 0;
 export const updateApplicationStatusResponseTwoCandidateFspOneIndexMax = 100;
 
 export const updateApplicationStatusResponseTwoCandidateFspOneBonusMin = 0;
-export const updateApplicationStatusResponseTwoCandidateFspOneBonusMax = 15;
+export const updateApplicationStatusResponseTwoCandidateFspOneBonusMax = 30;
 
 export const updateApplicationStatusResponseTwoCandidateFspOneAchievementsCountMin = 0;
 
@@ -5521,7 +5521,7 @@ export const listTaskSubmissionsResponseTwoCandidateFspOneIndexMin = 0;
 export const listTaskSubmissionsResponseTwoCandidateFspOneIndexMax = 100;
 
 export const listTaskSubmissionsResponseTwoCandidateFspOneBonusMin = 0;
-export const listTaskSubmissionsResponseTwoCandidateFspOneBonusMax = 15;
+export const listTaskSubmissionsResponseTwoCandidateFspOneBonusMax = 30;
 
 export const listTaskSubmissionsResponseTwoCandidateFspOneAchievementsCountMin = 0;
 
@@ -5696,7 +5696,7 @@ export const scoreTaskSubmissionResponseTwoCandidateFspOneIndexMin = 0;
 export const scoreTaskSubmissionResponseTwoCandidateFspOneIndexMax = 100;
 
 export const scoreTaskSubmissionResponseTwoCandidateFspOneBonusMin = 0;
-export const scoreTaskSubmissionResponseTwoCandidateFspOneBonusMax = 15;
+export const scoreTaskSubmissionResponseTwoCandidateFspOneBonusMax = 30;
 
 export const scoreTaskSubmissionResponseTwoCandidateFspOneAchievementsCountMin = 0;
 
