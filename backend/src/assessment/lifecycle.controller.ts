@@ -33,7 +33,7 @@ export class AssessmentLifecycleController {
   @Post()
   async start(@Req() req: { identity: Identity }, @Body() body: unknown) {
     const d = parse(StartTestBody, body), c = await this.candidate(req.identity);
-    const mode = assessmentMode(process.env.ASSESSMENT_EXPRESS);
+    const mode = assessmentMode(process.env.ASSESSMENT_EXPRESS === 'true' && d.express === true ? 'true' : undefined);
     // Expiry is committed independently of later validation failures.
     await this.db.testSession.updateMany({ where: { candidateId: c.id, status: 'in_progress', deadlineAt: { lte: new Date() } }, data: { status: 'expired', finishedAt: new Date() } });
     return this.db.$transaction(async tx => {

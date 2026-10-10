@@ -2839,6 +2839,10 @@ components:
           type: [string, 'null']
           format: uuid
           description: Построить бланк теста под вакансию
+        express:
+          type: boolean
+          default: false
+          description: Экспресс-тест для жюри на 5–6 вопросов без практики. Доступен, только если на стенде включён ASSESSMENT_EXPRESS; категорию не подтверждает
 
     TestProgress:
       type: object

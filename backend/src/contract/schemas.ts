@@ -782,10 +782,13 @@ export const GetMyTestEligibilityResponse = zod.object({
 /**
  * @summary Начать тест на заявленный грейд
  */
+export const startTestBodyExpressDefault = false;
+
 export const StartTestBody = zod.object({
   "declared_grade": zod.enum(['junior', 'middle', 'senior', 'lead']).describe('Junior (до 1 года), Middle (1–3), Senior (3–6), Lead (6+)'),
   "specialization": zod.enum(['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst']).optional().describe('По умолчанию из последнего опроса'),
-  "vacancy_id": zod.uuid().nullish().describe('Построить бланк теста под вакансию')
+  "vacancy_id": zod.uuid().nullish().describe('Построить бланк теста под вакансию'),
+  "express": zod.boolean().default(startTestBodyExpressDefault).describe('Экспресс-тест для жюри на 5–6 вопросов без практики. Доступен, только если на стенде включён ASSESSMENT_EXPRESS; категорию не подтверждает')
 })
 
 export const startTestResponseProgressAnsweredMin = 0;

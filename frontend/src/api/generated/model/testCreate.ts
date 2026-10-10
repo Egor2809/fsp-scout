@@ -13,4 +13,6 @@ export interface TestCreate {
      * @nullable
      */
   vacancy_id?: string | null;
+  /** Экспресс-тест для жюри на 5–6 вопросов без практики. Доступен, только если на стенде включён ASSESSMENT_EXPRESS; категорию не подтверждает */
+  express?: boolean;
 }

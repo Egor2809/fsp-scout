@@ -19,6 +19,8 @@ import { GRADES, INDUSTRIES, SPECIALIZATIONS, WORK_FORMATS, gradeExperience, gra
 import { eligibilityReasonText } from '@/lib/retake'
 import { cn } from '@/lib/utils'
 
+const EXPRESS_ENABLED = import.meta.env.VITE_API_MOCK === 'false' && import.meta.env.VITE_ASSESSMENT_EXPRESS === 'true'
+
 /** Три отдельных согласия: каждое со своим текстом, обязательные отмечены. */
 export function ConsentsForm({ onDone, submitLabel = 'Продолжить' }: { onDone?: () => void; submitLabel?: string }) {
   const query = useGetMyConsents()
@@ -217,15 +219,28 @@ export function GradePicker() {
           </div>
           {el.next_grade_change_at && <p className="text-sm text-muted-foreground">Подтверждённый грейд можно сменить не раньше {formatDate(el.next_grade_change_at)}.</p>}
           <InlineError>{start.isError ? errorMessage(start.error) : null}</InlineError>
-          <Button
-            className="justify-self-start"
-            disabled={!selected || start.isPending}
-            onClick={() => selected && start.mutate({ data: { declared_grade: selected } }, { onSuccess: (t) => navigate(`/c/test/${t.id}`) })}
-          >
-            <IconPlayerPlay data-icon="inline-start" />
-            Начать тест{selected ? ` на ${gradeLabel[selected]}` : ''}
-          </Button>
-          <p className="text-xs text-muted-foreground">Около 25 минут</p>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              disabled={!selected || start.isPending}
+              onClick={() => selected && start.mutate({ data: { declared_grade: selected } }, { onSuccess: (t) => navigate(`/c/test/${t.id}`) })}
+            >
+              <IconPlayerPlay data-icon="inline-start" />
+              Начать тест{selected ? ` на ${gradeLabel[selected]}` : ''}
+            </Button>
+            {EXPRESS_ENABLED && (
+              <Button
+                variant="outline"
+                disabled={!selected || start.isPending}
+                onClick={() => selected && start.mutate({ data: { declared_grade: selected, express: true } }, { onSuccess: (t) => navigate(`/c/test/${t.id}`) })}
+              >
+                Экспресс-тест для жюри
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Полный тест — около 25 минут, с практикой и подтверждением категории.
+            {EXPRESS_ENABLED && ' Экспресс — 5–6 вопросов за 5 минут, без практики, категорию не подтверждает.'}
+          </p>
         </div>
       )}
     </QueryView>
