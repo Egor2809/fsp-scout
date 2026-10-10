@@ -8,16 +8,17 @@ export const API_BASE = '/api/v1'
  * Добавляет Bearer-токен текущего провайдера авторизации, разбирает JSON
  * и превращает ответы 4xx/5xx в ApiError с телом RFC 9457.
  */
-export async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
+export async function apiFetch<T>(url: string, options: RequestInit & { anonymous?: boolean } = {}): Promise<T> {
+  const { anonymous, ...requestOptions } = options
   const headers = new Headers(options.headers)
-  const token = await getAccessToken()
+  const token = anonymous ? null : await getAccessToken()
   if (token) headers.set('Authorization', `Bearer ${token}`)
   if (!headers.has('Accept')) headers.set('Accept', 'application/json, application/problem+json')
 
   const target = url.startsWith('http') || url.startsWith(API_BASE) ? url : `${API_BASE}${url}`
   let response: Response
   try {
-    response = await fetch(target, { ...options, headers })
+    response = await fetch(target, { ...requestOptions, headers })
   } catch (cause) {
     throw ApiError.network(cause)
   }

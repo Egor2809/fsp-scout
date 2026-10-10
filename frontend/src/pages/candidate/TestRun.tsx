@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { IconClock, IconPlayerPlay, IconPlayerSkipForward } from '@tabler/icons-react'
 import { useFinishTest, useGetNextTestItem, useRunTestCode, useSubmitTestAnswer } from '@/api/generated/endpoints/assessment/assessment'
 import type { Answer, CodeRunResult, TestItem, TestProgress } from '@/api/generated/model'
-import { errorMessage } from '@/api/problem'
+import { ApiError, errorMessage } from '@/api/problem'
 import { invalidatePaths } from '@/api/queryClient'
 import { CodeEditor } from '@/components/CodeEditor'
 import { FadeIn } from '@/components/motion'
@@ -30,11 +30,14 @@ function useCountdown(deadline: string | undefined): number | null {
 
 /** Прогресс как беговая дорожка: по сегменту на задание, таймер — табло в углу. */
 function ProgressBar({ progress, left }: { progress: TestProgress; left: number | null }) {
-  const total = progress.adaptive_max + progress.practice_total
-  const done = progress.adaptive_answered + progress.practice_answered
+  const approachAnswered = Math.max(0, progress.answered - progress.adaptive_answered - progress.practice_answered)
+  const showApproach = progress.block === 'approach' || approachAnswered > 0
+  const total = progress.adaptive_max + progress.practice_total + Number(showApproach)
+  const done = progress.adaptive_answered + progress.practice_answered + approachAnswered
   const lanes = [
     ...Array.from({ length: progress.adaptive_max }, (_, i) => ({ done: i < progress.adaptive_answered, optional: i >= progress.adaptive_min, current: progress.block === 'adaptive' && i === progress.adaptive_answered })),
     ...Array.from({ length: progress.practice_total }, (_, i) => ({ done: i < progress.practice_answered, optional: false, current: progress.block === 'practice' && i === progress.practice_answered })),
+    ...(showApproach ? [{ done: approachAnswered > 0, optional: false, current: progress.block === 'approach' && approachAnswered === 0 }] : []),
   ]
   return (
     <div className="sticky top-14 z-10 -mx-4 mb-10 grid gap-3 border-b bg-background/95 px-4 py-4 backdrop-blur sm:-mx-8 sm:px-8">
@@ -226,7 +229,20 @@ export default function TestRun() {
   const { testId = '' } = useParams()
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const next = useGetNextTestItem(testId, { query: { staleTime: 0, refetchOnWindowFocus: false } })
+  const pendingSince = useRef<number | null>(null)
+  const next = useGetNextTestItem(testId, { query: {
+    staleTime: 0, refetchOnWindowFocus: false,
+    refetchInterval: (query) => {
+      const error = query.state.error
+      if (error instanceof ApiError && error.code === 'conflict' && error.problem.assessment_state === 'grading_pending') {
+        pendingSince.current ??= Date.now()
+        return Date.now() - pendingSince.current < 120000 ? 2000 : false
+      }
+      pendingSince.current = null
+      return false
+    },
+  } })
+  const gradingPending = next.error instanceof ApiError && next.error.code === 'conflict' && next.error.problem.assessment_state === 'grading_pending'
   const finish = useFinishTest()
   const left = useCountdown(next.data?.deadline_at)
   const doFinish = () =>
@@ -240,16 +256,33 @@ export default function TestRun() {
       },
     )
   const expired = left === 0
-  const autoFinished = useRef(false)
+  const inactive = next.error instanceof ApiError && next.error.code === 'test_not_active'
+    || finish.error instanceof ApiError && finish.error.code === 'test_not_active'
+  const expiredRefresh = useRef<string | null>(null)
   useEffect(() => {
-    if (expired && !autoFinished.current) {
-      autoFinished.current = true
-      doFinish()
+    if (expired && expiredRefresh.current !== testId) {
+      expiredRefresh.current = testId
+      void next.refetch()
+      void invalidatePaths(qc, '/me', '/tests')
     }
-  })
+  }, [expired, testId, next.refetch, qc])
 
   return (
     <div className="mx-auto max-w-3xl">
+      {expired || inactive ? (
+        <div className="grid justify-items-start gap-6 py-6">
+          <h1 className="display text-[1.75rem]">{expired ? 'Время теста вышло' : 'Тест больше не активен'}</h1>
+          <p role="status">Продолжить эту попытку нельзя. Доступность следующего теста можно посмотреть в личном кабинете, а состояние этой попытки — в истории.</p>
+          <Button onClick={() => navigate('/c', { replace: true })}>В личный кабинет</Button>
+          <Button variant="outline" onClick={() => navigate('/c/history', { replace: true })}>История тестов</Button>
+        </div>
+      ) : gradingPending ? (
+        <div className="grid gap-6 py-6">
+          {next.data && <ProgressBar progress={next.data.progress} left={left} />}
+          <p role="status" aria-live="polite">Ответ принят. Проверяем решение — это может занять некоторое время.</p>
+          <Button onClick={() => { pendingSince.current = Date.now(); void next.refetch() }} disabled={next.isFetching}>Проверить готовность</Button>
+        </div>
+      ) : (
       <QueryView query={next} errorTitle="Не удалось загрузить задание">
         {(step) => (
           <>
@@ -268,6 +301,7 @@ export default function TestRun() {
           </>
         )}
       </QueryView>
+      )}
     </div>
   )
 }

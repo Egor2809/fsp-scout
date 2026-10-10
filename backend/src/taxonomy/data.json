@@ -1,0 +1,1178 @@
+{
+  "specializations": [
+    {
+      "id": "backend",
+      "name": "Backend",
+      "competencies": [
+        {
+          "id": "backend.languages",
+          "name": "Языки и рантайм"
+        },
+        {
+          "id": "backend.databases",
+          "name": "Базы данных и SQL"
+        },
+        {
+          "id": "backend.architecture",
+          "name": "Архитектура и system design"
+        },
+        {
+          "id": "backend.messaging",
+          "name": "Очереди и интеграции"
+        },
+        {
+          "id": "backend.reliability",
+          "name": "Надёжность и отладка"
+        }
+      ]
+    },
+    {
+      "id": "frontend",
+      "name": "Frontend",
+      "competencies": [
+        {
+          "id": "frontend.core",
+          "name": "JavaScript и TypeScript"
+        },
+        {
+          "id": "frontend.frameworks",
+          "name": "Фреймворки и состояние"
+        },
+        {
+          "id": "frontend.layout",
+          "name": "Вёрстка и доступность"
+        },
+        {
+          "id": "frontend.performance",
+          "name": "Производительность"
+        },
+        {
+          "id": "frontend.testing",
+          "name": "Тестирование"
+        }
+      ]
+    },
+    {
+      "id": "mobile",
+      "name": "Mobile",
+      "competencies": [
+        {
+          "id": "mobile.ios",
+          "name": "iOS"
+        },
+        {
+          "id": "mobile.android",
+          "name": "Android"
+        },
+        {
+          "id": "mobile.cross",
+          "name": "Кроссплатформа"
+        }
+      ]
+    },
+    {
+      "id": "qa",
+      "name": "QA",
+      "competencies": [
+        {
+          "id": "qa.design",
+          "name": "Тест-дизайн"
+        },
+        {
+          "id": "qa.automation",
+          "name": "Автоматизация"
+        },
+        {
+          "id": "qa.performance",
+          "name": "Нагрузка и производительность"
+        }
+      ]
+    },
+    {
+      "id": "devops",
+      "name": "DevOps/SRE",
+      "competencies": [
+        {
+          "id": "devops.ci",
+          "name": "CI/CD"
+        },
+        {
+          "id": "devops.orchestration",
+          "name": "Контейнеры и оркестрация"
+        },
+        {
+          "id": "devops.observability",
+          "name": "Наблюдаемость"
+        },
+        {
+          "id": "devops.iac",
+          "name": "Инфраструктура как код"
+        }
+      ]
+    },
+    {
+      "id": "data_ml",
+      "name": "Data/ML",
+      "competencies": [
+        {
+          "id": "data.ml",
+          "name": "Машинное обучение"
+        },
+        {
+          "id": "data.engineering",
+          "name": "Инженерия данных"
+        },
+        {
+          "id": "data.analytics",
+          "name": "Анализ данных"
+        }
+      ]
+    },
+    {
+      "id": "analyst",
+      "name": "Аналитик",
+      "competencies": [
+        {
+          "id": "analyst.requirements",
+          "name": "Требования"
+        },
+        {
+          "id": "analyst.modeling",
+          "name": "Моделирование процессов"
+        },
+        {
+          "id": "analyst.data",
+          "name": "Данные и интеграции"
+        }
+      ]
+    }
+  ],
+  "grades": [
+    {
+      "id": "junior",
+      "name": "Junior",
+      "experience": "до 1 года"
+    },
+    {
+      "id": "middle",
+      "name": "Middle",
+      "experience": "1–3 года"
+    },
+    {
+      "id": "senior",
+      "name": "Senior",
+      "experience": "3–6 лет"
+    },
+    {
+      "id": "lead",
+      "name": "Lead",
+      "experience": "6+ лет"
+    }
+  ],
+  "industries": [
+    {
+      "id": "fintech",
+      "name": "Финтех"
+    },
+    {
+      "id": "ecom",
+      "name": "E-com"
+    },
+    {
+      "id": "gov",
+      "name": "Госсектор"
+    },
+    {
+      "id": "telecom",
+      "name": "Телеком"
+    },
+    {
+      "id": "gamedev",
+      "name": "Геймдев"
+    },
+    {
+      "id": "edtech",
+      "name": "Edtech"
+    },
+    {
+      "id": "medtech",
+      "name": "Медтех"
+    },
+    {
+      "id": "manufacturing",
+      "name": "Промышленность"
+    },
+    {
+      "id": "other",
+      "name": "Другое"
+    }
+  ],
+  "skills": [
+    {
+      "id": "python",
+      "name": "Python",
+      "specializations": [
+        "backend",
+        "data_ml",
+        "qa"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "питон",
+        "пайтон",
+        "py"
+      ]
+    },
+    {
+      "id": "go",
+      "name": "Go",
+      "specializations": [
+        "backend",
+        "devops"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "golang",
+        "го",
+        "голанг"
+      ]
+    },
+    {
+      "id": "java",
+      "name": "Java",
+      "specializations": [
+        "backend",
+        "mobile"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "джава"
+      ]
+    },
+    {
+      "id": "kotlin",
+      "name": "Kotlin",
+      "specializations": [
+        "backend",
+        "mobile"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "котлин"
+      ]
+    },
+    {
+      "id": "csharp",
+      "name": "C#",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "c#",
+        "шарп",
+        ".net",
+        "дотнет",
+        "dotnet"
+      ]
+    },
+    {
+      "id": "php",
+      "name": "PHP",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "пхп"
+      ]
+    },
+    {
+      "id": "nodejs",
+      "name": "Node.js",
+      "specializations": [
+        "backend",
+        "frontend"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "node",
+        "нода",
+        "node.js",
+        "nodejs"
+      ]
+    },
+    {
+      "id": "postgresql",
+      "name": "PostgreSQL",
+      "specializations": [
+        "backend",
+        "data_ml",
+        "analyst"
+      ],
+      "competency_id": "backend.databases",
+      "aliases": [
+        "postgres",
+        "постгрес",
+        "постгре",
+        "pg",
+        "postgre"
+      ]
+    },
+    {
+      "id": "mysql",
+      "name": "MySQL",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.databases",
+      "aliases": [
+        "мускул"
+      ]
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.databases",
+      "aliases": [
+        "mongo",
+        "монго"
+      ]
+    },
+    {
+      "id": "redis",
+      "name": "Redis",
+      "specializations": [
+        "backend",
+        "devops"
+      ],
+      "competency_id": "backend.databases",
+      "aliases": [
+        "редис"
+      ]
+    },
+    {
+      "id": "clickhouse",
+      "name": "ClickHouse",
+      "specializations": [
+        "backend",
+        "data_ml",
+        "analyst"
+      ],
+      "competency_id": "backend.databases",
+      "aliases": [
+        "кликхаус",
+        "ch"
+      ]
+    },
+    {
+      "id": "sql",
+      "name": "SQL",
+      "specializations": [
+        "backend",
+        "data_ml",
+        "analyst",
+        "qa"
+      ],
+      "competency_id": "backend.databases",
+      "aliases": [
+        "эскуэль",
+        "sql-запросы"
+      ]
+    },
+    {
+      "id": "kafka",
+      "name": "Kafka",
+      "specializations": [
+        "backend",
+        "data_ml"
+      ],
+      "competency_id": "backend.messaging",
+      "aliases": [
+        "кафка",
+        "apache kafka"
+      ]
+    },
+    {
+      "id": "rabbitmq",
+      "name": "RabbitMQ",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.messaging",
+      "aliases": [
+        "rabbit",
+        "кролик",
+        "рэббит"
+      ]
+    },
+    {
+      "id": "grpc",
+      "name": "gRPC",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.messaging",
+      "aliases": [
+        "грпц"
+      ]
+    },
+    {
+      "id": "rest",
+      "name": "REST API",
+      "specializations": [
+        "backend",
+        "frontend",
+        "analyst",
+        "qa"
+      ],
+      "competency_id": "backend.messaging",
+      "aliases": [
+        "rest",
+        "restapi",
+        "рест"
+      ]
+    },
+    {
+      "id": "microservices",
+      "name": "Микросервисы",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.architecture",
+      "aliases": [
+        "микросервисы",
+        "микросервисная архитектура",
+        "microservices"
+      ]
+    },
+    {
+      "id": "system_design",
+      "name": "System design",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.architecture",
+      "aliases": [
+        "системный дизайн",
+        "проектирование систем",
+        "архитектура"
+      ]
+    },
+    {
+      "id": "django",
+      "name": "Django",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "джанго"
+      ]
+    },
+    {
+      "id": "fastapi",
+      "name": "FastAPI",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "фастапи"
+      ]
+    },
+    {
+      "id": "spring",
+      "name": "Spring Boot",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.languages",
+      "aliases": [
+        "spring",
+        "спринг"
+      ]
+    },
+    {
+      "id": "observability_be",
+      "name": "Логи и трассировка",
+      "specializations": [
+        "backend"
+      ],
+      "competency_id": "backend.reliability",
+      "aliases": [
+        "трассировка",
+        "opentelemetry",
+        "otel"
+      ]
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "specializations": [
+        "backend",
+        "devops",
+        "qa"
+      ],
+      "competency_id": "devops.orchestration",
+      "aliases": [
+        "докер"
+      ]
+    },
+    {
+      "id": "kubernetes",
+      "name": "Kubernetes",
+      "specializations": [
+        "backend",
+        "devops"
+      ],
+      "competency_id": "devops.orchestration",
+      "aliases": [
+        "k8s",
+        "кубер",
+        "кубернетес",
+        "кубернетис"
+      ]
+    },
+    {
+      "id": "linux",
+      "name": "Linux",
+      "specializations": [
+        "backend",
+        "devops"
+      ],
+      "competency_id": "devops.orchestration",
+      "aliases": [
+        "линукс"
+      ]
+    },
+    {
+      "id": "git",
+      "name": "Git",
+      "specializations": [
+        "backend",
+        "frontend",
+        "mobile",
+        "devops",
+        "qa"
+      ],
+      "competency_id": "devops.ci",
+      "aliases": [
+        "гит"
+      ]
+    },
+    {
+      "id": "javascript",
+      "name": "JavaScript",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.core",
+      "aliases": [
+        "js",
+        "джаваскрипт",
+        "es6"
+      ]
+    },
+    {
+      "id": "typescript",
+      "name": "TypeScript",
+      "specializations": [
+        "frontend",
+        "backend"
+      ],
+      "competency_id": "frontend.core",
+      "aliases": [
+        "ts",
+        "тайпскрипт"
+      ]
+    },
+    {
+      "id": "react",
+      "name": "React",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.frameworks",
+      "aliases": [
+        "реакт",
+        "react.js",
+        "reactjs"
+      ]
+    },
+    {
+      "id": "vue",
+      "name": "Vue",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.frameworks",
+      "aliases": [
+        "vue.js",
+        "вью",
+        "vuejs"
+      ]
+    },
+    {
+      "id": "angular",
+      "name": "Angular",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.frameworks",
+      "aliases": [
+        "ангуляр"
+      ]
+    },
+    {
+      "id": "nextjs",
+      "name": "Next.js",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.frameworks",
+      "aliases": [
+        "next",
+        "некст"
+      ]
+    },
+    {
+      "id": "redux",
+      "name": "Redux",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.frameworks",
+      "aliases": [
+        "редакс"
+      ]
+    },
+    {
+      "id": "html_css",
+      "name": "HTML/CSS",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.layout",
+      "aliases": [
+        "html",
+        "css",
+        "вёрстка",
+        "верстка"
+      ]
+    },
+    {
+      "id": "a11y",
+      "name": "Доступность (a11y)",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.layout",
+      "aliases": [
+        "доступность",
+        "a11y",
+        "wcag"
+      ]
+    },
+    {
+      "id": "web_performance",
+      "name": "Web performance",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.performance",
+      "aliases": [
+        "производительность фронтенда",
+        "core web vitals",
+        "web vitals"
+      ]
+    },
+    {
+      "id": "webpack",
+      "name": "Webpack",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.performance",
+      "aliases": [
+        "вебпак"
+      ]
+    },
+    {
+      "id": "vite",
+      "name": "Vite",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.performance",
+      "aliases": [
+        "вит"
+      ]
+    },
+    {
+      "id": "jest",
+      "name": "Jest",
+      "specializations": [
+        "frontend"
+      ],
+      "competency_id": "frontend.testing",
+      "aliases": [
+        "джест"
+      ]
+    },
+    {
+      "id": "playwright",
+      "name": "Playwright",
+      "specializations": [
+        "frontend",
+        "qa"
+      ],
+      "competency_id": "frontend.testing",
+      "aliases": [
+        "плейрайт"
+      ]
+    },
+    {
+      "id": "cypress",
+      "name": "Cypress",
+      "specializations": [
+        "frontend",
+        "qa"
+      ],
+      "competency_id": "frontend.testing",
+      "aliases": [
+        "сайпресс"
+      ]
+    },
+    {
+      "id": "swift",
+      "name": "Swift",
+      "specializations": [
+        "mobile"
+      ],
+      "competency_id": "mobile.ios",
+      "aliases": [
+        "свифт"
+      ]
+    },
+    {
+      "id": "swiftui",
+      "name": "SwiftUI",
+      "specializations": [
+        "mobile"
+      ],
+      "competency_id": "mobile.ios",
+      "aliases": [
+        "свифтюай"
+      ]
+    },
+    {
+      "id": "android_sdk",
+      "name": "Android SDK",
+      "specializations": [
+        "mobile"
+      ],
+      "competency_id": "mobile.android",
+      "aliases": [
+        "android",
+        "андроид"
+      ]
+    },
+    {
+      "id": "jetpack_compose",
+      "name": "Jetpack Compose",
+      "specializations": [
+        "mobile"
+      ],
+      "competency_id": "mobile.android",
+      "aliases": [
+        "compose",
+        "компоуз"
+      ]
+    },
+    {
+      "id": "flutter",
+      "name": "Flutter",
+      "specializations": [
+        "mobile"
+      ],
+      "competency_id": "mobile.cross",
+      "aliases": [
+        "флаттер",
+        "dart",
+        "дарт"
+      ]
+    },
+    {
+      "id": "react_native",
+      "name": "React Native",
+      "specializations": [
+        "mobile",
+        "frontend"
+      ],
+      "competency_id": "mobile.cross",
+      "aliases": [
+        "react native",
+        "rn",
+        "реакт нейтив"
+      ]
+    },
+    {
+      "id": "test_design",
+      "name": "Тест-дизайн",
+      "specializations": [
+        "qa"
+      ],
+      "competency_id": "qa.design",
+      "aliases": [
+        "тест-дизайн",
+        "тест-кейсы",
+        "тест кейсы",
+        "чек-листы"
+      ]
+    },
+    {
+      "id": "api_testing",
+      "name": "Тестирование API",
+      "specializations": [
+        "qa"
+      ],
+      "competency_id": "qa.automation",
+      "aliases": [
+        "postman",
+        "постман",
+        "тестирование api"
+      ]
+    },
+    {
+      "id": "selenium",
+      "name": "Selenium",
+      "specializations": [
+        "qa"
+      ],
+      "competency_id": "qa.automation",
+      "aliases": [
+        "селениум"
+      ]
+    },
+    {
+      "id": "pytest",
+      "name": "pytest",
+      "specializations": [
+        "qa",
+        "backend"
+      ],
+      "competency_id": "qa.automation",
+      "aliases": [
+        "пайтест"
+      ]
+    },
+    {
+      "id": "load_testing",
+      "name": "Нагрузочное тестирование",
+      "specializations": [
+        "qa",
+        "devops"
+      ],
+      "competency_id": "qa.performance",
+      "aliases": [
+        "jmeter",
+        "locust",
+        "k6",
+        "нагрузочное",
+        "нагрузка"
+      ]
+    },
+    {
+      "id": "ci_cd",
+      "name": "CI/CD",
+      "specializations": [
+        "devops",
+        "backend",
+        "qa"
+      ],
+      "competency_id": "devops.ci",
+      "aliases": [
+        "ci",
+        "cd",
+        "gitlab ci",
+        "github actions",
+        "ci/cd"
+      ]
+    },
+    {
+      "id": "terraform",
+      "name": "Terraform",
+      "specializations": [
+        "devops"
+      ],
+      "competency_id": "devops.iac",
+      "aliases": [
+        "терраформ"
+      ]
+    },
+    {
+      "id": "ansible",
+      "name": "Ansible",
+      "specializations": [
+        "devops"
+      ],
+      "competency_id": "devops.iac",
+      "aliases": [
+        "ансибл"
+      ]
+    },
+    {
+      "id": "helm",
+      "name": "Helm",
+      "specializations": [
+        "devops"
+      ],
+      "competency_id": "devops.orchestration",
+      "aliases": [
+        "хелм"
+      ]
+    },
+    {
+      "id": "prometheus",
+      "name": "Prometheus",
+      "specializations": [
+        "devops",
+        "backend"
+      ],
+      "competency_id": "devops.observability",
+      "aliases": [
+        "прометеус",
+        "прометей"
+      ]
+    },
+    {
+      "id": "grafana",
+      "name": "Grafana",
+      "specializations": [
+        "devops"
+      ],
+      "competency_id": "devops.observability",
+      "aliases": [
+        "графана"
+      ]
+    },
+    {
+      "id": "nginx",
+      "name": "Nginx",
+      "specializations": [
+        "devops",
+        "backend"
+      ],
+      "competency_id": "devops.orchestration",
+      "aliases": [
+        "энджинкс",
+        "нджинкс"
+      ]
+    },
+    {
+      "id": "yandex_cloud",
+      "name": "Yandex Cloud",
+      "specializations": [
+        "devops"
+      ],
+      "competency_id": "devops.iac",
+      "aliases": [
+        "яндекс облако",
+        "yc",
+        "yandex cloud"
+      ]
+    },
+    {
+      "id": "pandas",
+      "name": "pandas",
+      "specializations": [
+        "data_ml",
+        "analyst"
+      ],
+      "competency_id": "data.analytics",
+      "aliases": [
+        "пандас"
+      ]
+    },
+    {
+      "id": "numpy",
+      "name": "NumPy",
+      "specializations": [
+        "data_ml"
+      ],
+      "competency_id": "data.analytics",
+      "aliases": [
+        "нампай"
+      ]
+    },
+    {
+      "id": "sklearn",
+      "name": "scikit-learn",
+      "specializations": [
+        "data_ml"
+      ],
+      "competency_id": "data.ml",
+      "aliases": [
+        "sklearn",
+        "склерн"
+      ]
+    },
+    {
+      "id": "pytorch",
+      "name": "PyTorch",
+      "specializations": [
+        "data_ml"
+      ],
+      "competency_id": "data.ml",
+      "aliases": [
+        "торч",
+        "torch"
+      ]
+    },
+    {
+      "id": "ml",
+      "name": "Машинное обучение",
+      "specializations": [
+        "data_ml"
+      ],
+      "competency_id": "data.ml",
+      "aliases": [
+        "ml",
+        "машинное обучение",
+        "machine learning"
+      ]
+    },
+    {
+      "id": "llm",
+      "name": "LLM",
+      "specializations": [
+        "data_ml"
+      ],
+      "competency_id": "data.ml",
+      "aliases": [
+        "llm",
+        "нейросети",
+        "gpt",
+        "rag"
+      ]
+    },
+    {
+      "id": "airflow",
+      "name": "Airflow",
+      "specializations": [
+        "data_ml"
+      ],
+      "competency_id": "data.engineering",
+      "aliases": [
+        "эйрфлоу"
+      ]
+    },
+    {
+      "id": "spark",
+      "name": "Spark",
+      "specializations": [
+        "data_ml"
+      ],
+      "competency_id": "data.engineering",
+      "aliases": [
+        "спарк",
+        "pyspark"
+      ]
+    },
+    {
+      "id": "dwh",
+      "name": "DWH",
+      "specializations": [
+        "data_ml",
+        "analyst"
+      ],
+      "competency_id": "data.engineering",
+      "aliases": [
+        "хранилище данных",
+        "dwh"
+      ]
+    },
+    {
+      "id": "requirements",
+      "name": "Сбор требований",
+      "specializations": [
+        "analyst"
+      ],
+      "competency_id": "analyst.requirements",
+      "aliases": [
+        "требования",
+        "сбор требований",
+        "тз"
+      ]
+    },
+    {
+      "id": "bpmn",
+      "name": "BPMN",
+      "specializations": [
+        "analyst"
+      ],
+      "competency_id": "analyst.modeling",
+      "aliases": [
+        "бпмн"
+      ]
+    },
+    {
+      "id": "uml",
+      "name": "UML",
+      "specializations": [
+        "analyst"
+      ],
+      "competency_id": "analyst.modeling",
+      "aliases": [
+        "юмл"
+      ]
+    },
+    {
+      "id": "openapi_spec",
+      "name": "OpenAPI",
+      "specializations": [
+        "analyst",
+        "backend"
+      ],
+      "competency_id": "analyst.data",
+      "aliases": [
+        "swagger",
+        "сваггер",
+        "openapi"
+      ]
+    },
+    {
+      "id": "bi",
+      "name": "BI-аналитика",
+      "specializations": [
+        "analyst",
+        "data_ml"
+      ],
+      "competency_id": "analyst.data",
+      "aliases": [
+        "power bi",
+        "tableau",
+        "datalens",
+        "бизнес-аналитика"
+      ]
+    }
+  ],
+  "cities": [
+    "Москва",
+    "Санкт-Петербург",
+    "Казань",
+    "Новосибирск",
+    "Екатеринбург",
+    "Нижний Новгород",
+    "Томск",
+    "Иннополис",
+    "Самара",
+    "Краснодар",
+    "Пермь",
+    "Воронеж"
+  ]
+}

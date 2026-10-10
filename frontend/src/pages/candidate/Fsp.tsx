@@ -31,7 +31,7 @@ export default function Fsp() {
                   }}
                 >
                   <FormField label="ФСП ID" htmlFor="fsp-id" className="min-w-56 flex-1">
-                    <Input id="fsp-id" value={fspId} onChange={(e) => setFspId(e.target.value)} placeholder="FSP-000000" className="num" />
+                    <Input id="fsp-id" value={fspId} onChange={(e) => setFspId(e.target.value)} placeholder="FSP-77-000001" className="num" />
                   </FormField>
                   <Button type="submit" disabled={link.isPending}>
                     Привязать
@@ -46,7 +46,7 @@ export default function Fsp() {
               <>
                 <div className="flex flex-wrap gap-12">
                   <Stat label="Индекс ФСП" value={fsp.index} accent />
-                  <Stat label="Бонус к рейтингу" value={`+${(fsp.bonus * 100).toFixed(0)}%`} />
+                  <Stat label="Бонус к силе профиля" value={`+${fsp.bonus.toFixed(1)}`} />
                 </div>
                 <div className="max-w-3xl">
                   <FspTimeline achievements={fsp.achievements} />

@@ -1,0 +1,113 @@
+import type { CandidateProfile, Category, ExplanationFactor, FspAchievement, MatchExplanation, SalaryRadar, SalaryRange, SearchFilters } from '../contract/model/index.js';
+import { computeFspScore, levelAtLeast, maxLevel } from './fsp-score.ts';
+import { skillName, taxonomy } from '../common/taxonomy-data.ts';
+
+export interface CandidateSnapshot {
+  profile: CandidateProfile;
+  publishedConsent: boolean;
+  hiddenCompanyIds: string[];
+  showFsp: boolean;
+  achievements: FspAchievement[];
+  taskSignal: { fresh: boolean; solvedCount: number; lastSolvedAt: string | null };
+  standardError: number | null;
+}
+export const round = (value: number) => Math.round(value * 100) / 100;
+const clamp = (value: number, max = 100) => Math.max(0, Math.min(max, value));
+export function category(specialization: Category['specialization'], grade: Category['grade']): Category {
+  return { specialization, grade, label: `${taxonomy.specializations.find(x => x.id === specialization)?.name ?? specialization} · ${taxonomy.grades.find(x => x.id === grade)?.name ?? grade}` };
+}
+export function overlaps(a: SalaryRange, b: SalaryRange): boolean { return a.from <= b.to && b.from <= a.to; }
+export function published(candidate: CandidateSnapshot, companyId: string): boolean {
+  return Boolean(candidate.profile.standing) && candidate.publishedConsent && candidate.profile.availability !== 'not_looking' && !candidate.hiddenCompanyIds.includes(companyId);
+}
+export function hardFilters(c: CandidateSnapshot, filters: SearchFilters, companyId: string): boolean {
+  if (!published(c, companyId)) return false;
+  const p = c.profile, standing = p.standing!;
+  if (standing.category.specialization !== filters.specialization || !filters.grades.includes(standing.category.grade)) return false;
+  if (p.availability === 'not_looking' || !filters.availability.includes(p.availability)) return false;
+  if (!p.work_formats.some(f => filters.work_formats.includes(f))) return false;
+  const remote = p.work_formats.includes('remote') && filters.work_formats.includes('remote');
+  if (filters.city && !remote && p.city !== filters.city && !(filters.include_relocation && p.relocation)) return false;
+  if (!filters.must_skills.every(id => p.skills.some(s => s.skill_id === id))) return false;
+  const verified = c.achievements.filter(a => a.verified);
+  if ((filters.fsp_only || filters.fsp_level_min) && (!c.showFsp || !verified.length)) return false;
+  if (filters.fsp_level_min && !levelAtLeast(maxLevel(verified), filters.fsp_level_min)) return false;
+  return true;
+}
+export function strength(c: CandidateSnapshot, now: Date) {
+  const p = c.profile;
+  const percentile = p.standing?.percentile ?? 0;
+  const confirmed = clamp(p.skills.filter(s => s.verified).length / Math.max(4, p.skills.length) * 140);
+  const tasks = clamp(c.taskSignal.solvedCount * 35 + (c.taskSignal.fresh ? 30 : 0));
+  const completeness = clamp(p.completeness);
+  const fspBonus = c.showFsp ? computeFspScore(c.achievements, p.standing?.category.specialization ?? p.specialization, now).bonus : 0;
+  return { percentile, confirmed, tasks, completeness, fspBonus, total: round(0.65 * percentile + 0.15 * confirmed + 0.1 * tasks + 0.1 * completeness + fspBonus) };
+}
+export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date): MatchExplanation {
+  const p = c.profile;
+  const wanted = [...new Set(filters.must_skills)].map(id => ({ id, weight: 1 }));
+  wanted.push(...[...new Set(filters.nice_skills)].filter(id => !filters.must_skills.includes(id)).map(id => ({ id, weight: 0.5 })));
+  const skillMap = new Map(p.skills.map(s => [s.skill_id, s]));
+  const totalWeight = wanted.reduce((sum, item) => sum + item.weight, 0);
+  const coverage = totalWeight ? wanted.reduce((sum, item) => sum + item.weight * (skillMap.get(item.id)?.verified ? 1 : skillMap.has(item.id) ? 1 / 1.5 : 0), 0) / totalWeight : 1;
+  const wantedIds = new Set(wanted.map(x => x.id));
+  const union = new Set([...wantedIds, ...skillMap.keys()]);
+  // Explicit lexical fallback; this is not an embedding model.
+  const lexical = wantedIds.size ? [...wantedIds].filter(id => skillMap.has(id)).length / Math.max(1, union.size) : 1;
+  const industry = !filters.industries.length ? 0.7 : p.industries.some(x => filters.industries.includes(x)) ? 1 : 0.3;
+  let salary = 0.6;
+  if (p.salary_expectation) salary = overlaps(p.salary_expectation, filters.salary) ? 1 : p.salary_expectation.from > filters.salary.to
+    ? clamp(1 - (p.salary_expectation.from - filters.salary.to) / filters.salary.to * 3, 1) : 0.85;
+  const conditions = 0.7 * salary + 0.3 * Number(p.work_formats.some(f => filters.work_formats.includes(f)));
+  const fit = round(100 * (0.4 * coverage + 0.25 * lexical + 0.15 * industry + 0.2 * conditions));
+  const parts = strength(c, now);
+  const penalty = (c.standardError ?? 1) > 0.45 ? 3 : 0;
+  const raw = 0.6 * fit + 0.4 * parts.total - penalty;
+  const score = round(clamp(raw));
+  const factors: ExplanationFactor[] = [
+    { kind: 'skills_coverage', label: `Покрытие навыков ${Math.round(coverage * 100)}%`, contribution: round(24 * coverage), polarity: coverage >= 0.7 ? 'positive' : 'neutral', evidence: 'Подтверждённый навык весит в 1.5 раза больше заявленного' },
+    { kind: 'semantic', label: 'Совпадение словаря навыков', contribution: round(15 * lexical), polarity: lexical >= 0.5 ? 'positive' : 'neutral', evidence: `Офлайн-метрика Jaccard: ${round(lexical)}; модель эмбеддингов не используется` },
+    { kind: 'industry', label: 'Соответствие отрасли', contribution: round(9 * industry), polarity: industry === 1 ? 'positive' : 'neutral', evidence: industry === 1 ? p.industries.filter(x => filters.industries.includes(x)).join(', ') : 'Отрасль не совпала или не задана' },
+    { kind: 'conditions', label: 'Соответствие условий', contribution: round(12 * conditions), polarity: salary < 0.5 ? 'negative' : 'positive', evidence: `Вилка ${filters.salary.from}–${filters.salary.to} ₽, формат ${filters.work_formats.join(', ')}` },
+    { kind: 'percentile', label: `${parts.percentile}-й перцентиль подтверждённого теста`, contribution: round(0.26 * parts.percentile), polarity: parts.percentile >= 50 ? 'positive' : 'neutral', evidence: p.standing?.category.label ?? null },
+    { kind: 'confirmed_skills', label: 'Подтверждённые навыки', contribution: round(0.06 * parts.confirmed), polarity: parts.confirmed ? 'positive' : 'neutral', evidence: p.skills.filter(s => s.verified).map(s => s.name).join(', ') || null },
+    { kind: 'tasks', label: 'Результаты регулярных заданий', contribution: round(0.04 * parts.tasks), polarity: parts.tasks ? 'positive' : 'neutral', evidence: c.taskSignal.lastSolvedAt },
+    { kind: 'completeness', label: 'Полнота профиля', contribution: round(0.04 * parts.completeness), polarity: 'neutral', evidence: `${parts.completeness}%` },
+  ];
+  if (parts.fspBonus) factors.push({ kind: 'fsp', label: 'Подтверждённые достижения ФСП', contribution: round(0.4 * parts.fspBonus), polarity: 'positive', evidence: `Бонус Strength +${parts.fspBonus}` });
+  for (const id of filters.nice_skills.filter(id => !skillMap.has(id))) factors.push({ kind: 'missing_skill', label: `Нет ${skillName(id)} (желательно)`, contribution: 0, polarity: 'negative', evidence: 'Уже учтено в покрытии навыков; повторного штрафа нет' });
+  if (penalty) factors.push({ kind: 'penalty', label: 'Низкая точность оценки', contribution: -penalty, polarity: 'negative', evidence: 'SE > 0.45 или оценка отсутствует' });
+  if (raw !== clamp(raw)) factors.push({ kind: 'penalty', label: 'Ограничение итогового скора', contribution: round(clamp(raw) - raw), polarity: 'neutral', evidence: 'Score ограничен диапазоном 0–100' });
+  // Account for rounding so displayed contributions sum to the displayed score.
+  const residual = round(score - factors.reduce((sum, f) => sum + f.contribution, 0));
+  factors.find(f => f.kind === 'completeness')!.contribution = round(factors.find(f => f.kind === 'completeness')!.contribution + residual);
+  factors.sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
+  const positives = factors.filter(f => f.polarity === 'positive');
+  const missing = factors.find(f => f.kind === 'missing_skill');
+  const chips = missing ? [...positives.slice(0, 2), missing] : positives.slice(0, 3);
+  for (const factor of factors) if (chips.length < 3 && !chips.includes(factor)) chips.push(factor);
+  return { score, fit, strength: parts.total, chips, factors };
+}
+function percentile(values: number[], q: number): number | null {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const index = (sorted.length - 1) * q;
+  return Math.round(sorted[Math.floor(index)]! + (sorted[Math.ceil(index)]! - sorted[Math.floor(index)]!) * (index % 1));
+}
+export function radar(candidates: CandidateSnapshot[], cat: Category, salary: SalaryRange): SalaryRadar {
+  const ranges = candidates.filter(c => c.profile.standing?.category.specialization === cat.specialization && c.profile.standing.category.grade === cat.grade).map(c => c.profile.salary_expectation).filter((s): s is SalaryRange => s !== null);
+  const total = ranges.length;
+  const above = total ? ranges.filter(s => s.from > salary.to).length / total : 0;
+  const below = total ? ranges.filter(s => s.to < salary.from).length / total : 0;
+  const within = total ? ranges.filter(s => overlaps(s, salary)).length / total : 0;
+  const mids = ranges.map(s => (s.from + s.to) / 2);
+  const min = total ? Math.floor(Math.min(...mids) / 50000) * 50000 : salary.from;
+  const max = total ? Math.ceil(Math.max(...mids) / 50000) * 50000 : salary.to;
+  const step = Math.max(10000, Math.ceil((max - min) / 6 / 10000) * 10000);
+  const histogram = Array.from({ length: 6 }, (_, i) => ({ from: min + i * step, to: min + (i + 1) * step,
+    count: mids.filter(x => x >= min + i * step && (i === 5 ? x <= min + (i + 1) * step : x < min + (i + 1) * step)).length }));
+  return { category: cat, salary, candidates_total: total, share_above: round(above), share_within: round(within), share_below: round(below),
+    median: percentile(mids, 0.5), p25: percentile(mids, 0.25), p75: percentile(mids, 0.75), histogram,
+    verdict: above > 0.5 ? 'below_market' : below > 0.5 ? 'above_market' : 'in_market',
+    message: !total ? `Недостаточно данных для ${cat.label}` : `Ваша вилка ниже ожиданий ${Math.round(above * 100)}% кандидатов ${cat.label}` };
+}

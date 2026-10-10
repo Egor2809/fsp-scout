@@ -1,0 +1,393 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model User {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subject String @unique
+  email String
+  displayName String
+  role String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  candidate Candidate?
+  memberships Membership[]
+}
+model DeletedIdentity {
+  identityHash String @id
+  requestedAt DateTime @default(now()) @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+}
+model Company {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String
+  industry String @default("other")
+  description String @default("")
+  city String?
+  details Json @default("{}")
+  verified Boolean @default(false)
+  quotaBase Int @default(20)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  memberships Membership[]
+  invitations Invitation[]
+  disclosures Disclosure[]
+  needs Need[]
+  searches Search[]
+  vacancies Vacancy[]
+  regularTasks RegularTask[]
+}
+model Membership {
+  userId String @db.Uuid
+  companyId String @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  @@id([userId, companyId])
+}
+model Candidate {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId String @unique @db.Uuid
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  surveyCompleted Boolean @default(false)
+  specialization String?
+  confirmedSpecialization String?
+  grade String?
+  theta Float?
+  standardError Float?
+  gradeChangedAt DateTime? @db.Timestamptz(3)
+  salaryFloor Int?
+  profile Json @default("{}")
+  privacy Json @default("{}")
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  lastActiveAt DateTime @default(now()) @db.Timestamptz(3)
+  consents Consent[]
+  surveys Survey[]
+  tests TestSession[]
+  invitations Invitation[]
+  disclosures Disclosure[]
+  shortlists Shortlist[]
+  fspLink FspLink?
+  applications Application[]
+  taskAssignments TaskAssignment[]
+  gradeHistory GradeHistory[]
+  certificates ProfileCertificate[]
+  @@index([specialization, grade])
+  @@index([confirmedSpecialization, grade])
+}
+model FspParticipant {
+  id String @id
+  ownerSubject String
+  achievements Json @default("[]")
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  link FspLink?
+}
+model FspLink {
+  candidateId String @id @db.Uuid
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  fspId String @unique
+  participant FspParticipant @relation(fields: [fspId], references: [id])
+  verifiedAt DateTime @default(now()) @db.Timestamptz(3)
+}
+model WebhookReceipt {
+  hash String @id
+  provider String
+  receivedAt DateTime @default(now()) @db.Timestamptz(3)
+}
+model Need {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String @db.Uuid
+  company Company @relation(fields: [companyId], references: [id])
+  rawText String
+  parsed Json
+  confirmed Json?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  searches Search[]
+  @@index([companyId, createdAt])
+}
+model Search {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String @db.Uuid
+  company Company @relation(fields: [companyId], references: [id])
+  needId String? @db.Uuid
+  need Need? @relation(fields: [needId], references: [id])
+  title String
+  currentVersion Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  versions SearchVersion[]
+  shortlist Shortlist[]
+  @@index([companyId, updatedAt])
+}
+model SearchVersion {
+  searchId String @db.Uuid
+  search Search @relation(fields: [searchId], references: [id], onDelete: Cascade)
+  version Int
+  label String
+  filters Json
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@id([searchId, version])
+}
+model Shortlist {
+  searchId String @db.Uuid
+  search Search @relation(fields: [searchId], references: [id], onDelete: Cascade)
+  candidateId String @db.Uuid
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+  addedAt DateTime @default(now()) @db.Timestamptz(3)
+  addedInVersion Int
+  @@id([searchId, candidateId])
+}
+model Survey {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String @db.Uuid
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  answers Json
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  @@index([candidateId, createdAt])
+}
+model Consent {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String @db.Uuid
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  type String
+  version String
+  givenAt DateTime @default(now()) @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  @@index([candidateId, type])
+}
+model TestSession {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String @db.Uuid
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  specialization String
+  declaredGrade String
+  status String @default("in_progress")
+  seed Int
+  startedAt DateTime @default(now()) @db.Timestamptz(3)
+  deadlineAt DateTime @db.Timestamptz(3)
+  finishedAt DateTime? @db.Timestamptz(3)
+  result Json?
+  policy Json @default("{\"min\":10,\"max\":18,\"targetSe\":0.35,\"topK\":5,\"maxExposure\":0.2,\"practiceTotal\":0}")
+  bankVersion String @default("unassigned")
+  vacancyId String? @db.Uuid
+  vacancy Vacancy? @relation(fields: [vacancyId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  gradeHistory GradeHistory?
+  exceptionParentId String? @unique @db.Uuid
+  exceptionParent TestSession? @relation("RetakeException", fields: [exceptionParentId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  exceptionChild TestSession? @relation("RetakeException")
+  items TestItem[]
+  @@index([candidateId, startedAt])
+  @@index([bankVersion, specialization, declaredGrade, status, finishedAt], map: "TestSession_normative_cohort_idx")
+}
+model TestItem {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String @db.Uuid
+  session TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  familyId String
+  templateVersion Int
+  parameters Json
+  publicItem Json
+  expectedAnswer Json
+  discrimination Float
+  difficulty Float
+  answer Json?
+  correct Boolean?
+  answeredAt DateTime? @db.Timestamptz(3)
+  ordinal Int
+  block String @default("adaptive")
+  competency String
+  issuedAt DateTime @default(now()) @db.Timestamptz(3)
+  telemetry Json @default("{}")
+  @@unique([sessionId, familyId])
+  @@unique([sessionId, ordinal])
+}
+model GradeHistory {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String @db.Uuid
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  specialization String
+  grade String
+  previousGrade String?
+  previousSpecialization String?
+  changedAt DateTime @default(now()) @db.Timestamptz(3)
+  testId String? @unique @db.Uuid
+  test TestSession? @relation(fields: [testId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  reason String
+  @@index([candidateId, changedAt])
+}
+model Invitation {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String @db.Uuid
+  candidateId String @db.Uuid
+  company Company @relation(fields: [companyId], references: [id])
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+  status String @default("sent")
+  salaryFrom Int
+  salaryTo Int
+  offer Json
+  postponedOnce Boolean @default(false)
+  sentAt DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+  viewedAt DateTime? @db.Timestamptz(3)
+  response Json?
+  vacancyId String? @db.Uuid
+  vacancy Vacancy? @relation(fields: [vacancyId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  events InvitationEvent[]
+  @@index([companyId, sentAt])
+  @@index([candidateId, status])
+}
+model Vacancy {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String @db.Uuid
+  company Company @relation(fields: [companyId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  title String
+  description String
+  specialization String
+  grade String
+  mustSkills String[]
+  niceSkills String[]
+  workFormat String
+  city String?
+  salaryFrom Int
+  salaryTo Int
+  status String @default("draft")
+  publishedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  applications Application[]
+  invitations Invitation[]
+  tests TestSession[]
+  @@index([companyId, createdAt])
+  @@index([status, specialization, grade, publishedAt])
+}
+model Application {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vacancyId String @db.Uuid
+  vacancy Vacancy @relation(fields: [vacancyId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  candidateId String @db.Uuid
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  status String @default("submitted")
+  coverLetter String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  events ApplicationEvent[]
+  @@unique([vacancyId, candidateId])
+  @@index([candidateId, createdAt])
+}
+model ApplicationEvent {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  applicationId String @db.Uuid
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  status String
+  actor String
+  note String?
+  at DateTime @default(now()) @db.Timestamptz(3)
+  @@index([applicationId, at])
+}
+model RegularTask {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String @db.Uuid
+  company Company @relation(fields: [companyId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  title String
+  description String
+  kind String
+  specializations String[]
+  grades String[]
+  timeLimitMin Int
+  language String?
+  starterCode String?
+  rubric Json
+  status String @default("active")
+  publishedAt DateTime @default(now()) @db.Timestamptz(3)
+  deadlineAt DateTime @db.Timestamptz(3)
+  lastAssignmentScanAt DateTime? @db.Timestamptz(3)
+  assignments TaskAssignment[]
+  @@index([companyId, publishedAt])
+  @@index([status, deadlineAt])
+}
+model TaskAssignment {
+  taskId String @db.Uuid
+  task RegularTask @relation(fields: [taskId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  candidateId String @db.Uuid
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  status String @default("assigned")
+  assignedAt DateTime @default(now()) @db.Timestamptz(3)
+  dueAt DateTime @db.Timestamptz(3)
+  submission TaskSubmission?
+  @@id([taskId, candidateId])
+  @@index([candidateId, assignedAt])
+}
+model TaskSubmission {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId String @db.Uuid
+  candidateId String @db.Uuid
+  assignment TaskAssignment @relation(fields: [taskId, candidateId], references: [taskId, candidateId], onDelete: Cascade, onUpdate: NoAction)
+  submittedAt DateTime @default(now()) @db.Timestamptz(3)
+  answerText String?
+  code String?
+  language String?
+  status String @default("pending")
+  llmScore Int?
+  finalScore Int?
+  scoredAt DateTime? @db.Timestamptz(3)
+  feedback String?
+  @@unique([taskId, candidateId])
+}
+model Disclosure {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String @db.Uuid
+  candidateId String @db.Uuid
+  company Company @relation(fields: [companyId], references: [id])
+  candidate Candidate @relation(fields: [candidateId], references: [id])
+  sourceId String @db.Uuid
+  reason String
+  at DateTime @default(now()) @db.Timestamptz(3)
+  @@unique([companyId, candidateId])
+}
+model InvitationEvent {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invitationId String @db.Uuid
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  status String
+  actor String
+  note String?
+  at DateTime @default(now()) @db.Timestamptz(3)
+}
+model Audit {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorSubject String
+  action String
+  resourceId String
+  metadata Json @default("{}")
+  at DateTime @default(now()) @db.Timestamptz(3)
+  @@index([resourceId, at])
+}
+model Outbox {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  topic String
+  payload Json
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  deliveredAt DateTime? @db.Timestamptz(3)
+  availableAt DateTime @default(now()) @db.Timestamptz(3)
+  claimUntil DateTime? @db.Timestamptz(3)
+  claimToken String? @db.Uuid
+  attempts Int @default(0)
+  failedAt DateTime? @db.Timestamptz(3)
+  lastErrorCode String?
+  @@index([deliveredAt, createdAt])
+  @@index([topic, deliveredAt, failedAt, availableAt], map: "Outbox_dispatch_idx")
+}
+model ProfileCertificate {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String @db.Uuid
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tokenHash String @unique
+  fingerprint String
+  snapshot Json
+  issuedAt DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  @@index([candidateId, issuedAt])
+  @@index([expiresAt])
+}

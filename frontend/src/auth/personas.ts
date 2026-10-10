@@ -2,7 +2,7 @@ import type { Role } from '@/api/generated/model'
 
 /**
  * Демо-аккаунты для dev-входа на моках. ID совпадают с сидом мок-бэкенда (src/mocks/db/seed.ts).
- * С реальным бэкендом (VITE_API_MOCK=false) используются учётки Keycloak: candidate@demo, employer@demo.
+ * С реальным бэкендом используются отдельно созданные учётки Keycloak; эти персоны там не создаются.
  */
 export interface DemoPersona {
   key: string

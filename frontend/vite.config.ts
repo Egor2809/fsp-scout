@@ -17,7 +17,7 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     proxy: {
-      // Реальный бэкенд (VITE_API_MOCK=false): FastAPI на :8000
+      // Реальный бэкенд (VITE_API_MOCK=false): NestJS на :8000
       '/api': {
         target: process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:8000',
         changeOrigin: true,

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:real": "VITE_API_MOCK=false vite",
+    "dev:real": "node --import ./scripts/real-env.mjs ./node_modules/vite/bin/vite.js",
     "generate:api": "orval --config orval.config.ts",
     "typecheck": "tsc -b",
     "lint": "eslint . --max-warnings=0",

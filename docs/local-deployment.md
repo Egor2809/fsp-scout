@@ -1,0 +1,73 @@
+# Локальный запуск всего стека
+
+В infra/compose.yaml добавлены migrate, api и worker. Dockerfile backend содержит
+отдельные стадии сборки, миграций и запуска. В runtime входят Python и pypdf
+для резюме; приложение работает пользователем node. API/worker имеют read-only
+файловую систему, временный /tmp, лимиты памяти/PID и сброшенные capabilities.
+Это локальная конфигурация: Keycloak работает в start-dev, TLS пока не настроен.
+
+Из корня проекта:
+
+```powershell
+if (-not (Test-Path infra/.env)) { Copy-Item infra/.env.example infra/.env }
+# Заполните пароли и случайный FSP_WEBHOOK_SECRET длиной минимум 32 символа.
+docker compose --env-file infra/.env -f infra/compose.yaml config --quiet
+docker compose --env-file infra/.env -f infra/compose.yaml up --build -d
+docker compose --env-file infra/.env -f infra/compose.yaml ps
+docker compose --env-file infra/.env -f infra/compose.yaml logs --tail 100 migrate api worker
+```
+
+В текущем шаблоне пароль PostgreSQL подставляется в URL подключения. Для этого
+локального шаблона используйте длинный случайный буквенно-цифровой пароль;
+пароли с URL-разделителями требуют отдельного URL-кодирования конфигурации.
+Не публикуйте .env или вывод конфигурации, содержащий секреты.
+
+API: http://localhost:8000/api/v1, Keycloak: http://localhost:8080,
+Mailpit: http://localhost:8025. Frontend запускается отдельно, с
+VITE_API_MOCK=false и VITE_AUTH_MODE=oidc. Issuer токенов остаётся публичным
+localhost:8080, а серверный JWKS запрашивается через внутренний хост keycloak.
+Запуск контейнера Keycloak ещё не означает готовность его HTTP API: в первые
+секунды проверка JWT может не пройти, пока Keycloak не завершит запуск.
+
+Миграции запускаются отдельным одноразовым сервисом; API/worker ждут его
+успешного завершения. Prisma db push не используется. /ready проверяет
+подключение к PostgreSQL и Redis, но не удостоверяет готовность Keycloak.
+Worker выполняет обслуживание, назначение регулярных заданий, скрытую оценку
+кода через настроенный Piston и удаление аккаунтов. LLM-проверка ещё не реализована.
+
+Проверка docker compose config --quiet проходит. Сборка и запуск не проверены:
+доступ к npm блокируется ECONNREFUSED 127.0.0.1:9, текущий docker info сообщает
+permission denied при подключении к pipe dockerDesktopLinuxEngine. Lockfile пока отсутствует, поэтому Dockerfile временно использует
+npm install; после успешной установки нужно сохранить проверенный lockfile,
+перейти на npm ci и проверить воспроизводимость сборки.
+
+После запуска необходимо выполнить Prisma/HTTP-интеграционные сценарии,
+проверить обработку резюме внутри контейнера, миграции с чистого PostgreSQL,
+OIDC-вход и работу frontend. Валидная конфигурация Compose этого не доказывает.
+
+После сборки запустите `powershell -ExecutionPolicy Bypass -File ./scripts/check-runtime.ps1`.
+Скрипт проверяет работающие контейнеры, успешное завершение migrate, /ready и discovery realm scout.
+
+## Фронтенд и аккаунты
+
+В отдельном терминале из корня проекта:
+
+```powershell
+cd frontend
+npm ci
+npm run dev:real
+```
+
+Откройте http://localhost:5173. Команда dev:real работает на Windows и включает реальный API и OIDC.
+Регистрация создаёт кандидата; письмо подтверждения доступно в Mailpit на http://localhost:8025.
+Учётки из моков автоматически в Keycloak не создаются. Администратор Keycloak — admin,
+пароль находится в локальном infra/.env (KEYCLOAK_ADMIN_PASSWORD).
+
+Для работодателя создайте пользователя в realm scout, подтвердите его email и назначьте realm role employer
+через административную консоль Keycloak. Свяжите его UUID с компанией операторской командой
+`backend/scripts/provision-employer.ts` (параметры --subject, --email, --company; DATABASE_URL и OIDC_ISSUER нужны в окружении).
+Скрипт запускается через tsx после установки backend-зависимостей и prisma:generate.
+Роль employer сама по себе компанию не создаёт; её отсутствие даёт 403 на корпоративных методах.
+
+Запуск интерфейса пока не доказывает прохождение тестирования: требуется расширение банка,
+настройка ASSESSMENT_GRADE_POLICY и Piston; первые нормативные профили требуют отдельной проверки.
