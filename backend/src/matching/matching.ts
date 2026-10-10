@@ -1,6 +1,6 @@
 import type { CandidateProfile, Category, ExplanationFactor, FspAchievement, Grade, MatchExplanation, SalaryRadar, SalaryRange, SearchFilters } from '../contract/model/index.js';
 import { computeFspScore, levelAtLeast, maxLevel } from './fsp-score.ts';
-import { skillName, taxonomy } from '../common/taxonomy-data.ts';
+import { SKILL_BY_ID, skillName, taxonomy } from '../common/taxonomy-data.ts';
 
 export interface CandidateSnapshot {
   profile: CandidateProfile;
@@ -58,13 +58,21 @@ export function strength(c: CandidateSnapshot, now: Date) {
   const fspBonus = c.showFsp ? computeFspScore(c.achievements, p.standing?.category.specialization ?? p.specialization, now).bonus : 0;
   return { percentile, weightedPercentile, reliability, confirmed, tasks, completeness, fspBonus, total: round(0.65 * weightedPercentile + 0.15 * confirmed + 0.1 * tasks + 0.1 * completeness + fspBonus) };
 }
+export const ADJACENT_CREDIT = 0.25;
+
 export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date): MatchExplanation {
   const p = c.profile;
   const wanted = [...new Set(filters.must_skills)].map(id => ({ id, weight: 1 }));
   wanted.push(...[...new Set(filters.nice_skills)].filter(id => !filters.must_skills.includes(id)).map(id => ({ id, weight: 0.5 })));
   const skillMap = new Map(p.skills.map(s => [s.skill_id, s]));
   const totalWeight = wanted.reduce((sum, item) => sum + item.weight, 0);
-  const coverage = totalWeight ? wanted.reduce((sum, item) => sum + item.weight * (skillMap.get(item.id)?.verified ? 1 : skillMap.has(item.id) ? 1 / 1.5 : 0), 0) / totalWeight : 1;
+  const adjacent = new Map(wanted.filter(item => !skillMap.has(item.id)).flatMap(item => {
+    const near = p.skills.filter(s => SKILL_BY_ID.get(s.skill_id)?.competency_id === SKILL_BY_ID.get(item.id)?.competency_id && SKILL_BY_ID.has(item.id))
+      .sort((a, b) => Number(b.verified) - Number(a.verified))[0];
+    return near ? [[item.id, near] as const] : [];
+  }));
+  const credit = (id: string) => skillMap.get(id)?.verified ? 1 : skillMap.has(id) ? 1 / 1.5 : adjacent.get(id)?.verified ? ADJACENT_CREDIT * 1.5 : adjacent.has(id) ? ADJACENT_CREDIT : 0;
+  const coverage = totalWeight ? wanted.reduce((sum, item) => sum + item.weight * credit(item.id), 0) / totalWeight : 1;
   const wantedIds = new Set(wanted.map(x => x.id));
   const union = new Set([...wantedIds, ...skillMap.keys()]);
   // Explicit lexical fallback; this is not an embedding model.
@@ -82,7 +90,7 @@ export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date)
   const raw = 0.6 * fit + 0.4 * parts.total - penalty - gradePenalty;
   const score = round(clamp(raw));
   const factors: ExplanationFactor[] = [
-    { kind: 'skills_coverage', label: `Покрытие навыков ${Math.round(coverage * 100)}%`, contribution: round(24 * coverage), polarity: coverage >= 0.7 ? 'positive' : 'neutral', evidence: 'Подтверждённый навык весит в 1.5 раза больше заявленного' },
+    { kind: 'skills_coverage', label: `Покрытие навыков ${Math.round(coverage * 100)}%`, contribution: round(24 * coverage), polarity: coverage >= 0.7 ? 'positive' : 'neutral', evidence: adjacent.size ? `Смежные навыки по таксономии: ${[...adjacent].map(([id, s]) => `${s.name} вместо ${skillName(id)}`).join(', ')}` : 'Подтверждённый навык весит в 1.5 раза больше заявленного' },
     { kind: 'semantic', label: 'Совпадение словаря навыков', contribution: round(15 * lexical), polarity: lexical >= 0.5 ? 'positive' : 'neutral', evidence: `Офлайн-метрика Jaccard: ${round(lexical)}; модель эмбеддингов не используется` },
     { kind: 'industry', label: 'Соответствие отрасли', contribution: round(9 * industry), polarity: industry === 1 ? 'positive' : 'neutral', evidence: industry === 1 ? p.industries.filter(x => filters.industries.includes(x)).join(', ') : 'Отрасль не совпала или не задана' },
     { kind: 'conditions', label: 'Соответствие условий', contribution: round(12 * conditions), polarity: salary < 0.5 ? 'negative' : 'positive', evidence: `Вилка ${filters.salary.from}–${filters.salary.to} ₽, формат ${filters.work_formats.join(', ')}` },
@@ -92,7 +100,7 @@ export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date)
     { kind: 'completeness', label: 'Полнота профиля', contribution: round(0.04 * parts.completeness), polarity: 'neutral', evidence: `${parts.completeness}%` },
   ];
   if (parts.fspBonus) factors.push({ kind: 'fsp', label: 'Подтверждённые достижения ФСП', contribution: round(0.4 * parts.fspBonus), polarity: 'positive', evidence: `Бонус Strength +${parts.fspBonus}` });
-  for (const id of filters.nice_skills.filter(id => !skillMap.has(id))) factors.push({ kind: 'missing_skill', label: `Нет ${skillName(id)} (желательно)`, contribution: 0, polarity: 'negative', evidence: 'Уже учтено в покрытии навыков; повторного штрафа нет' });
+  for (const id of filters.nice_skills.filter(id => !skillMap.has(id))) factors.push({ kind: 'missing_skill', label: adjacent.has(id) ? `Нет ${skillName(id)}, есть смежный ${adjacent.get(id)!.name}` : `Нет ${skillName(id)} (желательно)`, contribution: 0, polarity: 'negative', evidence: 'Уже учтено в покрытии навыков; повторного штрафа нет' });
   if (penalty) factors.push({ kind: 'penalty', label: 'Низкая точность оценки', contribution: -penalty, polarity: 'negative', evidence: 'SE > 0.45 или оценка отсутствует' });
   if (belowGrade) factors.push({ kind: 'penalty', label: 'Категория на один грейд ниже запроса', contribution: -gradePenalty, polarity: 'negative', evidence: `Подтверждённая категория: ${p.standing!.category.label}; штраф 8 баллов, категория не изменяется` });
   if (raw !== clamp(raw)) factors.push({ kind: 'penalty', label: 'Ограничение итогового скора', contribution: round(clamp(raw) - raw), polarity: 'neutral', evidence: 'Score ограничен диапазоном 0–100' });

@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { category, explain, hardFilters, percentileReliability, radar, searchGrades, strength, type CandidateSnapshot } from '../src/matching/matching.ts';
 import { parseNeed, parseSalary } from '../src/needs/need-parser.ts';
+import { SKILL_BY_ID } from '../src/common/taxonomy-data.ts';
 import type { FspAchievement, SearchFilters } from '../src/contract/model/index.js';
 
 const now = new Date('2026-10-10T00:00:00Z');
@@ -108,4 +109,16 @@ test('need parser extracts salary and splits mandatory/optional skills', () => {
   assert.ok(result.must_skills.some(s => s.id === 'postgresql'));
   assert.ok(result.nice_skills.some(s => s.id === 'kubernetes'));
   assert.equal(parseSalary('опыт 3-5 лет'), null);
+});
+
+test('adjacent taxonomy skill gives partial coverage and is explained', () => {
+  const base = SKILL_BY_ID.get('go')!;
+  const near = [...SKILL_BY_ID.values()].find(s => s.id !== base.id && s.competency_id === base.competency_id)!;
+  const withNear = candidate(), without = candidate();
+  withNear.profile = { ...withNear.profile, skills: [{ skill_id: near.id, name: near.name, level: 'confident', source: 'resume', verified: false, score: null }] };
+  without.profile = { ...without.profile, skills: [] };
+  const need = { ...filters, must_skills: [base.id], nice_skills: [] };
+  const e = explain(withNear, need, now);
+  assert.ok(e.fit > explain(without, need, now).fit);
+  assert.ok(e.factors.find(f => f.kind === 'skills_coverage')!.evidence!.includes(`${near.name} вместо ${base.name}`));
 });
