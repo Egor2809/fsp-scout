@@ -1,7 +1,7 @@
 import { estimate, information, type ItemParameters, type ItemResponse } from './irt.ts';
 
 export interface Family extends ItemParameters { id: string; competency: string }
-export interface CatPolicy { min: number; max: number; targetSe: number; topK: number; maxExposure: number; competencyWeights?: Record<string, number> }
+export interface CatPolicy { min: number; max: number; targetSe: number; topK: number; maxExposure: number; competencyWeights?: Record<string, number>; choiceShare?: number }
 export interface CatState { responses: ItemResponse[]; servedIds: string[]; competencyCounts: Record<string, number> }
 
 export function selectFamily(
@@ -37,6 +37,11 @@ export function selectFamily(
     const deficit = (f: Family) => weights[f.competency]! * (state.responses.length + 1) - (state.competencyCounts[f.competency] ?? 0);
     const maximum = Math.max(...pool.map(deficit));
     pool = pool.filter(f => Math.abs(deficit(f) - maximum) < 1e-10);
+  }
+  if (policy.choiceShare) {
+    const served = state.servedIds.filter(id => (byId.get(id)?.c ?? 0) > 0).length;
+    const choice = pool.filter(f => (f.c ?? 0) > 0);
+    if (choice.length && served < Math.floor(policy.choiceShare * (state.responses.length + 1))) pool = choice;
   }
   const choices = pool
     .map(family => ({ family, information: information(posterior.theta, family) }))

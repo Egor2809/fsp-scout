@@ -58,3 +58,25 @@ test('coverage blocked only by exposure is waived instead of stopping the sessio
   assert.deepEqual(waived.waived, ['b']);
   assert.equal(waived.family?.id, 'a2');
 });
+
+test('choice share guarantees answer-option items even when guessing lowers their information', () => {
+  const bank = [
+    ...Array.from({ length: 6 }, (_, i) => ({ id: `n${i}`, competency: 'x', a: 1.5, b: 0, c: 0 })),
+    ...Array.from({ length: 3 }, (_, i) => ({ id: `c${i}`, competency: 'x', a: 1, b: 0, c: 0.25 })),
+  ];
+  const policy = { min: 6, max: 6, targetSe: 0.1, topK: 1, maxExposure: 1, choiceShare: 0.17 };
+  const state = { responses: [] as { a: number; b: number; c: number; correct: boolean }[], servedIds: [] as string[], competencyCounts: {} };
+  for (let i = 0; i < 6; i++) {
+    const family = selectFamily(bank, state, policy, {}, [], () => 0).family!;
+    state.servedIds.push(family.id);
+    state.responses.push({ a: family.a, b: family.b, c: family.c, correct: i % 2 === 0 });
+  }
+  assert.equal(state.servedIds.filter(id => id.startsWith('c')).length, 1);
+  const without = { responses: [] as { a: number; b: number; c: number; correct: boolean }[], servedIds: [] as string[], competencyCounts: {} };
+  for (let i = 0; i < 6; i++) {
+    const family = selectFamily(bank, without, { ...policy, choiceShare: undefined }, {}, [], () => 0).family!;
+    without.servedIds.push(family.id);
+    without.responses.push({ a: family.a, b: family.b, c: family.c, correct: i % 2 === 0 });
+  }
+  assert.equal(without.servedIds.filter(id => id.startsWith('c')).length, 0);
+});
