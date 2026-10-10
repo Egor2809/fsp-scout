@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { LIVE_BANK, instantiate, bankInventory } from '../src/assessment/live-bank.ts';
+import { LIVE_BANK, instantiate, bankInventory, requiredCompetencies } from '../src/assessment/live-bank.ts';
 import { gradeAnswer } from '../src/assessment/grading.ts';
 import { FAMILIES } from '../src/assessment/showcase.ts';
 test('live instances have private answer keys, reproducible variants and a complete public projection', () => {
@@ -110,5 +110,22 @@ test('selected keys agree with brute-force references', () => {
     let lo = 0, hi = binary.parameters.size! - 1, probes = 0;
     while (lo <= hi) { const mid = (lo + hi) >> 1; probes++; lo = mid + 1; }
     assert.equal(binary.value, probes);
+  }
+});
+
+test('mandatory coverage only for competencies the exposure ceiling can sustain', () => {
+  for (const specialization of ['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst'] as const) {
+    const bank = LIVE_BANK.filter(f => f.specializations.includes(specialization));
+    const required = requiredCompetencies(bank, 0.4);
+    assert.ok(required.length > 0);
+    for (const id of required) assert.ok(bank.filter(f => f.competency === id).length >= 3);
+  }
+});
+test('complete tree bottom level matches level-order filling', () => {
+  for (let seed = 0; seed < 50; seed++) {
+    const tree = LIVE_BANK.find(f => f.id === 'live-binary-tree-height')!.generate(seed), nodes = tree.parameters.nodes!;
+    let left = nodes, width = 1;
+    while (left > width) { left -= width; width *= 2; }
+    assert.equal(tree.value, left);
   }
 });

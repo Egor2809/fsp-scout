@@ -34,14 +34,20 @@ export function hardFilters(c: CandidateSnapshot, filters: SearchFilters, compan
   if (filters.fsp_level_min && !levelAtLeast(maxLevel(verified), filters.fsp_level_min)) return false;
   return true;
 }
+const WITHIN_GRADE_VARIANCE = 0.8 ** 2 / 12;
+export function percentileReliability(standardError: number | null): number {
+  return standardError === null || !Number.isFinite(standardError) ? 0 : WITHIN_GRADE_VARIANCE / (WITHIN_GRADE_VARIANCE + standardError ** 2);
+}
 export function strength(c: CandidateSnapshot, now: Date) {
   const p = c.profile;
   const percentile = p.standing?.percentile ?? 0;
+  const reliability = percentileReliability(c.standardError);
+  const weightedPercentile = p.standing ? round(50 + (percentile - 50) * reliability) : 0;
   const confirmed = clamp(p.skills.filter(s => s.verified).length / Math.max(4, p.skills.length) * 140);
   const tasks = clamp(c.taskSignal.solvedCount * 35 + (c.taskSignal.fresh ? 30 : 0));
   const completeness = clamp(p.completeness);
   const fspBonus = c.showFsp ? computeFspScore(c.achievements, p.standing?.category.specialization ?? p.specialization, now).bonus : 0;
-  return { percentile, confirmed, tasks, completeness, fspBonus, total: round(0.65 * percentile + 0.15 * confirmed + 0.1 * tasks + 0.1 * completeness + fspBonus) };
+  return { percentile, weightedPercentile, reliability, confirmed, tasks, completeness, fspBonus, total: round(0.65 * weightedPercentile + 0.15 * confirmed + 0.1 * tasks + 0.1 * completeness + fspBonus) };
 }
 export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date): MatchExplanation {
   const p = c.profile;
@@ -69,7 +75,7 @@ export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date)
     { kind: 'semantic', label: 'Совпадение словаря навыков', contribution: round(15 * lexical), polarity: lexical >= 0.5 ? 'positive' : 'neutral', evidence: `Офлайн-метрика Jaccard: ${round(lexical)}; модель эмбеддингов не используется` },
     { kind: 'industry', label: 'Соответствие отрасли', contribution: round(9 * industry), polarity: industry === 1 ? 'positive' : 'neutral', evidence: industry === 1 ? p.industries.filter(x => filters.industries.includes(x)).join(', ') : 'Отрасль не совпала или не задана' },
     { kind: 'conditions', label: 'Соответствие условий', contribution: round(12 * conditions), polarity: salary < 0.5 ? 'negative' : 'positive', evidence: `Вилка ${filters.salary.from}–${filters.salary.to} ₽, формат ${filters.work_formats.join(', ')}` },
-    { kind: 'percentile', label: `${parts.percentile}-й перцентиль подтверждённого теста`, contribution: round(0.26 * parts.percentile), polarity: parts.percentile >= 50 ? 'positive' : 'neutral', evidence: p.standing?.category.label ?? null },
+    { kind: 'percentile', label: `${parts.percentile}-й перцентиль подтверждённого теста`, contribution: round(0.26 * parts.weightedPercentile), polarity: parts.percentile >= 50 ? 'positive' : 'neutral', evidence: p.standing ? `${p.standing.category.label}; вес перцентиля ×${round(parts.reliability)} по точности теста` : null },
     { kind: 'confirmed_skills', label: 'Подтверждённые навыки', contribution: round(0.06 * parts.confirmed), polarity: parts.confirmed ? 'positive' : 'neutral', evidence: p.skills.filter(s => s.verified).map(s => s.name).join(', ') || null },
     { kind: 'tasks', label: 'Результаты регулярных заданий', contribution: round(0.04 * parts.tasks), polarity: parts.tasks ? 'positive' : 'neutral', evidence: c.taskSignal.lastSolvedAt },
     { kind: 'completeness', label: 'Полнота профиля', contribution: round(0.04 * parts.completeness), polarity: 'neutral', evidence: `${parts.completeness}%` },

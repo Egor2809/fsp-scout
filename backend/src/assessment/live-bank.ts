@@ -3,7 +3,7 @@ import { seededRandom, type Family } from '../common/cat.ts';
 import type { ExpectedAnswer } from './grading.ts';
 
 interface Variant { parameters: Record<string, number>; prompt: string; value: number; tolerance?: number }
-export const LIVE_BANK_VERSION = 'expert-bank-20261010-v2';
+export const LIVE_BANK_VERSION = 'expert-bank-20261010-v3';
 export interface LiveFamily extends Family {
   title: string;
   specializations: readonly Specialization[];
@@ -46,8 +46,8 @@ export const LIVE_BANK: readonly LiveFamily[] = [
     return { parameters: { setup, tests, build, deploy }, prompt: `CI: подготовка ${setup} минут. После неё тесты (${tests} минут) и сборка (${build} минут) идут параллельно. Деплой (${deploy} минут) начинается после обеих задач. Ресурсы не ограничены. Через сколько минут всё завершится?`, value: setup + Math.max(tests, build) + deploy };
   }),
   family('live-test-cartesian', 'Полное покрытие конфигураций', 'quality', -0.8, all, seed => {
-    const n = draw(seed), browsers = n(2, 5), platforms = n(2, 4), roles = n(2, 5);
-    return { parameters: { browsers, platforms, roles }, prompt: `Проверяются все комбинации ${browsers} браузеров, ${platforms} платформ и ${roles} ролей. Один тест покрывает ровно одну комбинацию. Сколько тестов нужно для полного, а не попарного покрытия?`, value: browsers * platforms * roles };
+    const n = draw(seed), browsers = n(2, 12), platforms = n(2, 8), roles = n(2, 15), locales = n(1, 6);
+    return { parameters: { browsers, platforms, roles, locales }, prompt: `Проверяются все комбинации ${browsers} браузеров, ${platforms} платформ, ${roles} ролей и ${locales} локалей. Один тест покрывает ровно одну комбинацию. Сколько тестов нужно для полного, а не попарного покрытия?`, value: browsers * platforms * roles * locales };
   }),
   family('live-inclusive-boundaries', 'Граничные значения диапазона', 'quality', -1.2, all, seed => {
     const n = draw(seed), low = n(1, 50), high = low + n(5, 60);
@@ -67,12 +67,14 @@ export const LIVE_BANK: readonly LiveFamily[] = [
     return { parameters: { tp, fp, fn }, prompt: `Бинарный классификатор: TP=${tp}, FP=${fp}, FN=${fn}. Вычислите F1 положительного класса в процентах. Округлите до двух знаков.`, value: 200 * tp / (2 * tp + fp + fn), tolerance: 0.00500001 };
   }),
   family('live-loop-pairs', 'Число итераций вложенного цикла', 'algorithms', 0.2, all, seed => {
-    const n = draw(seed), size = n(5, 60);
+    const n = draw(seed), size = n(20, 4000);
     return { parameters: { size }, prompt: `Внешний цикл перебирает i от 0 до ${size - 1} включительно. Внутренний перебирает j от 0 до i-1 включительно (при i=0 не выполняется). Сколько раз выполнится тело внутреннего цикла?`, value: size * (size - 1) / 2 };
   }),
-  family('live-binary-tree-height', 'Высота полного дерева', 'algorithms', 0.5, ['backend', 'frontend', 'mobile', 'qa', 'data_ml'], seed => {
-    const n = draw(seed), levels = n(3, 12), nodes = 2 ** levels - 1;
-    return { parameters: { levels, nodes }, prompt: `Полное бинарное дерево содержит ${nodes} узлов; каждый уровень полностью заполнен. Сколько уровней, если корень — первый уровень?`, value: levels };
+  family('live-binary-tree-height', 'Нижний уровень полного дерева', 'algorithms', 0.5, ['backend', 'frontend', 'mobile', 'qa', 'data_ml'], seed => {
+    const n = draw(seed), nodes = n(20, 5000);
+    let levels = 1;
+    while (2 ** levels - 1 < nodes) levels++;
+    return { parameters: { levels, nodes }, prompt: `Полное (complete) бинарное дерево содержит ${nodes} узлов: все уровни, кроме нижнего, заполнены целиком, нижний заполняется слева направо. Сколько узлов на нижнем уровне?`, value: nodes - (2 ** (levels - 1) - 1) };
   }),
   family('live-css-box-width', 'Ширина CSS box model', 'interface', -0.1, ['frontend', 'qa'], seed => {
     const n = draw(seed), width = n(100, 400), padding = n(5, 25), border = n(1, 5), borderBox = n(0, 1);
@@ -87,8 +89,8 @@ export const LIVE_BANK: readonly LiveFamily[] = [
     return { parameters: { requests, workers, duration }, prompt: `${requests} задач готовы в момент 0. Есть ${workers} одинаковых worker, каждый обрабатывает одну задачу за ${duration} секунд без накладных расходов. Каково минимальное время до завершения всех задач в секундах?`, value: Math.ceil(requests / workers) * duration };
   }),
   family('live-js-event-loop-order', 'Порядок event loop', 'algorithms', 0.2, ['frontend', 'backend'], seed => {
-    const n = draw(seed), sync = n(1, 6), micro = n(1, 6);
-    return { parameters: { sync, micro }, prompt: `Скрипт сначала вызывает setTimeout(() => console.log('T'), 0), затем ${micro} раз Promise.resolve().then(() => console.log('P')), затем ${sync} раз синхронно console.log('S'). Каким по счёту (с 1) будет выведено 'T'?`, value: sync + micro + 1 };
+    const n = draw(seed), sync = n(1, 400), micro = n(1, 400);
+    return { parameters: { sync, micro }, prompt: `Скрипт сначала вызывает setTimeout(() => console.log('T'), 0), затем в цикле ${micro} раз Promise.resolve().then(() => console.log('P')), затем ${sync} раз синхронно console.log('S'). Каким по счёту (с 1) будет выведено 'T'?`, value: sync + micro + 1 };
   }, ['javascript']),
   family('live-debounce-calls', 'Вызовы debounce', 'interface', -1.1, ['frontend'], seed => {
     const n = draw(seed), bursts = n(2, 12), presses = n(3, 15), delay = pick(n, [150, 200, 300, 400]), pause = delay + n(1, 20) * 50;
@@ -111,8 +113,8 @@ export const LIVE_BANK: readonly LiveFamily[] = [
     return { parameters: { fixed, a, c, gap, width }, prompt: `grid-template-columns: ${fixed}px ${a}fr ${c}fr; column-gap: ${gap}px; ширина контейнера ${width}px, padding 0, содержимое ячеек не шире колонок. Какова ширина третьей колонки в px?`, value: c * unit };
   }, ['html_css']),
   family('live-react-memo-renders', 'Рендеры и React.memo', 'interface', 0.9, ['frontend'], seed => {
-    const n = draw(seed), updates = n(1, 12), stable = n(0, 1);
-    return { parameters: { updates, stable }, prompt: `Production-сборка React без StrictMode. Parent после монтирования ещё ${updates} раз перерисовывается из-за своего setState. Он рендерит <Plain /> без memo и <Child config={${stable ? 'CONFIG' : '{ size: 1 }'}} />, где Child обёрнут в React.memo${stable ? ', а CONFIG — константа уровня модуля' : ''}. Контекстов нет. Сколько раз суммарно выполнятся функции Plain и Child, включая монтирование?`, value: updates + 1 + (stable ? 1 : updates + 1) };
+    const n = draw(seed), updates = n(1, 400), stable = n(0, 1), plains = n(1, 9);
+    return { parameters: { updates, stable, plains }, prompt: `Production-сборка React без StrictMode. Parent после монтирования ещё ${updates} раз перерисовывается из-за своего setState. Он рендерит ${plains} экземпляр(ов) <Plain /> без memo (с разными key) и <Child config={${stable ? 'CONFIG' : '{ size: 1 }'}} />, где Child обёрнут в React.memo${stable ? ', а CONFIG — константа уровня модуля' : ''}. Контекстов нет. Сколько раз суммарно выполнятся функции Plain и Child, включая монтирование?`, value: plains * (updates + 1) + (stable ? 1 : updates + 1) };
   }, ['react']),
   family('live-css-specificity', 'Специфичность селектора', 'interface', 0.4, ['frontend'], seed => {
     const n = draw(seed), ids = n(0, 2), classes = n(0, 4), attrs = n(0, 1), elements = n(1, 4);
@@ -705,6 +707,12 @@ export function instantiate(family: LiveFamily, seed: number, id: string, index:
   return { familyId: family.id, templateVersion: family.templateVersion, parameters: { seed, ...variant.parameters }, publicItem, expectedAnswer, discrimination: family.a, difficulty: family.b };
 }
 
+export function requiredCompetencies(bank: readonly LiveFamily[], maxExposure: number): string[] {
+  if (!Number.isFinite(maxExposure) || maxExposure <= 0 || maxExposure > 1) throw new RangeError('Invalid exposure ceiling');
+  const counts = new Map<string, number>();
+  for (const f of bank) counts.set(f.competency, (counts.get(f.competency) ?? 0) + 1);
+  return [...counts].filter(([, n]) => n >= Math.ceil(1 / maxExposure)).map(([id]) => id).sort();
+}
 /** Necessary inventory bound only: it does not prove content balance or measured exposure. */
 export function bankInventory(specialization: Specialization, maxItems: number, exposureCeiling: number) {
   if (!Number.isInteger(maxItems) || maxItems < 1 || !Number.isFinite(exposureCeiling) || exposureCeiling <= 0 || exposureCeiling > 1) throw new RangeError('Invalid bank policy');

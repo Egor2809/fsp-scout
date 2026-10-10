@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { category, explain, hardFilters, radar, strength, type CandidateSnapshot } from '../src/matching/matching.ts';
+import { category, explain, hardFilters, percentileReliability, radar, strength, type CandidateSnapshot } from '../src/matching/matching.ts';
 import { parseNeed, parseSalary } from '../src/needs/need-parser.ts';
 import type { FspAchievement, SearchFilters } from '../src/contract/model/index.js';
 
@@ -42,6 +42,14 @@ test('FSP is a verified positive bonus and absence has no standalone penalty', (
   assert.ok(strength(c, now).total > base);
   c.showFsp = false;
   assert.equal(strength(c, now).total, base);
+});
+test('percentile weight shrinks with test standard error', () => {
+  const precise = candidate(), noisy = candidate();
+  precise.standardError = 0.1; noisy.standardError = 0.6;
+  assert.ok(percentileReliability(0.1) > percentileReliability(0.6));
+  assert.equal(percentileReliability(null), 0);
+  assert.ok(strength(precise, now).total > strength(noisy, now).total);
+  assert.equal(strength(noisy, now).percentile, 85);
 });
 test('radar partitions salary expectations and handles an empty category', () => {
   const cat = category('backend', 'middle');

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateCountFamily, seededRandom, selectFamily } from '../src/common/cat.ts';
+import { generateCountFamily, seededRandom, selectFamily, selectWithWaiver } from '../src/common/cat.ts';
 
 const policy = { min: 10, max: 18, targetSe: 0.35, topK: 5, maxExposure: 0.2 };
 const bank = [
@@ -45,4 +45,16 @@ test('an unavailable required competency cannot be replaced with unrelated items
   const capped = { ...state, responses: Array.from({ length: 18 }, () => ({ a: 1.2, b: 0, correct: true })) };
   assert.equal(selectFamily(bank, capped, policy, {}, ['sql', 'code'], () => 0).reason, 'coverage_unavailable');
   assert.equal(selectFamily(bank, { ...capped, competencyCounts: { sql: 1, code: 1 } }, policy, {}, ['sql', 'code'], () => 0).reason, 'max_length');
+});
+
+test('coverage blocked only by exposure is waived instead of stopping the session', () => {
+  const bank = [{ id: 'a1', a: 1, b: 0, competency: 'a' }, { id: 'a2', a: 1, b: 0.5, competency: 'a' }, { id: 'b1', a: 1, b: 0, competency: 'b' }];
+  const state = { responses: [], servedIds: [], competencyCounts: {} };
+  const limits = { min: 1, max: 3, targetSe: 0.1, topK: 1, maxExposure: 0.5 };
+  assert.equal(selectFamily(bank, state, limits, { b1: 1 }, ['a', 'b'], () => 0).family?.competency, 'a');
+  const stuck = { responses: [{ a: 1, b: 0, correct: true }], servedIds: ['a1'], competencyCounts: { a: 1 } };
+  assert.equal(selectFamily(bank, stuck, limits, { b1: 1 }, ['a', 'b'], () => 0).reason, 'coverage_unavailable');
+  const waived = selectWithWaiver(bank, stuck, limits, { b1: 1 }, ['a', 'b'], () => 0);
+  assert.deepEqual(waived.waived, ['b']);
+  assert.equal(waived.family?.id, 'a2');
 });

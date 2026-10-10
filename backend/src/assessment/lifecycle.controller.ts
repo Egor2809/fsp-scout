@@ -10,9 +10,9 @@ import { vacancyBlueprint } from './vacancy-blueprint.js';
 import { parse } from '../common/validation.js';
 import { Problem } from '../common/problem.js';
 import { eligibility, exceptionParent, type RetakeState } from '../common/retake.js';
-import { selectFamily, seededRandom, type CatState } from '../common/cat.js';
-import { LIVE_BANK, LIVE_BANK_VERSION, bankInventory, instantiate } from './live-bank.js';
-import { currentItem, DEFAULT_GRADE_POLICY, DEFAULT_POLICY, exposure, progress, validatePolicy, type IssuedItem, type SessionPolicy } from './session-state.js';
+import { selectWithWaiver, seededRandom, type CatState } from '../common/cat.js';
+import { LIVE_BANK, LIVE_BANK_VERSION, bankInventory, instantiate, requiredCompetencies } from './live-bank.js';
+import { coveredCompetencies, currentItem, DEFAULT_GRADE_POLICY, DEFAULT_POLICY, exposure, progress, validatePolicy, type IssuedItem, type SessionPolicy } from './session-state.js';
 import { validateGradeCuts, type GradeCuts } from './result-scoring.js';
 import { PRACTICE_BANK, PRACTICE_BANK_VERSION, instantiatePractice, selectPracticeFamily } from './practice-bank.js';
 import { CODE_JOB_TOPIC } from './code-job.js';
@@ -64,7 +64,8 @@ export class AssessmentLifecycleController {
       if (!inventory.sufficientInventory) throw new Problem(409, 'conflict', 'Банк этой специализации ещё не готов к тестированию');
       const bank = LIVE_BANK.filter(f => f.specializations.includes(specialization)
         && (!blueprint || blueprint.competencies.some(c => c.competency_id === f.competency)));
-      if (bank.length < Math.ceil(DEFAULT_POLICY.max / DEFAULT_POLICY.maxExposure)) throw new Problem(409, 'conflict', 'Недостаточно семейств для бланка вакансии');
+      const required = requiredCompetencies(bank, DEFAULT_POLICY.maxExposure);
+      if (bank.length < Math.ceil(DEFAULT_POLICY.max / DEFAULT_POLICY.maxExposure) || !required.length) throw new Problem(409, 'conflict', 'Недостаточно семейств для бланка вакансии');
       let gradeCuts: GradeCuts;
       try {
         gradeCuts = JSON.parse(process.env.ASSESSMENT_GRADE_POLICY || DEFAULT_GRADE_POLICY) as GradeCuts;
@@ -76,7 +77,7 @@ export class AssessmentLifecycleController {
       const practice = Boolean(process.env.PISTON_EXECUTE_URL && practiceRuntimeVersion && /^\d+\.\d+\.\d+$/.test(practiceRuntimeVersion)
         && practiceBank.length >= Math.ceil(DEFAULT_POLICY.practiceTotal / DEFAULT_POLICY.maxExposure));
       const policy: SessionPolicy = { ...DEFAULT_POLICY, gradeCuts, skillConfirmationPolicyVersion: SKILL_CONFIRMATION_POLICY.version,
-        familyIds: bank.map(f => f.id), requiredCompetencies: [...new Set(bank.map(f => f.competency))],
+        familyIds: bank.map(f => f.id), requiredCompetencies: required,
         ...(practice ? { practiceBankVersion: PRACTICE_BANK_VERSION, practiceFamilyIds: practiceBank.map(f => f.id), practiceLanguage, practiceRuntimeVersion }
           : { practiceTotal: 0, approachTotal: 0 }) };
       if (blueprint) {
@@ -140,7 +141,11 @@ export class AssessmentLifecycleController {
       const usageByFamily = new Map(usages.map(u => [u.familyId, u._count._all]));
       const blocked: Record<string, number> = {};
       for (const f of bank) blocked[f.id] = exposure(total, usageByFamily.get(f.id) ?? 0, policy.maxExposure).canServe ? 0 : 1;
-      const choice = selectFamily(bank, state, policy, blocked, policy.requiredCompetencies, seededRandom(t.seed ^ Math.imul(t.items.length + 1, 0x9e3779b1)));
+      const choice = selectWithWaiver(bank, state, policy, blocked, coveredCompetencies(policy), seededRandom(t.seed ^ Math.imul(t.items.length + 1, 0x9e3779b1)));
+      if (choice.waived.length) {
+        policy.waivedCompetencies = [...policy.waivedCompetencies ?? [], ...choice.waived];
+        await tx.testSession.update({ where: { id }, data: { policy: policy as unknown as Prisma.InputJsonObject } });
+      }
       const issuedAt = new Date();
       if (t.deadlineAt <= issuedAt) {
         await tx.testSession.update({ where: { id }, data: { status: 'expired', finishedAt: issuedAt } });
@@ -148,7 +153,7 @@ export class AssessmentLifecycleController {
       }
       if (!choice.family) {
         if (!['precision', 'max_length'].includes(choice.reason)) throw new Problem(409, 'conflict', 'Доступные семейства временно исчерпаны');
-        if (policy.requiredCompetencies.some(k => !counts[k])) throw new Problem(409, 'conflict', 'Не покрыты обязательные компетенции');
+        if (coveredCompetencies(policy).some(k => !counts[k])) throw new Problem(409, 'conflict', 'Не покрыты обязательные компетенции');
         const completedPractice = t.items.filter(i => i.block === 'practice' && i.answeredAt).length;
         if (completedPractice < policy.practiceTotal) {
           if (policy.practiceBankVersion !== PRACTICE_BANK_VERSION || !policy.practiceFamilyIds?.length || !policy.practiceLanguage || !policy.practiceRuntimeVersion)
