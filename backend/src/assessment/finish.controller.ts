@@ -164,7 +164,7 @@ export class AssessmentFinishController {
         const previousFlags = (Array.isArray(oldStanding.flags) ? oldStanding.flags : []) as unknown as IntegrityFlag[];
         await tx.candidate.update({ where: { id: c.id }, data: { profile: { ...profile,
           standing: { ...oldStanding, flags: canaryStandingFlags(previousFlags, flags) },
-        } as Prisma.InputJsonObject } });
+        } as unknown as Prisma.InputJsonObject } });
       }
       await tx.audit.create({ data: { actorSubject: req.identity.sub, action: 'assessment.finished', resourceId: id,
         metadata: { outcome: scored.outcome, policy_version: policy.gradeCuts.version, bank_version: test.bankVersion,
