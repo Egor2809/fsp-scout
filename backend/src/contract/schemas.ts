@@ -200,7 +200,11 @@ export const GetMyProfileResponse = zod.object({
 }).describe('Категория «специализация × грейд»'),
   "percentile": zod.int().min(1).max(getMyProfileResponseStandingOnePercentileMax),
   "confirmed_at": zod.iso.datetime({"offset":true}),
-  "test_id": zod.uuid()
+  "test_id": zod.uuid(),
+  "flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional()
 }).describe('Подтверждённое место кандидата в категории'),zod.null()]).describe('`null` — грейд не подтверждён'),
   "experience_years": zod.number().min(getMyProfileResponseExperienceYearsMin).max(getMyProfileResponseExperienceYearsMax),
   "experience": zod.array(zod.object({
@@ -343,7 +347,11 @@ export const UpdateMyProfileResponse = zod.object({
 }).describe('Категория «специализация × грейд»'),
   "percentile": zod.int().min(1).max(updateMyProfileResponseStandingOnePercentileMax),
   "confirmed_at": zod.iso.datetime({"offset":true}),
-  "test_id": zod.uuid()
+  "test_id": zod.uuid(),
+  "flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional()
 }).describe('Подтверждённое место кандидата в категории'),zod.null()]).describe('`null` — грейд не подтверждён'),
   "experience_years": zod.number().min(updateMyProfileResponseExperienceYearsMin).max(updateMyProfileResponseExperienceYearsMax),
   "experience": zod.array(zod.object({
@@ -482,6 +490,10 @@ export const GetMyCardPreviewResponse = zod.object({
 }).describe('Категория «специализация × грейд»'),zod.null()]),
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(getMyCardPreviewResponsePercentileMax).nullable(),
+  "test_flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(getMyCardPreviewResponseStrengthMin).max(getMyCardPreviewResponseStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
@@ -2439,6 +2451,10 @@ export const GetSearchResultsResponse = zod.object({
 }).describe('Категория «специализация × грейд»'),zod.null()]),
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(getSearchResultsResponseTwoItemsItemCandidatePercentileMax).nullable(),
+  "test_flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(getSearchResultsResponseTwoItemsItemCandidateStrengthMin).max(getSearchResultsResponseTwoItemsItemCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
@@ -2776,6 +2792,10 @@ export const ListCandidatesResponse = zod.object({
 }).describe('Категория «специализация × грейд»'),zod.null()]),
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(listCandidatesResponseTwoItemsItemPercentileMax).nullable(),
+  "test_flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(listCandidatesResponseTwoItemsItemStrengthMin).max(listCandidatesResponseTwoItemsItemStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
@@ -2934,6 +2954,10 @@ export const GetCandidateResponse = zod.object({
 }).describe('Категория «специализация × грейд»'),zod.null()]),
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(getCandidateResponseOnePercentileMax).nullable(),
+  "test_flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(getCandidateResponseOneStrengthMin).max(getCandidateResponseOneStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
@@ -4677,6 +4701,10 @@ export const ListVacancyApplicationsResponseItem = zod.object({
 }).describe('Категория «специализация × грейд»'),zod.null()]),
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(listVacancyApplicationsResponseTwoCandidatePercentileMax).nullable(),
+  "test_flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(listVacancyApplicationsResponseTwoCandidateStrengthMin).max(listVacancyApplicationsResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
@@ -4993,6 +5021,10 @@ export const UpdateApplicationStatusResponse = zod.object({
 }).describe('Категория «специализация × грейд»'),zod.null()]),
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(updateApplicationStatusResponseTwoCandidatePercentileMax).nullable(),
+  "test_flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(updateApplicationStatusResponseTwoCandidateStrengthMin).max(updateApplicationStatusResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
@@ -5524,6 +5556,10 @@ export const ListTaskSubmissionsResponseItem = zod.object({
 }).describe('Категория «специализация × грейд»'),zod.null()]),
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(listTaskSubmissionsResponseTwoCandidatePercentileMax).nullable(),
+  "test_flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(listTaskSubmissionsResponseTwoCandidateStrengthMin).max(listTaskSubmissionsResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
@@ -5695,6 +5731,10 @@ export const ScoreTaskSubmissionResponse = zod.object({
 }).describe('Категория «специализация × грейд»'),zod.null()]),
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(scoreTaskSubmissionResponseTwoCandidatePercentileMax).nullable(),
+  "test_flags": zod.array(zod.object({
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "severity": zod.enum(['info', 'warning'])
+}).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(scoreTaskSubmissionResponseTwoCandidateStrengthMin).max(scoreTaskSubmissionResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),

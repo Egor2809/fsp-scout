@@ -185,7 +185,7 @@ async function candidates(now: Date) {
       experience: experience(rand, spec, years, industries, now), skills: skills(rand, spec, grade), industries, work_formats: formats,
       salary_expectation: { from, to: Math.max(round10k(from * (1.12 + rand.next() * 0.15)), from + 20000) },
       availability: rand.chance(0.7) ? 'active' : 'open',
-      standing: { category: category(spec, grade), percentile: rand.int(5, 97), confirmed_at: confirmedAt.toISOString(), test_id: testId },
+      standing: { category: category(spec, grade), percentile: rand.int(5, 97), confirmed_at: confirmedAt.toISOString(), test_id: testId, flags: i % 9 === 0 ? [{ code: 'paste', severity: 'info' }] : i % 13 === 0 ? [{ code: 'focus_loss', severity: 'info' }] : [] },
       fsp_achievements: withFsp ? achievements(rand, spec, city, now) : [],
       ...(solved ? { task_signal: { fresh: true, solved_count: solved, last_solved_at: lastSolved } } : {}),
     };

@@ -2529,6 +2529,21 @@ components:
           type: string
           format: date-time
         test_id: { type: string, format: uuid }
+        flags:
+          type: array
+          items: { $ref: '#/components/schemas/IntegrityFlag' }
+
+    IntegrityFlag:
+      type: object
+      description: Сигнал прокторинга подтверждающего теста; не доказывает нарушение
+      required: [code, severity]
+      properties:
+        code:
+          type: string
+          enum: [fast_correct, paste, focus_loss]
+        severity:
+          type: string
+          enum: [info, warning]
 
     CandidateProfile:
       type: object
@@ -3896,6 +3911,9 @@ components:
             - type: 'null'
         grade_confirmed: { type: boolean }
         percentile: { type: [integer, 'null'], minimum: 1, maximum: 99 }
+        test_flags:
+          type: array
+          items: { $ref: '#/components/schemas/IntegrityFlag' }
         strength:
           type: number
           minimum: 0

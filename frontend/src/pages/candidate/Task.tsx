@@ -20,9 +20,10 @@ function Solution({ assignment }: { assignment: TaskAssignment }) {
   const [text, setText] = useState('')
   const [code, setCode] = useState(task.starter_code ?? '')
   const [error, setError] = useState<string | null>(null)
+  const [now] = useState(() => Date.now())
   const submission = assignment.submission ?? submit.data
   if (submission) return <section className="grid gap-4" aria-label="Моё решение"><h2 className="text-xl">Моё решение</h2><SubmissionContent submission={submission} /></section>
-  if (assignment.status !== 'assigned' || task.status !== 'active' || Date.parse(assignment.due_at) <= Date.now() || Date.parse(task.deadline_at) <= Date.now()) return <p role="status">Приём решений завершён.</p>
+  if (assignment.status !== 'assigned' || task.status !== 'active' || Date.parse(assignment.due_at) <= now || Date.parse(task.deadline_at) <= now) return <p role="status">Приём решений завершён.</p>
   return <form className="grid gap-4" onSubmit={async e => {
     e.preventDefault()
     setError(null)

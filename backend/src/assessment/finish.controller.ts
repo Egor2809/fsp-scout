@@ -134,7 +134,7 @@ export class AssessmentFinishController {
               && (protectedSkillIds.has(s.skill_id) || !verifiedSkills.some(v => v.skill_id === s.skill_id))),
             ...verifiedSkills.filter(s => !protectedSkillIds.has(s.skill_id)),
           ], standing: percentile !== null ? {
-            category: category(test.specialization as Specialization, test.declaredGrade as Grade), percentile, confirmed_at: now.toISOString(), test_id: id,
+            category: category(test.specialization as Specialization, test.declaredGrade as Grade), percentile, confirmed_at: now.toISOString(), test_id: id, flags: flags.map(f => ({ code: f.code, severity: f.severity })),
           } : changed ? null : profile.standing ?? null } as Prisma.InputJsonObject } });
         if (changed) await tx.gradeHistory.create({ data: { candidateId: c.id, specialization: test.specialization, grade: test.declaredGrade,
           previousGrade: c.grade, previousSpecialization: c.confirmedSpecialization, testId: id, changedAt: now, reason: 'test_passed' } });

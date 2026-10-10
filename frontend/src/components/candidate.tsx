@@ -8,6 +8,7 @@ import {
 } from "@tabler/icons-react";
 import type {
   CandidateCard,
+  IntegrityFlag,
   ExplanationFactor,
   FspAchievement,
   MatchExplanation,
@@ -319,35 +320,52 @@ export function CandidateFacts({
   card: CandidateCard;
   percentile?: boolean;
 }) {
+  const flags = card.test_flags ?? [];
   return (
-    <div
-      className={cn(
-        "grid grid-cols-2 gap-2",
-        percentile ? "sm:grid-cols-4" : "sm:grid-cols-3",
-      )}
-    >
-      {percentile && (
+    <div className="grid gap-2">
+      <div
+        className={cn(
+          "grid grid-cols-2 gap-2",
+          percentile ? "sm:grid-cols-4" : "sm:grid-cols-3",
+        )}
+      >
+        {percentile && (
+          <Stat
+            label="Перцентиль"
+            value={formatPercentile(card.percentile)}
+            accent
+          />
+        )}
         <Stat
-          label="Перцентиль"
-          value={formatPercentile(card.percentile)}
-          accent
+          label="Ожидания"
+          value={formatSalaryRange(card.salary_expectation)}
         />
+        <Stat
+          label="Статус"
+          value={<AvailabilityTag availability={card.availability} />}
+        />
+        <Stat
+          label="Был активен"
+          value={
+            card.last_active_at ? formatShortDate(card.last_active_at) : "—"
+          }
+        />
+      </div>
+      {flags.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          Сигналы теста: {flags.map((f) => integrityLabel[f.code]).join(" · ")}.
+          Не доказывают нарушение.
+        </p>
       )}
-      <Stat
-        label="Ожидания"
-        value={formatSalaryRange(card.salary_expectation)}
-      />
-      <Stat
-        label="Статус"
-        value={<AvailabilityTag availability={card.availability} />}
-      />
-      <Stat
-        label="Был активен"
-        value={card.last_active_at ? formatShortDate(card.last_active_at) : "—"}
-      />
     </div>
   );
 }
+
+const integrityLabel: Record<IntegrityFlag["code"], string> = {
+  fast_correct: "быстрые верные ответы",
+  paste: "вставки из буфера",
+  focus_loss: "уход со вкладки",
+};
 
 /** Полная анонимная карточка кандидата (банк, подборка, превью для самого кандидата). */
 export function CandidateCardView({ card }: { card: CandidateCard }) {

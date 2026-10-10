@@ -11,6 +11,7 @@ import type { Disclosure } from './disclosure';
 import type { ExperienceItem } from './experienceItem';
 import type { FspSummary } from './fspSummary';
 import type { Industry } from './industry';
+import type { IntegrityFlag } from './integrityFlag';
 import type { SalaryRange } from './salaryRange';
 import type { WorkFormat } from './workFormat';
 
@@ -30,6 +31,7 @@ export interface CandidateCard {
      * @nullable
      */
   percentile: number | null;
+  test_flags?: IntegrityFlag[];
   /**
      * Сила профиля (0–100 + бонус ФСП до 15)
      * @minimum 0

@@ -50,7 +50,7 @@ export function card(c: CandidateRow, companyId: string | null, now: Date, discl
   const fspScore = computeFspScore(verified, p.standing?.category.specialization ?? p.specialization, now);
   const top = topAchievement(achievements, p.standing?.category.specialization ?? p.specialization, now);
   return { id: c.id, alias: alias(companyId, c.id), category: p.standing ? category(p.standing.category.specialization, p.standing.category.grade) : null,
-    grade_confirmed: Boolean(p.standing), percentile: p.standing?.percentile ?? null, strength: strength(snap, now).total,
+    grade_confirmed: Boolean(p.standing), percentile: p.standing?.percentile ?? null, test_flags: p.standing?.flags ?? [], strength: strength(snap, now).total,
     skills: p.skills, experience_years: p.experience_years,
     experience: p.experience.map(e => {
       const hideCompany = !revealed && privacy.show_company_names !== true;
