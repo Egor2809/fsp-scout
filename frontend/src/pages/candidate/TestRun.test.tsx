@@ -17,13 +17,13 @@ beforeEach(() => mutate.mockClear())
 
 it('sends the selected single option to the generated API hook and resets for a new instance', () => {
   const view = render(<ItemView key={item.instance_id} testId="test" item={item} onAnswered={() => {}} />)
-  expect(screen.getByRole('button', { name: 'Ответить', exact: true })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Ответить' })).toBeDisabled()
   fireEvent.click(screen.getByRole('radio', { name: 'Второй вариант' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Ответить', exact: true }))
+  fireEvent.click(screen.getByRole('button', { name: 'Ответить' }))
   expect(mutate.mock.calls[0][0]).toMatchObject({ testId: 'test', data: { instance_id: 'instance-one', answer: { option_ids: ['o2'] } } })
   expect(mutate.mock.calls[0][0].data.answer).toEqual({ option_ids: ['o2'] })
   view.rerender(<ItemView key="instance-two" testId="test" item={{ ...item, instance_id: 'instance-two' }} onAnswered={() => {}} />)
-  expect(screen.getByRole('button', { name: 'Ответить', exact: true })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Ответить' })).toBeDisabled()
 })
 
 it('sends the complete multiple selection, supports unchecking, and skips without option_ids', () => {
@@ -32,7 +32,7 @@ it('sends the complete multiple selection, supports unchecking, and skips withou
   fireEvent.click(screen.getByRole('checkbox', { name: 'Второй вариант' }))
   fireEvent.click(screen.getByRole('checkbox', { name: 'Третий вариант' }))
   fireEvent.click(screen.getByRole('checkbox', { name: 'Второй вариант' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Ответить', exact: true }))
+  fireEvent.click(screen.getByRole('button', { name: 'Ответить' }))
   expect(mutate.mock.calls[0][0].data.answer).toEqual({ option_ids: ['o1', 'o3'] })
   fireEvent.click(screen.getByRole('button', { name: 'Не знаю, дальше' }))
   expect(mutate.mock.calls[1][0].data.answer).toEqual({ skipped: true })
