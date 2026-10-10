@@ -50,7 +50,7 @@ export class NeedsController {
     if (!n.confirmed) throw new Problem(409, 'need_not_confirmed', 'Подтвердите потребность');
     const need = n.confirmed as unknown as ConfirmedNeed;
     const rows = await this.matching.rows(n.companyId, need.specialization);
-    const snapshots = rows.map(snapshot);
+    const snapshots = rows.map(c => snapshot(c));
     const grades: Grade[] = ['junior', 'middle', 'senior', 'lead'];
     const index = grades.indexOf(need.grade);
     const choices = [need.grade, ...grades.filter((_, i) => Math.abs(i - index) === 1)];
@@ -67,6 +67,6 @@ export class NeedsController {
     if (salary.from > salary.to) throw new Problem(422, 'salary_range_invalid', 'Некорректная вилка', { errors: [{ pointer: '/salary_to', detail: 'Верхняя граница должна быть не меньше нижней' }] });
     const co = await this.matching.company(r.identity);
     const rows = await this.matching.rows(co.id, q.specialization, [q.grade]);
-    return radar(rows.map(snapshot), category(q.specialization as Specialization, q.grade), salary);
+    return radar(rows.map(c => snapshot(c)), category(q.specialization as Specialization, q.grade), salary);
   }
 }

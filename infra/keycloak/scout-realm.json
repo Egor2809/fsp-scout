@@ -5,9 +5,37 @@
   "registrationEmailAsUsername": true,
   "verifyEmail": true,
   "resetPasswordAllowed": true,
-  "defaultRoles": ["candidate"],
-  "roles": { "realm": [{ "name": "candidate" }, { "name": "employer" }, { "name": "admin" }] },
-  "smtpServer": { "host": "mailpit", "port": "1025", "from": "noreply@scout.local", "fromDisplayName": "Скаут", "auth": "false", "ssl": "false", "starttls": "false" },
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "ru",
+    "en"
+  ],
+  "defaultLocale": "ru",
+  "defaultRoles": [
+    "candidate"
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "candidate"
+      },
+      {
+        "name": "employer"
+      },
+      {
+        "name": "admin"
+      }
+    ]
+  },
+  "smtpServer": {
+    "host": "mailpit",
+    "port": "1025",
+    "from": "noreply@scout.local",
+    "fromDisplayName": "Скаут",
+    "auth": "false",
+    "ssl": "false",
+    "starttls": "false"
+  },
   "clients": [
     {
       "clientId": "scout-api",
@@ -21,12 +49,311 @@
       "publicClient": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
-      "redirectUris": ["http://localhost:5173/auth/callback"],
-      "webOrigins": ["http://localhost:5173"],
-      "attributes": { "pkce.code.challenge.method": "S256", "post.logout.redirect.uris": "http://localhost:5173" },
+      "redirectUris": [
+        "http://localhost:5173/auth/callback",
+        "http://localhost:8081/auth/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "http://localhost:8081"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173##http://localhost:8081"
+      },
       "protocolMappers": [
-        { "name": "api-audience", "protocol": "openid-connect", "protocolMapper": "oidc-audience-mapper", "config": { "included.client.audience": "scout-api", "access.token.claim": "true", "id.token.claim": "false" } }
+        {
+          "name": "api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "scout-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
       ]
+    },
+    {
+      "clientId": "scout-e2e",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "scout-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "11111111-1111-4111-8111-000000000001",
+      "username": "candidate@demo.ru",
+      "email": "candidate@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Демо",
+      "lastName": "Кандидат",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "candidate"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "22222222-2222-4222-8222-000000000001",
+      "username": "employer@demo.ru",
+      "email": "employer@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Демо",
+      "lastName": "Работодатель",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "employer"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "33333333-3333-4333-8333-000000000001",
+      "username": "admin@demo.ru",
+      "email": "admin@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Демо",
+      "lastName": "Администратор",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "11111111-1111-4111-8111-000000000101",
+      "username": "jury1-candidate@demo.ru",
+      "email": "jury1-candidate@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 1",
+      "lastName": "Кандидат",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "candidate"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "22222222-2222-4222-8222-000000000101",
+      "username": "jury1-employer@demo.ru",
+      "email": "jury1-employer@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 1",
+      "lastName": "Работодатель",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "employer"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "11111111-1111-4111-8111-000000000102",
+      "username": "jury2-candidate@demo.ru",
+      "email": "jury2-candidate@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 2",
+      "lastName": "Кандидат",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "candidate"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "22222222-2222-4222-8222-000000000102",
+      "username": "jury2-employer@demo.ru",
+      "email": "jury2-employer@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 2",
+      "lastName": "Работодатель",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "employer"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "11111111-1111-4111-8111-000000000103",
+      "username": "jury3-candidate@demo.ru",
+      "email": "jury3-candidate@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 3",
+      "lastName": "Кандидат",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "candidate"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "22222222-2222-4222-8222-000000000103",
+      "username": "jury3-employer@demo.ru",
+      "email": "jury3-employer@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 3",
+      "lastName": "Работодатель",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "employer"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "11111111-1111-4111-8111-000000000104",
+      "username": "jury4-candidate@demo.ru",
+      "email": "jury4-candidate@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 4",
+      "lastName": "Кандидат",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "candidate"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "22222222-2222-4222-8222-000000000104",
+      "username": "jury4-employer@demo.ru",
+      "email": "jury4-employer@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 4",
+      "lastName": "Работодатель",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "employer"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "11111111-1111-4111-8111-000000000105",
+      "username": "jury5-candidate@demo.ru",
+      "email": "jury5-candidate@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 5",
+      "lastName": "Кандидат",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "candidate"
+      ],
+      "requiredActions": []
+    },
+    {
+      "id": "22222222-2222-4222-8222-000000000105",
+      "username": "jury5-employer@demo.ru",
+      "email": "jury5-employer@demo.ru",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Жюри 5",
+      "lastName": "Работодатель",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo12345",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "employer"
+      ],
+      "requiredActions": []
     }
   ]
 }

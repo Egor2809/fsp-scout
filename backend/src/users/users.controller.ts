@@ -13,7 +13,7 @@ export class UsersController {
     const identity = request.identity;
     const user = await this.db.$transaction(async tx => {
       // Serialise provisioning for the same OIDC subject across API instances.
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${identity.sub}, 0))`;
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${identity.sub}, 0))`;
       if (await tx.deletedIdentity.findUnique({ where: { identityHash: identityTombstone(process.env.OIDC_ISSUER!, identity.sub) } }))
         throw new Problem(401, 'unauthorized', 'Аккаунт удалён или ожидает удаления');
       const user = await tx.user.upsert({

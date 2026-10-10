@@ -1,5 +1,11 @@
 # Локальный запуск всего стека
 
+Быстрый путь для проверки: `cd infra && cp .env.example .env && docker compose up --build`,
+затем http://localhost:8081. Сервис `seed` наполняет базу демо-данными, сервис `web` собирает
+фронтенд в режиме реального API и проксирует /api на api:8000. Демо-учётки (пароль `demo12345`)
+импортируются вместе с realm, их список в корневом README.md. Клиент `scout-e2e` с password grant
+нужен только для локальных сквозных проверок API.
+
 В infra/compose.yaml добавлены migrate, api и worker. Dockerfile backend содержит
 отдельные стадии сборки, миграций и запуска. В runtime входят Python и pypdf
 для резюме; приложение работает пользователем node. API/worker имеют read-only

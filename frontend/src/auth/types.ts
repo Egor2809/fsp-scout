@@ -23,7 +23,7 @@ export interface AuthProvider {
   getSession(): AuthSession | null
   getAccessToken(): Promise<string | null>
   /** dev: вход демо-персоной; oidc: редирект на Keycloak */
-  login(options?: { personaKey?: string; returnTo?: string }): Promise<AuthSession | null>
+  login(options?: { personaKey?: string; returnTo?: string; loginHint?: string }): Promise<AuthSession | null>
   /** dev: создаёт нового кандидата; oidc: редирект на регистрацию Keycloak (prompt=create) */
   register(input: RegisterInput, returnTo?: string): Promise<AuthSession | null>
   logout(): Promise<void>

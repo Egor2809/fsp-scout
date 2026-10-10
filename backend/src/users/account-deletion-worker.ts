@@ -30,7 +30,7 @@ export async function processAccountDeletion(db: PrismaClient, erase: (subject: 
   const { subject, identityHash } = payload as { subject: string; identityHash: string };
   try {
     await db.$transaction(async tx => {
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${subject}, 0))`;
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${subject}, 0))`;
       const user = await tx.user.findUnique({ where: { subject }, include: { candidate: true } });
       if (user?.candidate) await tx.$queryRaw`SELECT id FROM "Candidate" WHERE id = ${user.candidate.id}::uuid FOR UPDATE`;
       await tx.$queryRaw`SELECT id FROM "Outbox" WHERE id = ${job.id}::uuid FOR UPDATE`;

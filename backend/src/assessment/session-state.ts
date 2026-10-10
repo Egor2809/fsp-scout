@@ -9,7 +9,8 @@ export interface SessionPolicy extends CatPolicy {
   vacancyBlueprint?: TestBlueprint;
   skillConfirmationPolicyVersion?: string;
 }
-export const DEFAULT_POLICY: SessionPolicy = { min: 10, max: 18, targetSe: 0.35, topK: 5, maxExposure: 0.2, practiceTotal: 1, approachTotal: 1 };
+export const DEFAULT_GRADE_POLICY = JSON.stringify({ version: 'expert-cuts-20261010', cuts: { junior: -1.2, middle: -0.4, senior: 0.4, lead: 1.2 }, passProbability: 0.7 });
+export const DEFAULT_POLICY: SessionPolicy = { min: 8, max: 12, targetSe: 0.4, topK: 5, maxExposure: 0.4, practiceTotal: 1, approachTotal: 1 };
 export interface IssuedItem { id: string; ordinal: number; block: 'adaptive' | 'practice' | 'approach'; answeredAt: Date | null; correct: boolean | null }
 
 export function validatePolicy(policy: SessionPolicy): void {
@@ -52,6 +53,6 @@ export function answerDisposition(item: IssuedItem, current: IssuedItem | null, 
 export function exposure(sessionCount: number, servedCount: number, ceiling: number) {
   if (![sessionCount, servedCount].every(Number.isInteger) || sessionCount < 0 || servedCount < 0 || servedCount > sessionCount
     || !Number.isFinite(ceiling) || ceiling <= 0 || ceiling > 1) throw new RangeError('Invalid exposure counters');
-  const capacity = Math.floor(sessionCount * ceiling + 1e-12);
+  const capacity = Math.max(Math.floor(sessionCount * ceiling + 1e-12), Math.ceil(1 / ceiling));
   return { observedRate: sessionCount ? servedCount / sessionCount : 0, prospectiveRate: sessionCount ? (servedCount + 1) / sessionCount : null, canServe: servedCount + 1 <= capacity };
 }

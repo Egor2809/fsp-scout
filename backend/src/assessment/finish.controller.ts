@@ -10,7 +10,7 @@ import type { Grade, Specialization, TestResult } from '../contract/model/index.
 import { afterDays, gradeChangeAvailable, eligibility } from '../common/retake.js';
 import { category } from '../matching/matching.js';
 import { competencyScores, resultTrace, skipOutstanding, scoreCompletion } from './completion.js';
-import { GRADE_ORDER, empiricalPercentile } from './result-scoring.js';
+import { GRADE_ORDER, empiricalPercentile, modelPercentile } from './result-scoring.js';
 import { normativeCohort, normativePolicySignature } from './normative-cohort.js';
 import { telemetryFlags } from './telemetry-flags.js';
 import type { SessionPolicy } from './session-state.js';
@@ -88,7 +88,7 @@ export class AssessmentFinishController {
       }), { candidateId: c.id, bankVersion: test.bankVersion, policyVersion: policy.gradeCuts.version,
         policySignature: normativePolicySignature(policy),
         specialization: test.specialization as Specialization, grade: test.declaredGrade as Grade, at: now });
-      const percentile = mayConfirm ? empiricalPercentile(scored.theta, c.id, cohort)
+      const percentile = mayConfirm ? empiricalPercentile(scored.theta, c.id, cohort) ?? modelPercentile(scored.theta)
         : typeof oldStanding?.percentile === 'number' ? oldStanding.percentile : null;
       const lower = GRADE_ORDER[GRADE_ORDER.indexOf(test.declaredGrade as Grade) - 1] ?? null;
       const suggested = scored.suggestedHigherGrade ?? (scored.outcome === 'failed' ? lower : null);

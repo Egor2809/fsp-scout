@@ -14,7 +14,7 @@ export class AccountDeletionController {
     const subject = req.identity.sub, issuer = process.env.OIDC_ISSUER!;
     const identityHash = identityTombstone(issuer, subject);
     return this.db.$transaction(async tx => {
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${subject}, 0))`;
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${subject}, 0))`;
       const previous = await tx.deletedIdentity.findUnique({ where: { identityHash } });
       if (previous) return { scheduled_at: previous.requestedAt.toISOString() };
       const now = new Date();

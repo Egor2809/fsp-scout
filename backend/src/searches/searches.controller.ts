@@ -45,7 +45,7 @@ export class SearchesController {
     return search;
   }
   private async view(s: SearchRow) {
-    const candidates = (await this.matching.rows(s.companyId)).map(snapshot);
+    const candidates = (await this.matching.rows(s.companyId)).map(c => snapshot(c));
     return { id: s.id, need_id: s.needId, title: s.title, created_at: s.createdAt.toISOString(), updated_at: s.updatedAt.toISOString(), current_version: s.currentVersion,
       versions: s.versions.map(v => ({ version: v.version, created_at: v.createdAt.toISOString(), label: v.label, filters: v.filters,
         results_total: candidates.filter(c => hardFilters(c, v.filters as unknown as SearchFilters, s.companyId)).length })),

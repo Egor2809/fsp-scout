@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 import { IconArrowRight, IconBuilding, IconUser, IconUserPlus } from '@tabler/icons-react'
 import { homeFor, useAuth } from '@/auth/context'
-import { DEMO_PERSONAS } from '@/auth/personas'
+import { DEMO_PERSONAS, OIDC_DEMO_ACCOUNTS, OIDC_DEMO_PASSWORD, OIDC_JURY_ACCOUNTS } from '@/auth/personas'
 import { ConnectLines, Logo } from '@/components/brand'
 import { FormField } from '@/components/fields'
 import { ThemeToggle } from '@/components/layout/AppShell'
@@ -52,7 +52,45 @@ export default function Landing() {
         </section>
         <section className="grid content-start gap-4">
           <h2 className="text-xl">Войти в демо</h2>
-          {DEMO_PERSONAS.map((p) => (
+          {provider.mode === 'oidc' && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Вход через Keycloak, email подставится сам. Пароль для всех демо-учёток: <span className="font-mono text-foreground">{OIDC_DEMO_PASSWORD}</span>
+              </p>
+              {OIDC_DEMO_ACCOUNTS.map((a) => (
+                <button
+                  key={a.email}
+                  type="button"
+                  onClick={() => void provider.login({ loginHint: a.email })}
+                  className="group flex items-start gap-3 rounded-lg border bg-card p-4 text-left transition-colors outline-none hover:border-primary/50 hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-link">{a.role === 'employer' ? <IconBuilding /> : <IconUser />}</span>
+                  <span className="grid min-w-0 flex-1 gap-0.5">
+                    <span className="font-medium">
+                      {a.title} <span className="font-normal text-muted-foreground">· {a.email}</span>
+                    </span>
+                    <span className="text-sm text-muted-foreground">{a.description}</span>
+                  </span>
+                  <IconArrowRight className="mt-2 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                </button>
+              ))}
+              <div className="grid gap-2 rounded-lg border bg-card p-4">
+                <p className="font-medium">Отдельные учётки проверяющих</p>
+                {OIDC_JURY_ACCOUNTS.map((j) => (
+                  <div key={j.n} className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className="w-16 text-muted-foreground">Жюри {j.n}</span>
+                    <Button size="sm" variant="outline" onClick={() => void provider.login({ loginHint: j.candidate })}>
+                      <IconUser /> Кандидат
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => void provider.login({ loginHint: j.employer })}>
+                      <IconBuilding /> Работодатель
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {provider.mode === 'dev' && DEMO_PERSONAS.map((p) => (
             <button
               key={p.key}
               type="button"

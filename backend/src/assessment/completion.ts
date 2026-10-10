@@ -22,7 +22,7 @@ export function scoreCompletion(items: readonly CompletionItem[], policy: Sessio
   const readiness = completionReadiness(items, policy);
   if (readiness === 'unanswered' || readiness === 'pending_grading') throw new Error('Complete/grade issued responses before scoring');
   const observations = items.filter(i => i.block === 'adaptive').map(i => ({ a: i.discrimination, b: i.difficulty, correct: i.correct! }));
-  if (readiness === 'ready' && policy.practiceTotal >= 1 && (policy.approachTotal ?? 0) >= 1) {
+  if (readiness === 'ready' && (policy.practiceTotal === 0 || (policy.approachTotal ?? 0) >= 1)) {
     const scored = scoreOutcome(observations, grade, cuts);
     const practiceFailed = items.filter(i => i.block === 'practice' || i.block === 'approach').some(i => i.correct !== true);
     return { ...scored, ...(practiceFailed ? { outcome: 'failed' as const, suggestedHigherGrade: null } : {}), incomplete: false, practiceFailed };
