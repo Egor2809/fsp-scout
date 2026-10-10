@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { category, explain, hardFilters, percentileReliability, radar, searchGrades, strength, type CandidateSnapshot } from '../src/matching/matching.ts';
+import { MATCH_WEIGHTS, category, explain, hardFilters, percentileReliability, radar, searchGrades, strength, type CandidateSnapshot } from '../src/matching/matching.ts';
 import { parseNeed, parseSalary } from '../src/needs/need-parser.ts';
 import { SKILL_BY_ID } from '../src/common/taxonomy-data.ts';
 import type { FspAchievement, SearchFilters } from '../src/contract/model/index.js';
@@ -30,8 +30,8 @@ test('one lower grade is visible with an explicit penalty; other hard filters re
   c.profile.standing!.category = category('backend', 'junior');
   assert.ok(hardFilters(c, filters, 'company'));
   const lower = explain(c, filters, now);
-  assert.equal(lower.score, exact.score - 8);
-  assert.ok(lower.chips.some(f => f.contribution === -8 && f.polarity === 'negative'));
+  assert.ok(Math.abs(lower.score - (exact.score - MATCH_WEIGHTS.gradePenalty)) < 1e-8);
+  assert.ok(lower.chips.some(f => f.contribution === -MATCH_WEIGHTS.gradePenalty && f.polarity === 'negative'));
   assert.ok(Math.abs(lower.factors.reduce((sum, f) => sum + f.contribution, 0) - lower.score) < 1e-8);
   assert.equal(hardFilters(c, { ...filters, grades: ['senior'] }, 'company'), false);
   assert.equal(hardFilters(c, { ...filters, grades: [] }, 'company'), false);

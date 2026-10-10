@@ -56,9 +56,10 @@ export function strength(c: CandidateSnapshot, now: Date) {
   const tasks = clamp(c.taskSignal.solvedCount * 35 + (c.taskSignal.fresh ? 30 : 0));
   const completeness = clamp(p.completeness);
   const fspBonus = c.showFsp ? computeFspScore(c.achievements, p.standing?.category.specialization ?? p.specialization, now).bonus : 0;
-  return { percentile, weightedPercentile, reliability, confirmed, tasks, completeness, fspBonus, total: round(0.65 * weightedPercentile + 0.15 * confirmed + 0.1 * tasks + 0.1 * completeness + fspBonus) };
+  return { percentile, weightedPercentile, reliability, confirmed, tasks, completeness, fspBonus, total: round(MATCH_WEIGHTS.percentile * weightedPercentile + MATCH_WEIGHTS.confirmed * confirmed + MATCH_WEIGHTS.tasks * tasks + MATCH_WEIGHTS.completeness * completeness + fspBonus) };
 }
 export const ADJACENT_CREDIT = 0.25;
+export const MATCH_WEIGHTS = { fit: 0.6, coverage: 0.25, lexical: 0.45, industry: 0.1, conditions: 0.2, claimed: 1 / 1.5, gradePenalty: 15, sePenalty: 3, percentile: 0.65, confirmed: 0.15, tasks: 0.1, completeness: 0.1 };
 
 export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date): MatchExplanation {
   const p = c.profile;
@@ -71,7 +72,7 @@ export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date)
       .sort((a, b) => Number(b.verified) - Number(a.verified))[0];
     return near ? [[item.id, near] as const] : [];
   }));
-  const credit = (id: string) => skillMap.get(id)?.verified ? 1 : skillMap.has(id) ? 1 / 1.5 : adjacent.get(id)?.verified ? ADJACENT_CREDIT * 1.5 : adjacent.has(id) ? ADJACENT_CREDIT : 0;
+  const credit = (id: string) => skillMap.get(id)?.verified ? 1 : skillMap.has(id) ? MATCH_WEIGHTS.claimed : adjacent.get(id)?.verified ? ADJACENT_CREDIT * 1.5 : adjacent.has(id) ? ADJACENT_CREDIT : 0;
   const coverage = totalWeight ? wanted.reduce((sum, item) => sum + item.weight * credit(item.id), 0) / totalWeight : 1;
   const wantedIds = new Set(wanted.map(x => x.id));
   const union = new Set([...wantedIds, ...skillMap.keys()]);
@@ -82,27 +83,28 @@ export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date)
   if (p.salary_expectation) salary = overlaps(p.salary_expectation, filters.salary) ? 1 : p.salary_expectation.from > filters.salary.to
     ? clamp(1 - (p.salary_expectation.from - filters.salary.to) / filters.salary.to * 3, 1) : 0.85;
   const conditions = 0.7 * salary + 0.3 * Number(p.work_formats.some(f => filters.work_formats.includes(f)));
-  const fit = round(100 * (0.4 * coverage + 0.25 * lexical + 0.15 * industry + 0.2 * conditions));
+  const W = MATCH_WEIGHTS, fitShare = 100 * W.fit, strengthShare = 1 - W.fit;
+  const fit = round(100 * (W.coverage * coverage + W.lexical * lexical + W.industry * industry + W.conditions * conditions));
   const parts = strength(c, now);
-  const penalty = (c.standardError ?? 1) > 0.45 ? 3 : 0;
+  const penalty = (c.standardError ?? 1) > 0.45 ? W.sePenalty : 0;
   const belowGrade = p.standing ? gradeGap(p.standing.category.grade, filters.grades) === 1 : false;
-  const gradePenalty = belowGrade ? 8 : 0;
-  const raw = 0.6 * fit + 0.4 * parts.total - penalty - gradePenalty;
+  const gradePenalty = belowGrade ? W.gradePenalty : 0;
+  const raw = W.fit * fit + strengthShare * parts.total - penalty - gradePenalty;
   const score = round(clamp(raw));
   const factors: ExplanationFactor[] = [
-    { kind: 'skills_coverage', label: `Покрытие навыков ${Math.round(coverage * 100)}%`, contribution: round(24 * coverage), polarity: coverage >= 0.7 ? 'positive' : 'neutral', evidence: adjacent.size ? `Смежные навыки по таксономии: ${[...adjacent].map(([id, s]) => `${s.name} вместо ${skillName(id)}`).join(', ')}` : 'Подтверждённый навык весит в 1.5 раза больше заявленного' },
-    { kind: 'semantic', label: 'Совпадение словаря навыков', contribution: round(15 * lexical), polarity: lexical >= 0.5 ? 'positive' : 'neutral', evidence: `Офлайн-метрика Jaccard: ${round(lexical)}; модель эмбеддингов не используется` },
-    { kind: 'industry', label: 'Соответствие отрасли', contribution: round(9 * industry), polarity: industry === 1 ? 'positive' : 'neutral', evidence: industry === 1 ? p.industries.filter(x => filters.industries.includes(x)).join(', ') : 'Отрасль не совпала или не задана' },
-    { kind: 'conditions', label: 'Соответствие условий', contribution: round(12 * conditions), polarity: salary < 0.5 ? 'negative' : 'positive', evidence: `Вилка ${filters.salary.from}–${filters.salary.to} ₽, формат ${filters.work_formats.join(', ')}` },
-    { kind: 'percentile', label: `${parts.percentile}-й перцентиль подтверждённого теста`, contribution: round(0.26 * parts.weightedPercentile), polarity: parts.percentile >= 50 ? 'positive' : 'neutral', evidence: p.standing ? `${p.standing.category.label}; вес перцентиля ×${round(parts.reliability)} по точности теста` : null },
-    { kind: 'confirmed_skills', label: 'Подтверждённые навыки', contribution: round(0.06 * parts.confirmed), polarity: parts.confirmed ? 'positive' : 'neutral', evidence: p.skills.filter(s => s.verified).map(s => s.name).join(', ') || null },
-    { kind: 'tasks', label: 'Результаты регулярных заданий', contribution: round(0.04 * parts.tasks), polarity: parts.tasks ? 'positive' : 'neutral', evidence: c.taskSignal.lastSolvedAt },
-    { kind: 'completeness', label: 'Полнота профиля', contribution: round(0.04 * parts.completeness), polarity: 'neutral', evidence: `${parts.completeness}%` },
+    { kind: 'skills_coverage', label: `Покрытие навыков ${Math.round(coverage * 100)}%`, contribution: round(fitShare * W.coverage * coverage), polarity: coverage >= 0.7 ? 'positive' : 'neutral', evidence: adjacent.size ? `Смежные навыки по таксономии: ${[...adjacent].map(([id, s]) => `${s.name} вместо ${skillName(id)}`).join(', ')}` : 'Подтверждённый навык весит в 1.5 раза больше заявленного' },
+    { kind: 'semantic', label: 'Совпадение словаря навыков', contribution: round(fitShare * W.lexical * lexical), polarity: lexical >= 0.5 ? 'positive' : 'neutral', evidence: `Офлайн-метрика Jaccard: ${round(lexical)}; модель эмбеддингов не используется` },
+    { kind: 'industry', label: 'Соответствие отрасли', contribution: round(fitShare * W.industry * industry), polarity: industry === 1 ? 'positive' : 'neutral', evidence: industry === 1 ? p.industries.filter(x => filters.industries.includes(x)).join(', ') : 'Отрасль не совпала или не задана' },
+    { kind: 'conditions', label: 'Соответствие условий', contribution: round(fitShare * W.conditions * conditions), polarity: salary < 0.5 ? 'negative' : 'positive', evidence: `Вилка ${filters.salary.from}–${filters.salary.to} ₽, формат ${filters.work_formats.join(', ')}` },
+    { kind: 'percentile', label: `${parts.percentile}-й перцентиль подтверждённого теста`, contribution: round(strengthShare * W.percentile * parts.weightedPercentile), polarity: parts.percentile >= 50 ? 'positive' : 'neutral', evidence: p.standing ? `${p.standing.category.label}; вес перцентиля ×${round(parts.reliability)} по точности теста` : null },
+    { kind: 'confirmed_skills', label: 'Подтверждённые навыки', contribution: round(strengthShare * W.confirmed * parts.confirmed), polarity: parts.confirmed ? 'positive' : 'neutral', evidence: p.skills.filter(s => s.verified).map(s => s.name).join(', ') || null },
+    { kind: 'tasks', label: 'Результаты регулярных заданий', contribution: round(strengthShare * W.tasks * parts.tasks), polarity: parts.tasks ? 'positive' : 'neutral', evidence: c.taskSignal.lastSolvedAt },
+    { kind: 'completeness', label: 'Полнота профиля', contribution: round(strengthShare * W.completeness * parts.completeness), polarity: 'neutral', evidence: `${parts.completeness}%` },
   ];
-  if (parts.fspBonus) factors.push({ kind: 'fsp', label: 'Подтверждённые достижения ФСП', contribution: round(0.4 * parts.fspBonus), polarity: 'positive', evidence: `Бонус Strength +${parts.fspBonus}` });
+  if (parts.fspBonus) factors.push({ kind: 'fsp', label: 'Подтверждённые достижения ФСП', contribution: round(strengthShare * parts.fspBonus), polarity: 'positive', evidence: `Бонус Strength +${parts.fspBonus}` });
   for (const id of filters.nice_skills.filter(id => !skillMap.has(id))) factors.push({ kind: 'missing_skill', label: adjacent.has(id) ? `Нет ${skillName(id)}, есть смежный ${adjacent.get(id)!.name}` : `Нет ${skillName(id)} (желательно)`, contribution: 0, polarity: 'negative', evidence: 'Уже учтено в покрытии навыков; повторного штрафа нет' });
   if (penalty) factors.push({ kind: 'penalty', label: 'Низкая точность оценки', contribution: -penalty, polarity: 'negative', evidence: 'SE > 0.45 или оценка отсутствует' });
-  if (belowGrade) factors.push({ kind: 'penalty', label: 'Категория на один грейд ниже запроса', contribution: -gradePenalty, polarity: 'negative', evidence: `Подтверждённая категория: ${p.standing!.category.label}; штраф 8 баллов, категория не изменяется` });
+  if (belowGrade) factors.push({ kind: 'penalty', label: 'Категория на один грейд ниже запроса', contribution: -gradePenalty, polarity: 'negative', evidence: `Подтверждённая категория: ${p.standing!.category.label}; штраф ${W.gradePenalty} баллов, категория не изменяется` });
   if (raw !== clamp(raw)) factors.push({ kind: 'penalty', label: 'Ограничение итогового скора', contribution: round(clamp(raw) - raw), polarity: 'neutral', evidence: 'Score ограничен диапазоном 0–100' });
   // Account for rounding so displayed contributions sum to the displayed score.
   const residual = round(score - factors.reduce((sum, f) => sum + f.contribution, 0));
