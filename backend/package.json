@@ -12,9 +12,11 @@
     "contract:snapshot": "node scripts/check-contract-snapshot.mjs",
     "contract:matrix": "node scripts/update-api-matrix.mjs",
     "test": "node --experimental-strip-types --test --test-isolation=none test/*.test.ts",
+    "eval": "node --experimental-strip-types eval/validate.ts",
     "test:integration": "node --test --test-isolation=none integration/*.test.mjs",
     "prisma:generate": "prisma generate",
-    "migrate": "prisma migrate deploy"
+    "migrate": "prisma migrate deploy",
+    "seed:demo": "tsx scripts/seed-demo.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.1.6",

@@ -1,5 +1,9 @@
 node_modules
 dist
-.env*
+screenshots
+.env
+.env.*
+!.env.example
+*.log
 test-results
 playwright-report

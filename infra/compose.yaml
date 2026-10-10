@@ -6,7 +6,7 @@ services:
       POSTGRES_DB: scout
       POSTGRES_USER: scout
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
-    ports: ["127.0.0.1:5432:5432"]
+    ports: ["127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"]
     volumes:
       - postgres:/var/lib/postgresql/data
       - ./postgres-init.sql:/docker-entrypoint-initdb.d/01-keycloak.sql:ro
@@ -53,6 +53,19 @@ services:
       postgres:
         condition: service_healthy
     restart: "no"
+  seed:
+    build:
+      context: ../backend
+      target: migrate
+    command: ["npm", "run", "seed:demo"]
+    environment:
+      DATABASE_URL: postgresql://scout:${POSTGRES_PASSWORD}@postgres:5432/scout
+      OIDC_ISSUER: http://localhost:8080/realms/scout
+      SEED_PER_CATEGORY: ${SEED_PER_CATEGORY:-15}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
   api:
     build:
       context: ../backend
@@ -63,9 +76,9 @@ services:
       OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/scout}
       OIDC_JWKS_URL: http://keycloak:8080/realms/scout/protocol/openid-connect/certs
       OIDC_AUDIENCE: scout-api
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8081}
       PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8000/api/v1}
-      PUBLIC_VERIFICATION_BASE_URL: ${PUBLIC_VERIFICATION_BASE_URL:-http://localhost:5173}
+      PUBLIC_VERIFICATION_BASE_URL: ${PUBLIC_VERIFICATION_BASE_URL:-http://localhost:8081}
       FSP_WEBHOOK_SECRET: ${FSP_WEBHOOK_SECRET:?Set FSP_WEBHOOK_SECRET}
       ASSESSMENT_GRADE_POLICY: ${ASSESSMENT_GRADE_POLICY:-}
       PISTON_EXECUTE_URL: ${PISTON_EXECUTE_URL:-}
@@ -73,7 +86,7 @@ services:
       PISTON_JAVASCRIPT_VERSION: ${PISTON_JAVASCRIPT_VERSION:-}
       PISTON_GO_VERSION: ${PISTON_GO_VERSION:-}
     depends_on:
-      migrate:
+      seed:
         condition: service_completed_successfully
       redis:
         condition: service_healthy
@@ -120,7 +133,7 @@ services:
     mem_limit: 512m
     pids_limit: 32
     stop_grace_period: 30s
-  frontend:
+  web:
     build:
       context: ../frontend
       args:
@@ -128,7 +141,7 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    ports: ["127.0.0.1:5173:80"]
+    ports: ["127.0.0.1:8081:80"]
 volumes:
   postgres:
   redis:

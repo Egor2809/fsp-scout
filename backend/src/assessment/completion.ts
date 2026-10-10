@@ -1,5 +1,5 @@
 import { estimate, type ItemResponse } from '../common/irt.ts';
-import { currentItem, validatePolicy, type IssuedItem, type SessionPolicy } from './session-state.ts';
+import { coveredCompetencies, currentItem, validatePolicy, type IssuedItem, type SessionPolicy } from './session-state.ts';
 import type { Grade } from '../contract/model/index.js';
 import { scoreOutcome, validateGradeCuts, GRADE_ORDER, type GradeCuts } from './result-scoring.ts';
 
@@ -22,7 +22,7 @@ export function scoreCompletion(items: readonly CompletionItem[], policy: Sessio
   const readiness = completionReadiness(items, policy);
   if (readiness === 'unanswered' || readiness === 'pending_grading') throw new Error('Complete/grade issued responses before scoring');
   const observations = items.filter(i => i.block === 'adaptive').map(i => ({ a: i.discrimination, b: i.difficulty, correct: i.correct! }));
-  if (readiness === 'ready' && policy.practiceTotal >= 1 && (policy.approachTotal ?? 0) >= 1) {
+  if (readiness === 'ready' && (policy.practiceTotal === 0 || (policy.approachTotal ?? 0) >= 1)) {
     const scored = scoreOutcome(observations, grade, cuts);
     const practiceFailed = items.filter(i => i.block === 'practice' || i.block === 'approach').some(i => i.correct !== true);
     return { ...scored, ...(practiceFailed ? { outcome: 'failed' as const, suggestedHigherGrade: null } : {}), incomplete: false, practiceFailed };
@@ -45,7 +45,7 @@ export function completionReadiness(items: readonly CompletionItem[], policy: Se
   if (adaptive.length < policy.min) return 'adaptive_incomplete';
   const observations: ItemResponse[] = adaptive.map(item => ({ a: item.discrimination, b: item.difficulty, correct: item.correct! }));
   if (adaptive.length < policy.max && estimate(observations).se > policy.targetSe) return 'adaptive_incomplete';
-  if (policy.requiredCompetencies?.some(id => !adaptive.some(item => item.competency === id))) return 'coverage_incomplete';
+  if (coveredCompetencies(policy).some(id => !adaptive.some(item => item.competency === id))) return 'coverage_incomplete';
   if (items.filter(item => item.block === 'practice').length < policy.practiceTotal) return 'practice_incomplete';
   // A failed practice already fails the assessment; no misleading clarification is fabricated for broken code.
   if (!items.some(item => item.block === 'practice' && item.correct === false)

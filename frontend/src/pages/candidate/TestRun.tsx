@@ -259,13 +259,14 @@ export default function TestRun() {
   const inactive = next.error instanceof ApiError && next.error.code === 'test_not_active'
     || finish.error instanceof ApiError && finish.error.code === 'test_not_active'
   const expiredRefresh = useRef<string | null>(null)
+  const refetchNext = next.refetch
   useEffect(() => {
     if (expired && expiredRefresh.current !== testId) {
       expiredRefresh.current = testId
-      void next.refetch()
+      void refetchNext()
       void invalidatePaths(qc, '/me', '/tests')
     }
-  }, [expired, testId, next.refetch, qc])
+  }, [expired, testId, refetchNext, qc])
 
   return (
     <div className="mx-auto max-w-3xl">

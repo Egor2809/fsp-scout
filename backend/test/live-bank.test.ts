@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { LIVE_BANK, instantiate, bankInventory } from '../src/assessment/live-bank.ts';
+import { readFileSync } from 'node:fs';
+import { LIVE_BANK, instantiate, bankInventory, requiredCompetencies } from '../src/assessment/live-bank.ts';
 import { gradeAnswer } from '../src/assessment/grading.ts';
 import { FAMILIES } from '../src/assessment/showcase.ts';
 test('live instances have private answer keys, reproducible variants and a complete public projection', () => {
@@ -56,5 +57,75 @@ test('inventory audit exposes the real bank deficit rather than relaxing the exp
     assert.equal(audit.required, 90);
     assert.equal(audit.sufficientInventory, false);
     assert.equal(audit.deficit, 90 - audit.available);
+  }
+});
+test('every live family yields finite, deterministic and varied variants', () => {
+  for (const family of LIVE_BANK) {
+    const prompts = new Set<string>();
+    for (let seed = 0; seed < 200; seed++) {
+      const variant = family.generate(seed);
+      assert.ok(Number.isFinite(variant.value), `${family.id} seed ${seed}`);
+      assert.ok(!/undefined|NaN/.test(variant.prompt), `${family.id} seed ${seed}`);
+      assert.ok(Object.values(variant.parameters).every(Number.isFinite), `${family.id} seed ${seed}`);
+      assert.ok(variant.tolerance === undefined || (variant.tolerance >= 0 && variant.tolerance < 1), family.id);
+      assert.deepEqual(family.generate(seed), variant);
+      prompts.add(variant.prompt);
+    }
+    assert.ok(prompts.size >= 5, family.id);
+  }
+});
+test('each specialization has at least 34 families over 3+ competencies and the full difficulty range', () => {
+  const skills = new Set((JSON.parse(readFileSync(new URL('../src/taxonomy/data.json', import.meta.url), 'utf8')) as { skills: { id: string }[] }).skills.map(s => s.id));
+  for (const family of LIVE_BANK) {
+    assert.ok(family.b >= -1.8 && family.b <= 1.8, family.id);
+    for (const skill of family.skillIds) assert.ok(skills.has(skill), `${family.id}: ${skill}`);
+  }
+  for (const specialization of ['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst'] as const) {
+    const families = LIVE_BANK.filter(f => f.specializations.includes(specialization));
+    assert.ok(families.length >= 34, specialization);
+    assert.ok(new Set(families.map(f => f.competency)).size >= 3, specialization);
+    assert.ok(families.filter(f => f.b <= -0.6).length >= 8, specialization);
+    assert.ok(families.filter(f => f.b > -0.6 && f.b <= 0.6).length >= 8, specialization);
+    assert.ok(families.filter(f => f.b > 0.6).length >= 7, specialization);
+  }
+});
+test('selected keys agree with brute-force references', () => {
+  const byId = (id: string) => LIVE_BANK.find(f => f.id === id)!;
+  for (let seed = 0; seed < 50; seed++) {
+    const rehash = byId('live-rehash-moves').generate(seed), { shards, keys } = rehash.parameters;
+    let moved = 0;
+    for (let k = 0; k < keys!; k++) if (k % shards! !== k % (shards! + 1)) moved++;
+    assert.equal(rehash.value, moved);
+    const throttle = byId('live-throttle-calls').generate(seed), { step, window, count } = throttle.parameters;
+    let fired = 0, last = -Infinity;
+    for (let i = 0; i < count!; i++) if (i * step! - last >= window!) { fired++; last = i * step!; }
+    assert.equal(throttle.value, fired);
+    const pairwise = byId('live-pairwise-min').generate(seed), [a, b, c] = [pairwise.parameters.x!, pairwise.parameters.y!, pairwise.parameters.z!].sort((p, q) => q - p);
+    const rows: number[][] = [];
+    for (let i = 0; i < a!; i++) for (let j = 0; j < b!; j++) rows.push([i, j, (i + j) % c!]);
+    const covered = (p: number, q: number, size: number) => new Set(rows.map(r => `${r[p]}:${r[q]}`)).size === size;
+    assert.ok(covered(0, 1, a! * b!) && covered(0, 2, a! * c!) && covered(1, 2, b! * c!));
+    assert.equal(pairwise.value, rows.length);
+    const binary = byId('live-binary-search-probes').generate(seed);
+    let lo = 0, hi = binary.parameters.size! - 1, probes = 0;
+    while (lo <= hi) { const mid = (lo + hi) >> 1; probes++; lo = mid + 1; }
+    assert.equal(binary.value, probes);
+  }
+});
+
+test('mandatory coverage only for competencies the exposure ceiling can sustain', () => {
+  for (const specialization of ['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst'] as const) {
+    const bank = LIVE_BANK.filter(f => f.specializations.includes(specialization));
+    const required = requiredCompetencies(bank, 0.4);
+    assert.ok(required.length > 0);
+    for (const id of required) assert.ok(bank.filter(f => f.competency === id).length >= 3);
+  }
+});
+test('complete tree bottom level matches level-order filling', () => {
+  for (let seed = 0; seed < 50; seed++) {
+    const tree = LIVE_BANK.find(f => f.id === 'live-binary-tree-height')!.generate(seed), nodes = tree.parameters.nodes!;
+    let left = nodes, width = 1;
+    while (left > width) { left -= width; width *= 2; }
+    assert.equal(tree.value, left);
   }
 });

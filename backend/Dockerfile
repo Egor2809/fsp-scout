@@ -1,14 +1,14 @@
 FROM node:24-bookworm-slim AS build
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
-COPY package.json ./
-# Replace with npm ci after the first verified dependency installation creates a lockfile.
-RUN npm install --ignore-scripts
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
 COPY tsconfig.json ./
 COPY prisma ./prisma
 COPY src ./src
 RUN DATABASE_URL=postgresql://scout:unused@localhost:5432/scout npm run prisma:generate
 RUN npm run build
+COPY scripts ./scripts
 
 FROM build AS migrate
 CMD ["npm", "run", "migrate"]

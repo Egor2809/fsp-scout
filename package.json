@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "npm --prefix backend test",
-    "eval": "node --experimental-strip-types eval/simulate.ts",
+    "eval": "npm --prefix backend run eval",
     "test:evaluate": "node --experimental-strip-types --test --test-isolation=none eval/evaluation-ui.test.mjs",
     "test:tasks": "node --experimental-strip-types --test --test-isolation=none eval/task-workflow.test.mjs",
     "check:contract": "npm --prefix backend run contract:snapshot",

@@ -59,8 +59,8 @@ export class OidcAuthProvider implements AuthProvider {
     return user && !user.expired ? user.access_token : null
   }
 
-  async login(options?: { returnTo?: string }) {
-    await this.manager.signinRedirect({ state: { returnTo: options?.returnTo ?? '/' } })
+  async login(options?: { returnTo?: string; loginHint?: string }) {
+    await this.manager.signinRedirect({ state: { returnTo: options?.returnTo ?? '/' }, login_hint: options?.loginHint })
     return null
   }
 

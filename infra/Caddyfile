@@ -1,6 +1,6 @@
 {$APP_DOMAIN} {
     encode zstd gzip
-    reverse_proxy frontend:80
+    reverse_proxy web:80
 }
 {$AUTH_DOMAIN} {
     @admin path /admin /admin/*

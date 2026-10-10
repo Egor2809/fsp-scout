@@ -13,10 +13,13 @@ services:
       CORS_ORIGIN: https://${APP_DOMAIN:?Set APP_DOMAIN}
       PUBLIC_API_URL: https://${APP_DOMAIN}/api/v1
       PUBLIC_VERIFICATION_BASE_URL: https://${APP_DOMAIN}
+  seed:
+    environment:
+      OIDC_ISSUER: https://${AUTH_DOMAIN}/realms/scout
   worker:
     environment:
       OIDC_ISSUER: https://${AUTH_DOMAIN}/realms/scout
-  frontend:
+  web:
     build:
       args:
         VITE_OIDC_AUTHORITY: https://${AUTH_DOMAIN}/realms/scout
@@ -30,7 +33,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
-    depends_on: [frontend, keycloak]
+    depends_on: [web, keycloak]
 volumes:
   caddy_data:
   caddy_config:

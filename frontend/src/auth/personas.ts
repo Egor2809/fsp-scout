@@ -47,3 +47,19 @@ export const DEMO_PERSONAS: readonly DemoPersona[] = [
 export const DEMO_COMPANY_ID = '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
 export const DEMO_CANDIDATE_FSP_ID = 'c56a4180-65aa-42ec-a945-5fd21dec0538'
 export const DEMO_CANDIDATE_NO_FSP_ID = 'e4eaaaf2-d142-41e1-b3e4-080027620cdd'
+
+export interface OidcDemoAccount {
+  email: string
+  role: Role
+  title: string
+  description: string
+}
+
+export const OIDC_DEMO_PASSWORD = 'demo12345'
+
+export const OIDC_DEMO_ACCOUNTS: readonly OidcDemoAccount[] = [
+  { email: 'candidate@demo.ru', role: 'candidate', title: 'Кандидат', description: 'Чистая учётка: согласия, опрос, адаптивный тест, инвайты' },
+  { email: 'employer@demo.ru', role: 'employer', title: 'Работодатель', description: '«Северный код»: подборки по сотням подтверждённых кандидатов, вакансии' },
+]
+
+export const OIDC_JURY_ACCOUNTS = [1, 2, 3, 4, 5].map((n) => ({ n, candidate: `jury${n}-candidate@demo.ru`, employer: `jury${n}-employer@demo.ru` }))

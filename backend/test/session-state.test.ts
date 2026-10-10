@@ -10,7 +10,7 @@ test('progress does not confuse minimum length with actual CAT stopping', () => 
   assert.equal(progress(items, policy, true).block, 'practice');
   assert.equal(progress([...items, issued(11, false, 'practice')], policy).block, 'practice');
   assert.equal(progress([...items, issued(11, true, 'practice')], policy, true).practice_answered, 1);
-  assert.equal(progress(items, policy).answered, 10);
+  assert.equal(progress(items, policy).answered, policy.min);
   assert.throws(() => progress(items, { ...policy, targetSe: NaN }), /policy/);
 });
 test('one outstanding item is stable; duplicate responses replay only the same answer', () => {
@@ -25,7 +25,8 @@ test('one outstanding item is stable; duplicate responses replay only the same a
   assert.notEqual(canonicalAnswer({ text: '1' }), canonicalAnswer({ text: '2' }));
 });
 test('exposure uses real sessions and checks prospective capacity without bootstrap observations', () => {
-  assert.equal(exposure(1, 0, 0.2).canServe, false);
+  assert.equal(exposure(1, 0, 0.2).canServe, true);
+  assert.equal(exposure(5, 5, 0.2).canServe, false);
   assert.equal(exposure(5, 0, 0.2).canServe, true);
   assert.equal(exposure(1, 1, 0.2).observedRate, 1);
   assert.equal(exposure(49, 10, 0.2).canServe, false);

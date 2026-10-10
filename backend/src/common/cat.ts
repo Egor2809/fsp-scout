@@ -44,6 +44,23 @@ export function selectFamily(
   return { family: choices[Math.floor(draw * choices.length)]!.family, reason: 'selected' };
 }
 
+/** Coverage of a competency whose unserved families are all at the exposure ceiling is waived, never forced. */
+export function selectWithWaiver(
+  bank: readonly Family[], state: CatState, policy: CatPolicy,
+  exposure: Readonly<Record<string, number>>, requiredCompetencies: readonly string[], random: () => number,
+) {
+  const waived: string[] = [];
+  let choice = selectFamily(bank, state, policy, exposure, requiredCompetencies, random);
+  while (choice.reason === 'coverage_unavailable' && state.responses.length < policy.max) {
+    const blocked = requiredCompetencies.filter(id => !state.competencyCounts[id] && !waived.includes(id)
+      && bank.filter(f => f.competency === id && !state.servedIds.includes(f.id)).every(f => (exposure[f.id] ?? 0) >= policy.maxExposure));
+    if (!blocked.length) break;
+    waived.push(...blocked);
+    choice = selectFamily(bank, state, policy, exposure, requiredCompetencies.filter(id => !waived.includes(id)), random);
+  }
+  return { ...choice, waived };
+}
+
 export function seededRandom(seed: number): () => number {
   let value = seed >>> 0;
   return () => {

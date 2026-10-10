@@ -1,5 +1,11 @@
 # Локальный запуск всего стека
 
+Быстрый путь для проверки: `cd infra && cp .env.example .env && docker compose up --build`,
+затем http://localhost:8081. Сервис `seed` наполняет базу демо-данными, сервис `web` собирает
+фронтенд в режиме реального API и проксирует /api на api:8000. Демо-учётки (пароль `demo12345`)
+импортируются вместе с realm, их список в корневом README.md. Клиент `scout-e2e` с password grant
+нужен только для локальных сквозных проверок API.
+
 В infra/compose.yaml добавлены migrate, api и worker. Dockerfile backend содержит
 отдельные стадии сборки, миграций и запуска. В runtime входят Python и pypdf
 для резюме; приложение работает пользователем node. API/worker имеют read-only
@@ -23,7 +29,7 @@ docker compose --env-file infra/.env -f infra/compose.yaml logs --tail 100 migra
 Не публикуйте .env или вывод конфигурации, содержащий секреты.
 
 API: http://localhost:8000/api/v1, Keycloak: http://localhost:8080,
-Mailpit: http://localhost:8025. Frontend включён в Compose на http://localhost:5173,
+Mailpit: http://localhost:8025. Frontend включён в Compose на http://localhost:8081,
 с VITE_API_MOCK=false и VITE_AUTH_MODE=oidc. Issuer токенов остаётся публичным
 localhost:8080, а серверный JWKS запрашивается через внутренний хост keycloak.
 Запуск контейнера Keycloak ещё не означает готовность его HTTP API: в первые
@@ -37,9 +43,8 @@ Worker выполняет обслуживание, назначение рег�
 
 Проверка docker compose config --quiet проходит. Сборка и запуск не проверены:
 доступ к npm блокируется ECONNREFUSED 127.0.0.1:9, текущий docker info сообщает
-permission denied при подключении к pipe dockerDesktopLinuxEngine. Lockfile пока отсутствует, поэтому Dockerfile временно использует
-npm install; после успешной установки нужно сохранить проверенный lockfile,
-перейти на npm ci и проверить воспроизводимость сборки.
+permission denied при подключении к pipe dockerDesktopLinuxEngine. Lockfile backend получен при объединении с main;
+Dockerfile и CI используют npm ci. Полную воспроизводимость сборки ещё нужно проверить.
 
 После запуска необходимо выполнить Prisma/HTTP-интеграционные сценарии,
 проверить обработку резюме внутри контейнера, миграции с чистого PostgreSQL,

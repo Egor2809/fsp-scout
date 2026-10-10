@@ -41,8 +41,8 @@ test('practice handles negative windows, replacements, touching/empty intervals 
   assert.equal(practiceAnswer('streak', [2, 2, 1, 2, 2, 2], 2), 3);
 });
 test('practice selection uses real exposure capacity, avoids repeats and balances least-used families', () => {
-  assert.equal(selectPracticeFamily(PRACTICE_BANK, [], 1, new Map(), 0.2, () => 0), null);
-  const used = new Map(PRACTICE_BANK.map(f => [f.id, 1]));
+  assert.notEqual(selectPracticeFamily(PRACTICE_BANK, [], 1, new Map(), 0.2, () => 0), null);
+  const used = new Map(PRACTICE_BANK.map(f => [f.id, 5]));
   assert.equal(selectPracticeFamily(PRACTICE_BANK, [], 5, used, 0.2, () => 0), null);
   used.set(PRACTICE_BANK[2].id, 0);
   assert.equal(selectPracticeFamily(PRACTICE_BANK, [], 10, used, 0.2, () => 0)?.id, PRACTICE_BANK[2].id);

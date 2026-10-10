@@ -33,6 +33,13 @@ export function scoreOutcome(responses: readonly ItemResponse[], declaredGrade: 
 }
 
 export interface NormObservation { candidateId: string; theta: number }
+export function modelPercentile(theta: number): number {
+  if (!Number.isFinite(theta)) throw new RangeError('Invalid theta');
+  const t = 1 / (1 + 0.3275911 * Math.abs(theta) / Math.SQRT2);
+  const erf = 1 - t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * Math.exp(-theta * theta / 2);
+  return Math.max(1, Math.min(99, Math.round(50 * (1 + Math.sign(theta) * erf))));
+}
+
 /** Supply one same-category, same-calibration cohort. The tested candidate is excluded. */
 export function empiricalPercentile(theta: number, candidateId: string, cohort: readonly NormObservation[], minimumSize = 30): number | null {
   if (!Number.isFinite(theta) || !Number.isInteger(minimumSize) || minimumSize < 2) throw new RangeError('Invalid percentile request');

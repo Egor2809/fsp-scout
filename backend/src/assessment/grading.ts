@@ -11,7 +11,7 @@ export class InvalidAnswer extends Error {
   readonly pointer: string;
   constructor(pointer: string, message: string) { super(message); this.pointer = pointer; }
 }
-const fail = (field: string, message: string): never => { throw new InvalidAnswer(`/answer/${field}`, message); };
+function fail(field: string, message: string): never { throw new InvalidAnswer(`/answer/${field}`, message); }
 function normalize(value: string, sensitive: boolean): string {
   const text = value.normalize('NFKC').trim().replace(/\s+/gu, ' ');
   return sensitive ? text : text.toLocaleLowerCase('en-US');

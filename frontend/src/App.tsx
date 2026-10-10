@@ -1,5 +1,5 @@
-import { lazy, Suspense, type ReactNode } from 'react'
-import { createBrowserRouter, Navigate, Outlet, RouterProvider, useLocation } from 'react-router'
+import { lazy, Suspense, useState, type ReactNode } from 'react'
+import { createBrowserRouter, Navigate, Outlet, RouterProvider, useLocation, type RouteObject } from 'react-router'
 import { homeFor, useAuth } from '@/auth/context'
 import { AppShell, PageFallback } from '@/components/layout/AppShell'
 import { PageTransition } from '@/components/motion'
@@ -63,7 +63,7 @@ function Bare() {
   )
 }
 
-const router = createBrowserRouter([
+const routes: RouteObject[] = [
   {
     element: <Bare />,
     children: [
@@ -128,8 +128,9 @@ const router = createBrowserRouter([
       { path: '*', element: <NotFound /> },
     ],
   },
-])
+]
 
 export default function App() {
+  const [router] = useState(() => createBrowserRouter(routes))
   return <RouterProvider router={router} />
 }
