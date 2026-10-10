@@ -1,0 +1,268 @@
+/*
+ * Токены «Скаута» по брендбуку ФСП (fsp-russia.ru/press/brandbook).
+ *
+ *   #402FFF  основной: кнопки, ссылки, активные состояния (6.8:1 с белым — годится и для текста)
+ *   #EC1D35  акцент ФСП: бейджи ФСП, ключевые цифры. 4.4:1 с белым — только крупный текст и иконки
+ *   #1B1C21  текст и тёмная тема
+ *   #EDEDED  фон секций
+ *   #C8C9CA  границы и неактивные элементы
+ *
+ * Ошибки — отдельный тёмно-красный с иконкой (не фирменный красный).
+ * Шрифты: пара «заголовки + текст» задаётся переменными --font-display/--font-text и переключается
+ *         атрибутом data-font на <html> (страница /fonts). JetBrains Mono (фирменный ФСП) — цифры и код.
+ * Направление: «скаутинг в спорте» — синие полотна, табло, карточки игроков.
+ */
+
+:root {
+  /* Палитра бренда (не использовать напрямую в компонентах — только через семантические токены) */
+  --fsp-blue: #402fff;
+  --fsp-red: #ec1d35;
+  --fsp-ink: #1b1c21;
+  --fsp-mist: #ededed;
+  --fsp-steel: #c8c9ca;
+
+  /* Семантика: светлая тема */
+  --background: #ffffff;
+  --foreground: var(--fsp-ink);
+  --card: #ffffff;
+  --card-foreground: var(--fsp-ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--fsp-ink);
+  --primary: var(--fsp-blue);
+  --primary-foreground: #ffffff;
+  --secondary: var(--fsp-mist);
+  --secondary-foreground: var(--fsp-ink);
+  --muted: var(--fsp-mist);
+  --muted-foreground: #5a5b61; /* 6.8:1 на белом, 5.8:1 на #EDEDED */
+  --accent: #f0eeff; /* тон основного для hover/выделения */
+  --accent-foreground: var(--fsp-ink);
+  --destructive: #a3121c; /* тёмно-красный для ошибок, 7.9:1 */
+  --destructive-surface: #fbeaea;
+  --border: var(--fsp-steel);
+  --input: var(--fsp-steel);
+  --ring: var(--fsp-blue);
+
+  --surface: var(--fsp-mist); /* фон секций */
+  --link: var(--fsp-blue);
+  --brand-accent: var(--fsp-red);
+  --success: #13795b;
+  --success-surface: #e7f4ef;
+  --warning: #8a5a00;
+  --warning-surface: #fbf1dc;
+  --line-motif: var(--fsp-blue);
+  --canvas: var(--fsp-blue); /* синее полотно табло */
+  --canvas-foreground: #ffffff;
+
+  --chart-1: var(--fsp-blue);
+  --chart-2: var(--fsp-red);
+  --chart-3: var(--fsp-ink);
+  --chart-4: var(--fsp-steel);
+  --chart-5: #8c82ff;
+  --chart-grid: #e2e2e3;
+
+  --radius: 0.5rem;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--fsp-ink);
+  --sidebar-primary: var(--fsp-blue);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0eeff;
+  --sidebar-accent-foreground: var(--fsp-ink);
+  --sidebar-border: var(--fsp-steel);
+  --sidebar-ring: var(--fsp-blue);
+
+  color-scheme: light;
+}
+
+/*
+ * Пары шрифтов. По умолчанию антиква Source Serif 4 + Wix Madefor Text.
+ * Атрибут data-font работает и на <html>, и на обёртке (образцы на /fonts).
+ * --display-weight: тонкое начертание только для крупного текста (.display, .display-xl, от 28px).
+ * --heading-weight: заголовки секций и мелкие подписи, не тоньше 500. Текст всегда 400.
+ */
+:root,
+[data-font='serif'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+  --font-data: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --display-weight: 260;
+  --display-tracking: -0.012em;
+  --display-variation: normal;
+  --heading-weight: 600;
+  --heading-tracking: -0.01em;
+  --heading-variation: normal;
+  --text-variation: normal;
+}
+[data-font='sber'] {
+  /* Пара из проекта СберИндекс: Oranienbaum (антиква, одно начертание 400, тонкая за счёт контраста),
+     Ysabeau Office (гуманистический гротеск), Martian Mono (цифры и код) */
+  --font-text: 'Ysabeau Office Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Oranienbaum', Georgia, 'Times New Roman', serif;
+  --font-data: 'Martian Mono Variable', 'JetBrains Mono Variable', ui-monospace, Menlo, monospace;
+  --display-weight: 400;
+  --display-tracking: -0.01em;
+  --display-variation: normal;
+  --heading-weight: 600;
+  --heading-tracking: -0.005em;
+  --heading-variation: normal;
+  --text-variation: normal;
+}
+[data-font='literata'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Literata Variable', Georgia, 'Times New Roman', serif;
+  --display-weight: 240;
+  --display-tracking: -0.018em;
+  --display-variation: normal;
+  --heading-weight: 600;
+  --heading-tracking: -0.012em;
+  --heading-variation: normal;
+  --text-variation: normal;
+}
+[data-font='wix'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Wix Madefor Display Variable', 'Wix Madefor Text Variable', ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 400;
+  --display-tracking: -0.024em;
+  --display-variation: normal;
+  --heading-weight: 650;
+  --heading-tracking: -0.018em;
+  --heading-variation: normal;
+  --text-variation: normal;
+}
+[data-font='future'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Geologica Variable', ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 200;
+  --display-tracking: -0.01em;
+  --display-variation: 'SHRP' 100;
+  --heading-weight: 560;
+  --heading-tracking: -0.014em;
+  --heading-variation: 'SHRP' 40;
+  --text-variation: normal;
+}
+[data-font='jura'] {
+  --font-text: 'Wix Madefor Text Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Jura Variable', ui-sans-serif, system-ui, sans-serif;
+  --display-weight: 300;
+  --display-tracking: 0.005em;
+  --display-variation: normal;
+  --heading-weight: 600;
+  --heading-tracking: 0;
+  --heading-variation: normal;
+  --text-variation: normal;
+}
+[data-font] {
+  font-family: var(--font-text);
+}
+
+.dark {
+  /* Тёмная тема на #1B1C21 */
+  --background: var(--fsp-ink);
+  --foreground: var(--fsp-mist);
+  --card: #222329;
+  --card-foreground: var(--fsp-mist);
+  --popover: #25262c;
+  --popover-foreground: var(--fsp-mist);
+  --primary: var(--fsp-blue); /* заливка кнопок с белым текстом: 6.8:1 */
+  --primary-foreground: #ffffff;
+  --secondary: #2c2d34;
+  --secondary-foreground: var(--fsp-mist);
+  --muted: #2a2b31;
+  --muted-foreground: #a5a6ab; /* 7:1 */
+  --accent: #2d2a52;
+  --accent-foreground: var(--fsp-mist);
+  --destructive: #f28b8b; /* текст ошибок на тёмном, 7.2:1 */
+  --destructive-surface: #3a1a1d;
+  --border: #3a3b42;
+  --input: #46474e;
+  --ring: #8c82ff;
+
+  --surface: #23242a;
+  --link: #a49cff; /* ссылки на тёмном: 7.1:1 */
+  --brand-accent: var(--fsp-red);
+  --success: #4fc79a;
+  --success-surface: #173329;
+  --warning: #e0a84a;
+  --warning-surface: #33290f;
+  --line-motif: #8c82ff;
+  --canvas: var(--fsp-blue);
+  --canvas-foreground: #ffffff;
+
+  --chart-1: #7a6dff;
+  --chart-2: var(--fsp-red);
+  --chart-3: var(--fsp-mist);
+  --chart-4: #5c5d63;
+  --chart-5: #b3acff;
+  --chart-grid: #33343b;
+
+  --sidebar: #1f2025;
+  --sidebar-foreground: var(--fsp-mist);
+  --sidebar-primary: var(--fsp-blue);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2d2a52;
+  --sidebar-accent-foreground: var(--fsp-mist);
+  --sidebar-border: #3a3b42;
+  --sidebar-ring: #8c82ff;
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: var(--font-text);
+  --font-mono: var(--font-data);
+  --font-heading: var(--font-display);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-surface: var(--destructive-surface);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-surface: var(--surface);
+  --color-link: var(--link);
+  --color-brand-accent: var(--brand-accent);
+  --color-success: var(--success);
+  --color-success-surface: var(--success-surface);
+  --color-warning: var(--warning);
+  --color-warning-surface: var(--warning-surface);
+  --color-line-motif: var(--line-motif);
+  --color-canvas: var(--canvas);
+  --color-canvas-foreground: var(--canvas-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}

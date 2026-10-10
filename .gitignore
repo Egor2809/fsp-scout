@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+.npm-cache/
+.env
+.env.*
+!.env.example
+# Материалы организаторов: репозиторий станет публичным при сдаче
+*.pdf
+*.pptx

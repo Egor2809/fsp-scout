@@ -1,0 +1,32 @@
+{
+  "realm": "scout",
+  "enabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "verifyEmail": true,
+  "resetPasswordAllowed": true,
+  "defaultRoles": ["candidate"],
+  "roles": { "realm": [{ "name": "candidate" }, { "name": "employer" }, { "name": "admin" }] },
+  "smtpServer": { "host": "mailpit", "port": "1025", "from": "noreply@scout.local", "fromDisplayName": "Скаут", "auth": "false", "ssl": "false", "starttls": "false" },
+  "clients": [
+    {
+      "clientId": "scout-api",
+      "enabled": true,
+      "bearerOnly": true,
+      "publicClient": false
+    },
+    {
+      "clientId": "scout-frontend",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:5173/auth/callback"],
+      "webOrigins": ["http://localhost:5173"],
+      "attributes": { "pkce.code.challenge.method": "S256", "post.logout.redirect.uris": "http://localhost:5173" },
+      "protocolMappers": [
+        { "name": "api-audience", "protocol": "openid-connect", "protocolMapper": "oidc-audience-mapper", "config": { "included.client.audience": "scout-api", "access.token.claim": "true", "id.token.claim": "false" } }
+      ]
+    }
+  ]
+}

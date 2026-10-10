@@ -1,0 +1,13 @@
+CREATE TABLE "FspParticipant" (
+  id TEXT PRIMARY KEY, "ownerSubject" TEXT NOT NULL,
+  achievements JSONB NOT NULL DEFAULT '[]', "updatedAt" TIMESTAMPTZ(3) NOT NULL
+);
+CREATE TABLE "FspLink" (
+  "candidateId" UUID PRIMARY KEY REFERENCES "Candidate"(id) ON DELETE CASCADE,
+  "fspId" TEXT NOT NULL UNIQUE REFERENCES "FspParticipant"(id),
+  "verifiedAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE "WebhookReceipt" (
+  hash TEXT PRIMARY KEY, provider TEXT NOT NULL,
+  "receivedAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

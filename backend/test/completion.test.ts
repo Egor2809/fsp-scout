@@ -1,0 +1,67 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { completionReadiness, resultTrace, competencyScores, skipOutstanding, scoreCompletion, type CompletionItem } from '../src/assessment/completion.ts';
+import { estimate } from '../src/common/irt.ts';
+const policy = { min: 2, max: 3, targetSe: 0.1, topK: 5, maxExposure: 0.2, practiceTotal: 1, approachTotal: 1, requiredCompetencies: ['sql', 'systems'] };
+const item = (n: number): CompletionItem => ({ id: String(n), ordinal: n, block: 'adaptive', answeredAt: new Date(), correct: n % 2 === 1,
+  competency: n === 1 ? 'sql' : 'systems', discrimination: 1.2, difficulty: n - 2 });
+test('finish readiness enforces precision/max, coverage, graded answers and actual practice completion', () => {
+  assert.equal(completionReadiness([item(1)], policy), 'adaptive_incomplete');
+  assert.equal(completionReadiness([item(1), item(2)], policy), 'adaptive_incomplete');
+  const adaptive = [item(1), item(2), item(3)];
+  assert.equal(completionReadiness(adaptive, policy), 'practice_incomplete');
+  assert.equal(completionReadiness(adaptive.map(i => ({ ...i, competency: 'sql' })), policy), 'coverage_incomplete');
+  assert.equal(completionReadiness([...adaptive, { ...item(4), block: 'practice', answeredAt: null }], policy), 'unanswered');
+  assert.equal(completionReadiness([...adaptive, { ...item(4), block: 'practice', correct: null }], policy), 'pending_grading');
+  assert.equal(completionReadiness([...adaptive, { ...item(4), block: 'practice', correct: true }], policy), 'approach_incomplete');
+  assert.equal(completionReadiness([...adaptive, { ...item(4), block: 'practice', correct: true }, { ...item(5), block: 'approach' }], policy), 'ready');
+});
+test('result trajectory uses ordered prefixes and competency scores count only graded responses', () => {
+  const items = [item(3), item(1), item(2)];
+  const trace = resultTrace(items);
+  assert.deepEqual(trace.map(t => t.index), [1, 2, 3]);
+  const last = estimate([item(1), item(2), item(3)].map(i => ({ a: i.discrimination, b: i.difficulty, correct: i.correct! })));
+  assert.equal(trace[2].theta, last.theta);
+  assert.equal(trace[2].se, last.se);
+  const scores = competencyScores([...items, { ...item(4), competency: 'pending', correct: null }]);
+  assert.equal(scores.find(s => s.competency_id === 'sql')?.score, 100);
+  assert.equal(scores.find(s => s.competency_id === 'systems')?.score, 50);
+  assert.ok(!scores.some(s => s.competency_id === 'pending'));
+});
+test('early finish records only issued skips, preserves previous responses and cannot confirm a grade from insufficient evidence', () => {
+  const original = [item(1), { ...item(2), answeredAt: null, correct: null }];
+  const at = new Date('2026-10-10T00:00:00Z');
+  const skipped = skipOutstanding(original, at);
+  assert.deepEqual(skipped.skippedIds, ['2']);
+  assert.equal(skipped.items.length, original.length);
+  assert.equal(original[1].answeredAt, null);
+  assert.equal(skipped.items[1].correct, false);
+  assert.equal(skipped.items[1].answeredAt, at);
+  assert.equal(skipped.items[0].correct, original[0].correct);
+  const cuts = { version: 'fixture', cuts: { junior: -4, middle: -3, senior: -2, lead: -1 }, passProbability: 0.7 };
+  const incomplete = scoreCompletion(skipped.items, policy, 'junior', cuts);
+  assert.equal(incomplete.incomplete, true);
+  assert.equal(incomplete.outcome, 'failed');
+  assert.equal(incomplete.suggestedHigherGrade, null);
+  const empty = scoreCompletion([], policy, 'junior', cuts);
+  assert.equal(empty.outcome, 'failed');
+  assert.ok(Number.isFinite(empty.theta) && Number.isFinite(empty.se));
+  assert.throws(() => scoreCompletion([{ ...item(1), correct: null }], policy, 'junior', cuts));
+});
+test('a failed or absent mandatory practice cannot be replaced by a strong adaptive result', () => {
+  const cuts = { version: 'fixture', cuts: { junior: -4, middle: -3, senior: -2, lead: -1 }, passProbability: 0.7 };
+  const adaptive = [item(1), item(2), item(3)].map(i => ({ ...i, correct: true }));
+  const failed = scoreCompletion([...adaptive, { ...item(4), block: 'practice', correct: false }], policy, 'junior', cuts);
+  assert.equal(failed.outcome, 'failed');
+  assert.equal(failed.practiceFailed, true);
+  assert.equal(failed.incomplete, false);
+  const passed = scoreCompletion([...adaptive, { ...item(4), block: 'practice', correct: true }, { ...item(5), block: 'approach', correct: true }], policy, 'junior', cuts);
+  assert.notEqual(passed.outcome, 'failed');
+  const wrongApproach = scoreCompletion([...adaptive, { ...item(4), block: 'practice', correct: true }, { ...item(5), block: 'approach', correct: false }], policy, 'junior', cuts);
+  assert.equal(wrongApproach.outcome, 'failed');
+  const noApproachPolicy = scoreCompletion([...adaptive, { ...item(4), block: 'practice', correct: true }], { ...policy, approachTotal: 0 }, 'junior', cuts);
+  assert.equal(noApproachPolicy.incomplete, true);
+  const legacy = scoreCompletion(adaptive, { ...policy, practiceTotal: 0 }, 'junior', cuts);
+  assert.equal(legacy.outcome, 'failed');
+  assert.equal(legacy.incomplete, true);
+});

@@ -1,0 +1,102 @@
+import { useState } from 'react'
+import { Navigate, useNavigate } from 'react-router'
+import { IconArrowRight, IconBuilding, IconUser, IconUserPlus } from '@tabler/icons-react'
+import { homeFor, useAuth } from '@/auth/context'
+import { DEMO_PERSONAS } from '@/auth/personas'
+import { ConnectLines, Logo } from '@/components/brand'
+import { FormField } from '@/components/fields'
+import { ThemeToggle } from '@/components/layout/AppShell'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+
+export default function Landing() {
+  const { session, provider } = useAuth()
+  const navigate = useNavigate()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  if (session) return <Navigate to={homeFor(session)} replace />
+
+  const go = async (p: Promise<unknown>) => {
+    await p
+    const s = provider.getSession()
+    if (s) navigate(s.role === 'candidate' && !DEMO_PERSONAS.some((d) => d.userId === s.userId) ? '/c/onboarding' : homeFor(s))
+  }
+
+  return (
+    <div className="min-h-svh bg-background">
+      <header className="mx-auto flex h-14 max-w-6xl items-center px-4 sm:px-6">
+        <Logo />
+        <div className="ml-auto">
+          <ThemeToggle />
+        </div>
+      </header>
+      <main className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:py-16">
+        <section className="canvas-board overflow-hidden rounded-lg p-6 sm:p-10">
+          <ConnectLines className="text-white opacity-[0.2] dark:opacity-[0.2]" />
+          <div className="relative">
+            <p className="eyebrow mb-4 text-white/85">Обратный найм в ИТ</p>
+            <h1 className="display-xl text-[2.5rem] sm:text-[4rem]">
+              Компании приходят <span className="underline decoration-brand-accent decoration-[0.12em] underline-offset-[0.12em]">к вам</span>
+            </h1>
+            <p className="mt-5 max-w-lg text-white/85 text-pretty">
+              Пройдите адаптивный тест один раз и получайте инвайты с вилкой от работодателей. Профиль анонимен, контакты открываются только после вашего согласия.
+              Победы на соревнованиях ФСП усиливают карточку.
+            </p>
+            <ul className="mt-6 grid gap-2 text-sm text-white">
+              <li>· Категория «Backend · Middle» и перцентиль вместо резюме</li>
+              <li>· Вилка в каждом инвайте обязательна</li>
+              <li>· Работодатель видит, почему вы в подборке</li>
+            </ul>
+          </div>
+        </section>
+        <section className="grid content-start gap-4">
+          <h2 className="text-xl">Войти в демо</h2>
+          {DEMO_PERSONAS.map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => void go(provider.login({ personaKey: p.key }))}
+              className="group flex items-start gap-3 rounded-lg border bg-card p-4 text-left transition-colors outline-none hover:border-primary/50 hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-link">{p.role === 'employer' ? <IconBuilding /> : <IconUser />}</span>
+              <span className="grid min-w-0 flex-1 gap-0.5">
+                <span className="font-medium">
+                  {p.displayName} <span className="font-normal text-muted-foreground">· {p.title}</span>
+                </span>
+                <span className="text-sm text-muted-foreground">{p.description}</span>
+              </span>
+              <IconArrowRight className="mt-2 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            </button>
+          ))}
+          <form
+            className="grid gap-3 rounded-lg border bg-card p-4"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (name.trim().length < 2 || !/^\S+@\S+\.\S+$/.test(email)) {
+                setError('Укажите имя и корректный email')
+                return
+              }
+              void go(provider.register({ fullName: name, email }))
+            }}
+          >
+            <p className="flex items-center gap-2 font-medium">
+              <IconUserPlus className="size-5 text-link" /> Новый кандидат: путь с нуля
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <FormField label="Имя и фамилия" htmlFor="reg-name">
+                <Input id="reg-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+              </FormField>
+              <FormField label="Email" htmlFor="reg-email" error={error}>
+                <Input id="reg-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+              </FormField>
+            </div>
+            <Button type="submit" className="justify-self-start">
+              Зарегистрироваться
+            </Button>
+          </form>
+        </section>
+      </main>
+    </div>
+  )
+}

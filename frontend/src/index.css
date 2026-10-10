@@ -1,0 +1,176 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+/* Пары шрифтов переключаются на /fonts; файлы грузятся только для активной пары (unicode-range + ленивые @font-face) */
+@import '@fontsource-variable/wix-madefor-display/index.css';
+@import '@fontsource-variable/wix-madefor-text/index.css';
+@import '@fontsource-variable/geologica/shrp.css';
+@import '@fontsource-variable/source-serif-4/opsz.css';
+@import '@fontsource-variable/literata/opsz.css';
+@import '@fontsource-variable/jura/index.css';
+@import '@fontsource-variable/jetbrains-mono/index.css';
+@import '@fontsource/oranienbaum/400.css';
+@import '@fontsource-variable/ysabeau-office/wght.css';
+@import '@fontsource-variable/martian-mono/wght.css';
+@import './theme.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-synthesis: none;
+    font-kerning: normal;
+    font-optical-sizing: auto;
+  }
+  body {
+    @apply bg-background text-foreground;
+    line-height: 1.5;
+    font-variation-settings: var(--text-variation);
+  }
+  /* Заголовки секций: гарнитура заголовков пары, но не тоньше 500, потому что кегль мелкий */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: var(--heading-weight);
+    font-variation-settings: var(--heading-variation);
+    letter-spacing: var(--heading-tracking);
+    text-wrap: balance;
+  }
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+  a {
+    @apply text-link underline-offset-4;
+  }
+  code,
+  kbd,
+  pre,
+  samp {
+    @apply font-mono;
+  }
+  /* Цвет бирки по умолчанию; утилиты text-* его перекрывают (нулевая специфичность) */
+  :where(.eyebrow) {
+    color: var(--muted-foreground);
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--fsp-blue) 22%, transparent);
+  }
+}
+
+@layer utilities {
+  /* Цифры: грейд, перцентиль, вилка, индекс: JetBrains Mono, табличные */
+  .num,
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'zero' 0;
+  }
+  /* Надпись-«бирка» в стиле брендбука: моно, капс, разрядка */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  /* Дисплей: тонкое начертание пары. Только для кегля от 28px, мельче берите обычный h1–h4 */
+  .display {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-variation-settings: var(--display-variation);
+    letter-spacing: var(--display-tracking);
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  .display-xl {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    font-variation-settings: var(--display-variation);
+    letter-spacing: calc(var(--display-tracking) * 1.6);
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+  /* Капс: только короткие подписи; капсу нужна разрядка, а не сжатие */
+  .display-caps {
+    font-family: var(--font-display);
+    font-weight: var(--heading-weight);
+    font-variation-settings: var(--heading-variation);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  /* Интерактивная карточка: лёгкий подъём при наведении, сжатие при нажатии */
+  .lift {
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 180ms ease-out,
+      border-color 180ms ease-out;
+  }
+  @media (hover: hover) {
+    .lift:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px -12px color-mix(in oklab, var(--foreground) 35%, transparent);
+    }
+  }
+  .lift:active {
+    transform: translateY(0) scale(0.99);
+  }
+  /* Синее полотно табло с лёгким шумом (feTurbulence, opacity 0.08) */
+  .canvas-board {
+    position: relative;
+    isolation: isolate;
+    background-color: var(--canvas);
+    color: var(--canvas-foreground);
+  }
+  .canvas-board::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+    opacity: 0.08;
+    mix-blend-mode: screen;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
