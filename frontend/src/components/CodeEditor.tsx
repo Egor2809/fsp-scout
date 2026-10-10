@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { basicSetup, EditorView } from 'codemirror'
-import { EditorState, type Extension } from '@codemirror/state'
+import { Compartment, EditorState, type Extension } from '@codemirror/state'
 import { python } from '@codemirror/lang-python'
 import { go } from '@codemirror/lang-go'
 import { javascript } from '@codemirror/lang-javascript'
@@ -50,6 +50,8 @@ export function CodeEditor({
   ariaLabel: string
 }) {
   const host = useRef<HTMLDivElement>(null)
+  const editor = useRef<EditorView | null>(null)
+  const editable = useRef(new Compartment())
   const cb = useRef({ onChange, onPaste })
   useEffect(() => {
     cb.current = { onChange, onPaste }
@@ -64,7 +66,7 @@ export function CodeEditor({
           basicSetup,
           theme,
           ...lang(language),
-          EditorState.readOnly.of(readOnly),
+          editable.current.of(EditorState.readOnly.of(false)),
           EditorView.contentAttributes.of({ 'aria-label': ariaLabel }),
           EditorView.updateListener.of((u) => {
             if (u.docChanged) cb.current.onChange?.(u.state.doc.toString())
@@ -78,7 +80,11 @@ export function CodeEditor({
         ],
       }),
     })
-    return () => view.destroy()
-  }, [initial, language, readOnly, ariaLabel])
+    editor.current = view
+    return () => { editor.current = null; view.destroy() }
+  }, [initial, language, ariaLabel])
+  useEffect(() => {
+    editor.current?.dispatch({ effects: editable.current.reconfigure(EditorState.readOnly.of(readOnly)) })
+  }, [readOnly, initial, language, ariaLabel])
   return <div ref={host} className="overflow-hidden rounded-lg border" />
 }

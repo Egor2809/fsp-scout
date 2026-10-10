@@ -2,6 +2,7 @@ import { ACTIVE_INVITATION_STATUSES } from '@/lib/invitationStatus'
 import { buildSeed, DB_VERSION } from './seed'
 import type { MockDb } from './types'
 import { DB_STORAGE_KEY } from '../constants'
+import { recomputeTaskSignal } from '../lib/taskSignal'
 
 /**
  * Хранилище мок-«сервера». В браузере — localStorage (общий для вкладок: кандидат и работодатель
@@ -83,6 +84,16 @@ export function resetMemoryDb(): void {
 /** Система переводит просроченные активные инвайты в expired и тесты с истёкшим временем — в expired. */
 function sweepExpired(db: MockDb, now: Date): boolean {
   let changed = false
+  for (const task of db.tasks) {
+    if (task.status === 'active' && Date.parse(task.deadlineAt) <= now.getTime()) { task.status = 'closed'; changed = true }
+  }
+  for (const assignment of db.assignments) {
+    if (assignment.status === 'assigned' && Date.parse(assignment.dueAt) <= now.getTime()) { assignment.status = 'expired'; changed = true }
+  }
+  for (const candidate of db.candidates) {
+    const signal = recomputeTaskSignal(db.submissions, candidate.id, now)
+    if (JSON.stringify(candidate.taskSignal) !== JSON.stringify(signal)) { candidate.taskSignal = signal; changed = true }
+  }
   for (const inv of db.invitations) {
     if (ACTIVE_INVITATION_STATUSES.includes(inv.status) && new Date(inv.expiresAt).getTime() <= now.getTime()) {
       inv.status = 'expired'

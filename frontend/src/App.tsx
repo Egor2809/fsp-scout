@@ -23,6 +23,8 @@ const CHistory = lazy(() => import('@/pages/candidate/History'))
 const CSettings = lazy(() => import('@/pages/candidate/Settings'))
 const CVacancies = lazy(() => import('@/pages/candidate/Vacancies'))
 const CApplications = lazy(() => import('@/pages/candidate/Applications'))
+const CTasks = lazy(() => import('@/pages/candidate/Tasks'))
+const CTask = lazy(() => import('@/pages/candidate/Task'))
 
 const EHome = lazy(() => import('@/pages/employer/Home'))
 const ENeedNew = lazy(() => import('@/pages/employer/NeedNew'))
@@ -34,7 +36,8 @@ const ECandidate = lazy(() => import('@/pages/employer/Candidate'))
 const EInvitations = lazy(() => import('@/pages/employer/Invitations'))
 const EVacancies = lazy(() => import('@/pages/employer/Vacancies'))
 const ECompany = lazy(() => import('@/pages/employer/Company'))
-const Soon = lazy(() => import('@/pages/common/Soon'))
+const ETasks = lazy(() => import('@/pages/employer/Tasks'))
+const ETask = lazy(() => import('@/pages/employer/Task'))
 
 function RequireRole({ role, children }: { role: 'candidate' | 'employer'; children: ReactNode }) {
   const { session } = useAuth()
@@ -90,7 +93,8 @@ const router = createBrowserRouter([
       { path: 'settings', element: <CSettings /> },
       { path: 'vacancies', element: <CVacancies /> },
       { path: 'applications', element: <CApplications /> },
-      { path: 'tasks', element: <Soon /> },
+      { path: 'tasks', element: <CTasks /> },
+      { path: 'tasks/:taskId', element: <CTask /> },
       { path: '*', element: <NotFound /> },
     ],
   },
@@ -112,7 +116,8 @@ const router = createBrowserRouter([
       { path: 'invitations', element: <EInvitations /> },
       { path: 'vacancies', element: <EVacancies /> },
       { path: 'company', element: <ECompany /> },
-      { path: 'tasks', element: <Soon /> },
+      { path: 'tasks', element: <ETasks /> },
+      { path: 'tasks/:taskId', element: <ETask /> },
       { path: '*', element: <NotFound /> },
     ],
   },

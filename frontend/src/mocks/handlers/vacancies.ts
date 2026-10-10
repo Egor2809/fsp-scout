@@ -14,6 +14,7 @@ import { practiceFor } from '../data/items'
 import type { MockDb, VacancyRec } from '../db/types'
 import { DEMO_ADAPTIVE_MAX, DEMO_ADAPTIVE_MIN } from '../lib/cat'
 import { parseNeed } from '../lib/needParser'
+import { recomputeTaskSignal } from '../lib/taskSignal'
 import {
   applicationView,
   assignmentView,
@@ -295,15 +296,12 @@ export const vacancyHandlers = [
     const t = ctx.db.tasks.find((x) => x.id === String(params.taskId))
     if (!a || !t) return notFound('Задание')
     if (a.status !== 'assigned') return problem(409, 'task_already_submitted', 'Решение уже отправлено', 'Задание можно сдать один раз.')
-    if (new Date(a.dueAt).getTime() < ctx.now.getTime()) return problem(409, 'conflict', 'Срок истёк', 'Срок сдачи задания прошёл.')
+    if (new Date(a.dueAt).getTime() <= ctx.now.getTime() || new Date(t.deadlineAt).getTime() <= ctx.now.getTime() || t.status !== 'active') return problem(409, 'conflict', 'Срок истёк', 'Срок сдачи задания прошёл.')
     const parsed = parseBody(SubmitTaskBody, body)
     if (!parsed.ok) return parsed.response
     const text = parsed.data.answer_text?.trim() || null
     const code = parsed.data.code?.trim() || null
     if (!text && !code) return validationProblem([{ pointer: '/answer_text', detail: 'Добавьте решение: код или текст' }])
-    // Предварительная оценка по рубрике (в проде — LLM, последнее слово за работодателем)
-    const size = (text?.length ?? 0) + (code?.length ?? 0)
-    const llm = Math.max(35, Math.min(92, Math.round(45 + Math.log2(1 + size) * 4.5)))
     const sub = {
       id: crypto.randomUUID(),
       taskId: t.id,
@@ -313,7 +311,7 @@ export const vacancyHandlers = [
       code,
       language: parsed.data.language ?? t.language,
       status: 'pending' as const,
-      llmScore: llm,
+      llmScore: null,
       finalScore: null,
       freshSignal: false,
       feedback: null,
@@ -398,9 +396,7 @@ export const vacancyHandlers = [
     const a = ctx.db.assignments.find((x) => x.taskId === t.id && x.candidateId === s.candidateId)
     if (a) a.status = 'reviewed'
     const c = ctx.db.candidates.find((x) => x.id === s.candidateId)
-    if (c && s.freshSignal) {
-      c.taskSignal = { fresh: true, solvedCount: c.taskSignal.solvedCount + 1, lastSolvedAt: ctx.now.toISOString() }
-    }
+    if (c) c.taskSignal = recomputeTaskSignal(ctx.db.submissions, c.id, ctx.now)
     const view = employerSubmissionView(ctx.db, s, ctx.companyId, ctx.now)
     return view ? json(view) : notFound('Решение')
   }),

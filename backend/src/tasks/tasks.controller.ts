@@ -97,7 +97,8 @@ export class TasksController {
       const assignment = await tx.taskAssignment.findUnique({ where: { taskId_candidateId: { taskId: id, candidateId: c.id } }, include: { task: true } });
       if (!assignment) throw new Problem(404, 'not_found', 'Задание не найдено');
       if (await tx.taskSubmission.findUnique({ where: { taskId_candidateId: { taskId: id, candidateId: c.id } } })) throw new Problem(409, 'task_already_submitted', 'Решение уже отправлено');
-      if (assignment.status !== 'assigned' || assignment.dueAt <= new Date() || assignment.task.status !== 'active') throw new Problem(409, 'conflict', 'Срок сдачи истёк');
+      const now = new Date();
+      if (assignment.status !== 'assigned' || assignment.dueAt <= now || assignment.task.deadlineAt <= now || assignment.task.status !== 'active') throw new Problem(409, 'conflict', 'Срок сдачи истёк');
       if (!await tx.consent.findFirst({ where: { candidateId: c.id, type: 'personal_data', revokedAt: null } })) throw new Problem(403, 'consent_required', 'Нужно согласие', { consent_types: ['personal_data'] });
       const language = d.language ?? assignment.task.language;
       if (code && (!language || (assignment.task.language && language !== assignment.task.language))) throw new Problem(422, 'validation_error', 'Проверьте язык', { errors: [{ pointer: '/language', detail: 'Язык должен соответствовать заданию' }] });

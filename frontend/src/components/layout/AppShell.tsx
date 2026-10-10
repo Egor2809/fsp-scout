@@ -86,6 +86,7 @@ function useNav(role: 'candidate' | 'employer'): { title: string; items: NavItem
         { to: '/e/needs/new', label: 'Новая потребность', icon: IconSparkles },
         { to: '/e/searches', label: 'Подборки', icon: IconUsersGroup },
         { to: '/e/candidates', label: 'Банк кандидатов', icon: IconDatabaseSearch },
+        { to: '/evaluate', label: 'Проверка подбора', icon: IconChartDots3 },
         { to: '/e/invitations', label: 'Инвайты', icon: IconMail },
       ],
     },
