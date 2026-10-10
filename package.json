@@ -1,0 +1,12 @@
+{
+  "name": "fsp-scout",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm --prefix backend test",
+    "eval": "node --experimental-strip-types eval/simulate.ts",
+    "test:evaluate": "node --experimental-strip-types --test --test-isolation=none eval/evaluation-ui.test.mjs",
+    "check:contract": "npm --prefix backend run contract:snapshot",
+    "typecheck": "npm --prefix backend run build && npm --prefix frontend run typecheck"
+  }
+}

@@ -5,6 +5,7 @@ import { AppShell, PageFallback } from '@/components/layout/AppShell'
 import { PageTransition } from '@/components/motion'
 
 const Landing = lazy(() => import('@/pages/common/Landing'))
+const Evaluate = lazy(() => import('@/pages/common/Evaluate'))
 const VerifyProfile = lazy(() => import('@/pages/common/VerifyProfile'))
 const HowItWorks = lazy(() => import('@/pages/common/HowItWorks'))
 const NotFound = lazy(() => import('@/pages/common/NotFound'))
@@ -64,6 +65,7 @@ const router = createBrowserRouter([
     element: <Bare />,
     children: [
       { path: '/', element: <Landing /> },
+      { path: '/evaluate', element: <RequireRole role="employer"><Evaluate /></RequireRole> },
       { path: '/fonts', element: <Fonts /> },
       { path: '/verify/:token', element: <VerifyProfile /> },
     ],

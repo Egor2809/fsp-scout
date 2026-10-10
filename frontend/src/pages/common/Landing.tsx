@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Link, Navigate, useNavigate } from 'react-router'
 import { IconArrowRight, IconBuilding, IconUser, IconUserPlus } from '@tabler/icons-react'
 import { homeFor, useAuth } from '@/auth/context'
 import { DEMO_PERSONAS } from '@/auth/personas'
@@ -18,9 +18,13 @@ export default function Landing() {
   if (session) return <Navigate to={homeFor(session)} replace />
 
   const go = async (p: Promise<unknown>) => {
-    await p
-    const s = provider.getSession()
-    if (s) navigate(s.role === 'candidate' && !DEMO_PERSONAS.some((d) => d.userId === s.userId) ? '/c/onboarding' : homeFor(s))
+    try {
+      await p
+      const s = provider.getSession()
+      if (s) navigate(s.role === 'candidate' && !DEMO_PERSONAS.some((d) => d.userId === s.userId) ? '/c/onboarding' : homeFor(s))
+    } catch {
+      setError('Не удалось войти. Попробуйте ещё раз.')
+    }
   }
 
   return (
@@ -51,8 +55,9 @@ export default function Landing() {
           </div>
         </section>
         <section className="grid content-start gap-4">
-          <h2 className="text-xl">Войти в демо</h2>
-          {DEMO_PERSONAS.map((p) => (
+          <h2 className="text-xl">{provider.mode === 'dev' ? 'Войти в демо' : 'Войти в Скаут'}</h2>
+          <Link to="/evaluate" className="text-link">Проверка подбора на своих резюме (для работодателя)</Link>
+          {provider.mode === 'dev' ? DEMO_PERSONAS.map((p) => (
             <button
               key={p.key}
               type="button"
@@ -68,7 +73,8 @@ export default function Landing() {
               </span>
               <IconArrowRight className="mt-2 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
             </button>
-          ))}
+          )) : <Button onClick={() => void go(provider.login())}>Войти через аккаунт ФСП / Keycloak</Button>}
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           <form
             className="grid gap-3 rounded-lg border bg-card p-4"
             onSubmit={(e) => {
