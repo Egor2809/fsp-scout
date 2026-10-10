@@ -1,6 +1,6 @@
 # Вопросы с выбором ответа
 
-Текущая версия v5 и результаты раунда 2: [assessment-choice-resilience.md](assessment-choice-resilience.md). Ниже сохранён отчёт о первоначальном добавлении банка v4.
+Текущая версия v6: [assessment-canaries.md](assessment-canaries.md). Устойчивость choice-банка: [assessment-choice-resilience.md](assessment-choice-resilience.md). Ниже сохранён отчёт о первоначальном добавлении банка v4.
 
 Версия банка: `expert-bank-20261010-v4`. Добавлены 70 семейств: по 9 single_choice и 1 multiple_choice для каждой из семи специализаций. Данные новых семейств находятся в `backend/src/assessment/choice-bank.ts`, подключение и выдача — в `live-bank.ts`.
 

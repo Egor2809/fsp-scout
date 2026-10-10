@@ -4979,6 +4979,38 @@
           "test_id": {
             "type": "string",
             "format": "uuid"
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrityFlag"
+            }
+          }
+        }
+      },
+      "IntegrityFlag": {
+        "type": "object",
+        "description": "Сигнал прокторинга подтверждающего теста; не доказывает нарушение",
+        "required": [
+          "code",
+          "severity"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "fast_correct",
+              "paste",
+              "focus_loss",
+              "leak_suspected"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning"
+            ]
           }
         }
       },
@@ -5766,6 +5798,9 @@
           "vacancy_id"
         ],
         "properties": {
+          "express": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -5826,6 +5861,9 @@
           "finished_at"
         ],
         "properties": {
+          "express": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -6278,6 +6316,9 @@
           "trace"
         ],
         "properties": {
+          "express": {
+            "type": "boolean"
+          },
           "test_id": {
             "type": "string",
             "format": "uuid"
@@ -6397,7 +6438,8 @@
                   "enum": [
                     "fast_correct",
                     "paste",
-                    "focus_loss"
+                    "focus_loss",
+                    "leak_suspected"
                   ]
                 },
                 "severity": {
@@ -7107,7 +7149,7 @@
           "bonus": {
             "type": "number",
             "minimum": 0,
-            "maximum": 15,
+            "maximum": 30,
             "description": "Бонус к силе профиля"
           },
           "components": {
@@ -7146,7 +7188,7 @@
           "bonus": {
             "type": "number",
             "minimum": 0,
-            "maximum": 15
+            "maximum": 30
           },
           "achievements_count": {
             "type": "integer",
@@ -8125,7 +8167,7 @@
           "strength": {
             "type": "number",
             "minimum": 0,
-            "maximum": 115
+            "maximum": 130
           },
           "chips": {
             "type": "array",
@@ -8400,11 +8442,17 @@
             "minimum": 1,
             "maximum": 99
           },
+          "test_flags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntegrityFlag"
+            }
+          },
           "strength": {
             "type": "number",
             "minimum": 0,
-            "maximum": 115,
-            "description": "Сила профиля (0–100 + бонус ФСП до 15)"
+            "maximum": 130,
+            "description": "Сила профиля (0–100 + бонус ФСП до 30)"
           },
           "skills": {
             "type": "array",
@@ -8572,6 +8620,30 @@
           }
         ]
       },
+      "CompanyTrust": {
+        "type": "object",
+        "description": "Надёжность компании за 90 дней — защита кандидата от фиктивных вакансий",
+        "required": [
+          "invitations_90d",
+          "acceptance_rate",
+          "withdrawn_after_accept"
+        ],
+        "properties": {
+          "invitations_90d": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "acceptance_rate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "withdrawn_after_accept": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
       "InvitationQuota": {
         "type": "object",
         "required": [
@@ -8587,7 +8659,7 @@
           "limit": {
             "type": "integer",
             "minimum": 0,
-            "description": "Итоговый лимит на неделю (база + бонус)",
+            "description": "Итоговый лимит на неделю (база + бонус − штраф, не меньше 1)",
             "examples": [
               22
             ]
@@ -8613,6 +8685,11 @@
           "period_end": {
             "type": "string",
             "format": "date-time"
+          },
+          "penalty": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Штраф за отзыв приглашений после согласия кандидата (2 за каждый)"
           },
           "acceptance_rate": {
             "type": "number",
@@ -8867,6 +8944,9 @@
           },
           "company": {
             "$ref": "#/components/schemas/CompanyBrief"
+          },
+          "company_trust": {
+            "$ref": "#/components/schemas/CompanyTrust"
           },
           "contact_person": {
             "type": "string",

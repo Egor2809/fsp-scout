@@ -6,13 +6,14 @@ import { Database } from '../database/database.service.js';
 import { Problem } from '../common/problem.js';
 import { parse } from '../common/validation.js';
 import { FinishTestResponse } from '../contract/schemas.js';
-import type { Grade, Specialization, TestResult } from '../contract/model/index.js';
+import type { Grade, IntegrityFlag, Specialization, TestResult } from '../contract/model/index.js';
 import { afterDays, gradeChangeAvailable, eligibility } from '../common/retake.js';
 import { category } from '../matching/matching.js';
 import { competencyScores, resultTrace, skipOutstanding, scoreCompletion } from './completion.js';
 import { GRADE_ORDER, empiricalPercentile, modelPercentile } from './result-scoring.js';
 import { normativeCohort, normativePolicySignature } from './normative-cohort.js';
 import { telemetryFlags } from './telemetry-flags.js';
+import { canaryFlags, canaryTimingModels, canaryStandingFlags } from './canary-flags.js';
 import { confirmsCategory, fullAttempts, type SessionPolicy } from './session-state.js';
 import { confirmedSkills, SKILL_CONFIRMATION_POLICY } from './confirmed-skills.js';
 import { LIVE_BANK, LIVE_BANK_VERSION } from './live-bank.js';
@@ -52,11 +53,31 @@ export class AssessmentFinishController {
       const items = skipped.items;
       if (items.some(i => i.correct === null)) throw new Problem(409, 'conflict', 'Ответ ещё оценивается');
       const scored = scoreCompletion(items, policy, test.declaredGrade as Grade, policy.gradeCuts);
+      const canaries = items.filter(i => i.block === 'adaptive' && (i.parameters as Prisma.JsonObject).canary === 1);
+      const timingItems = canaries.length ? await tx.testItem.findMany({ where: {
+        block: 'adaptive', correct: true, answeredAt: { not: null }, answer: { not: Prisma.DbNull },
+        OR: canaries.map(i => ({ familyId: i.familyId, templateVersion: i.templateVersion })),
+        session: { candidateId: { not: c.id }, bankVersion: test.bankVersion, specialization: test.specialization,
+          declaredGrade: test.declaredGrade, status: 'finished', finishedAt: { lte: now },
+          policy: { path: ['express'], equals: policy.express === true } },
+      }, orderBy: [{ answeredAt: 'desc' }, { id: 'asc' }], take: 3000,
+      select: { id: true, familyId: true, templateVersion: true, correct: true, issuedAt: true, answeredAt: true,
+        session: { select: { candidateId: true, bankVersion: true, specialization: true, declaredGrade: true, policy: true, finishedAt: true } } },
+      }) : [];
+      const timingModels = canaryTimingModels(timingItems.map(i => ({ ...i, ...i.session,
+        express: (i.session.policy as Prisma.JsonObject).express === true })), {
+        candidateId: c.id, bankVersion: test.bankVersion, specialization: test.specialization, declaredGrade: test.declaredGrade,
+        express: policy.express === true, at: now, families: canaries.map(i => ({ familyId: i.familyId, templateVersion: i.templateVersion })),
+      });
       const flags = telemetryFlags(items.map(i => {
         const telemetry = i.telemetry as Prisma.JsonObject;
         return { familyId: i.familyId, correct: i.correct, difficulty: i.difficulty,
           serverElapsedMs: Number(telemetry.server_elapsed_ms ?? 0), pasteCount: Number(telemetry.paste_count ?? 0), focusLostCount: Number(telemetry.focus_lost_count ?? 0) };
       }), scored.theta, []); // No fabricated timing norms: fast_correct needs actual saved models.
+      flags.push(...canaryFlags(items.filter(i => i.block === 'adaptive').map(i => ({ familyId: i.familyId, ordinal: i.ordinal,
+        canary: (i.parameters as Prisma.JsonObject).canary === 1, correct: i.correct,
+        serverElapsedMs: i.answer !== null && i.answeredAt ? Math.max(0, i.answeredAt.getTime() - i.issuedAt.getTime()) : 0,
+      })), timingModels));
       now = new Date();
       if (test.deadlineAt <= now) {
         await tx.testSession.update({ where: { id }, data: { status: 'expired', finishedAt: now } });
@@ -139,10 +160,16 @@ export class AssessmentFinishController {
           } : changed ? null : profile.standing ?? null } as Prisma.InputJsonObject } });
         if (changed) await tx.gradeHistory.create({ data: { candidateId: c.id, specialization: test.specialization, grade: test.declaredGrade,
           previousGrade: c.grade, previousSpecialization: c.confirmedSpecialization, testId: id, changedAt: now, reason: 'test_passed' } });
+      } else if (!policy.express && oldStanding && c.confirmedSpecialization === test.specialization && flags.some(f => f.code === 'leak_suspected')) {
+        const previousFlags = (Array.isArray(oldStanding.flags) ? oldStanding.flags : []) as unknown as IntegrityFlag[];
+        await tx.candidate.update({ where: { id: c.id }, data: { profile: { ...profile,
+          standing: { ...oldStanding, flags: canaryStandingFlags(previousFlags, flags) },
+        } as Prisma.InputJsonObject } });
       }
       await tx.audit.create({ data: { actorSubject: req.identity.sub, action: 'assessment.finished', resourceId: id,
         metadata: { outcome: scored.outcome, policy_version: policy.gradeCuts.version, bank_version: test.bankVersion,
           normative_candidates: cohort.length, category_changed: changed, incomplete: scored.incomplete, practice_failed: scored.practiceFailed, issued_skips: skipped.skippedIds.length,
+          integrity_flags: flags.map(f => f.code),
           skill_policy_version: policy.skillConfirmationPolicyVersion ?? null, confirmed_skills: verifiedSkills.map(s => s.skill_id) } } });
       return validated;
     }, { timeout: 15000 });

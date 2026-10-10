@@ -16,7 +16,7 @@ test('every choice pool contains four different questions and four different ans
 });
 
 test('choice families cover every specialization and validate 200 deterministic shuffled instances', () => {
-  assert.equal(LIVE_BANK_VERSION, 'expert-bank-20261010-v5');
+  assert.equal(LIVE_BANK_VERSION, 'expert-bank-20261010-v6');
   const choices = LIVE_BANK.filter(f => f.generate(0).options);
   for (const spec of ['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst'] as const) {
     const families = choices.filter(f => f.specializations.includes(spec));

@@ -9,4 +9,5 @@ export const TestResultFlagsItemCode = {
   fast_correct: 'fast_correct',
   paste: 'paste',
   focus_loss: 'focus_loss',
+  leak_suspected: 'leak_suspected',
 } as const;

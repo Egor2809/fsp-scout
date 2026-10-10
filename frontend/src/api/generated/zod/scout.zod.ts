@@ -202,7 +202,7 @@ export const GetMyProfileResponse = zod.object({
   "confirmed_at": zod.iso.datetime({"offset":true}),
   "test_id": zod.uuid(),
   "flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional()
 }).describe('Подтверждённое место кандидата в категории'),zod.null()]).describe('`null` — грейд не подтверждён'),
@@ -349,7 +349,7 @@ export const UpdateMyProfileResponse = zod.object({
   "confirmed_at": zod.iso.datetime({"offset":true}),
   "test_id": zod.uuid(),
   "flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional()
 }).describe('Подтверждённое место кандидата в категории'),zod.null()]).describe('`null` — грейд не подтверждён'),
@@ -491,7 +491,7 @@ export const GetMyCardPreviewResponse = zod.object({
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(getMyCardPreviewResponsePercentileMax).nullable(),
   "test_flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(getMyCardPreviewResponseStrengthMin).max(getMyCardPreviewResponseStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
@@ -1106,7 +1106,7 @@ export const FinishTestResponse = zod.object({
   "message": zod.string()
 }),
   "flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning']),
   "message": zod.string()
 })),
@@ -1183,7 +1183,7 @@ export const GetTestResultResponse = zod.object({
   "message": zod.string()
 }),
   "flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning']),
   "message": zod.string()
 })),
@@ -2460,7 +2460,7 @@ export const GetSearchResultsResponse = zod.object({
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(getSearchResultsResponseTwoItemsItemCandidatePercentileMax).nullable(),
   "test_flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(getSearchResultsResponseTwoItemsItemCandidateStrengthMin).max(getSearchResultsResponseTwoItemsItemCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
@@ -2801,7 +2801,7 @@ export const ListCandidatesResponse = zod.object({
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(listCandidatesResponseTwoItemsItemPercentileMax).nullable(),
   "test_flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(listCandidatesResponseTwoItemsItemStrengthMin).max(listCandidatesResponseTwoItemsItemStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
@@ -2963,7 +2963,7 @@ export const GetCandidateResponse = zod.object({
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(getCandidateResponseOnePercentileMax).nullable(),
   "test_flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(getCandidateResponseOneStrengthMin).max(getCandidateResponseOneStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
@@ -4833,7 +4833,7 @@ export const ListVacancyApplicationsResponseItem = zod.object({
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(listVacancyApplicationsResponseTwoCandidatePercentileMax).nullable(),
   "test_flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(listVacancyApplicationsResponseTwoCandidateStrengthMin).max(listVacancyApplicationsResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
@@ -5153,7 +5153,7 @@ export const UpdateApplicationStatusResponse = zod.object({
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(updateApplicationStatusResponseTwoCandidatePercentileMax).nullable(),
   "test_flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(updateApplicationStatusResponseTwoCandidateStrengthMin).max(updateApplicationStatusResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
@@ -5688,7 +5688,7 @@ export const ListTaskSubmissionsResponseItem = zod.object({
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(listTaskSubmissionsResponseTwoCandidatePercentileMax).nullable(),
   "test_flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(listTaskSubmissionsResponseTwoCandidateStrengthMin).max(listTaskSubmissionsResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
@@ -5863,7 +5863,7 @@ export const ScoreTaskSubmissionResponse = zod.object({
   "grade_confirmed": zod.boolean(),
   "percentile": zod.int().min(1).max(scoreTaskSubmissionResponseTwoCandidatePercentileMax).nullable(),
   "test_flags": zod.array(zod.object({
-  "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
+  "code": zod.enum(['fast_correct', 'paste', 'focus_loss', 'leak_suspected']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
   "strength": zod.number().min(scoreTaskSubmissionResponseTwoCandidateStrengthMin).max(scoreTaskSubmissionResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),

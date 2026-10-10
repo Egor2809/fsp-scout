@@ -365,6 +365,7 @@ const integrityLabel: Record<IntegrityFlag["code"], string> = {
   fast_correct: "быстрые верные ответы",
   paste: "вставки из буфера",
   focus_loss: "уход со вкладки",
+  leak_suspected: "возможный доступ к ключам",
 };
 
 /** Полная анонимная карточка кандидата (банк, подборка, превью для самого кандидата). */

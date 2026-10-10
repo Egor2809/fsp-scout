@@ -2,13 +2,15 @@ import type { Specialization, TestItem } from '../contract/model/index.js';
 import { seededRandom, type Family } from '../common/cat.ts';
 import type { ExpectedAnswer } from './grading.ts';
 import { choiceFamilies } from './choice-bank.ts';
+import { canaryFamilies } from './canary-bank.ts';
 
 interface NumericVariant { parameters: Record<string, number>; prompt: string; value: number; tolerance?: number; options?: never }
 export interface ChoiceVariant { parameters: Record<string, number>; prompt: string; type: 'single_choice' | 'multiple_choice'; options: { id: string; text: string }[]; correctIds: string[]; value?: never; tolerance?: never }
 type Variant = NumericVariant | ChoiceVariant;
-export const LIVE_BANK_VERSION = 'expert-bank-20261010-v5';
+export const LIVE_BANK_VERSION = 'expert-bank-20261010-v6';
 export interface LiveFamily extends Family {
   c: number;
+  canary?: boolean;
   title: string;
   specializations: readonly Specialization[];
   skillIds: readonly string[];
@@ -697,6 +699,7 @@ export const LIVE_BANK: readonly LiveFamily[] = [
     const n = draw(seed), values = Array.from({ length: 7 }, () => n(50, 500));
     return { parameters: { last: values[6] }, prompt: `Заказы по дням: ${values.join(', ')}. Чему равно скользящее среднее за 3 дня на последний день? Округлите до двух знаков.`, value: (values[4] + values[5] + values[6]) / 3, tolerance: R2 };
   }, ['bi']),
+  ...canaryFamilies,
 ];
 
 export function instantiate(family: LiveFamily, seed: number, id: string, index: number) {
@@ -729,7 +732,7 @@ export function instantiate(family: LiveFamily, seed: number, id: string, index:
   }
   const guessing = publicItem.type === 'single_choice' ? 1 / publicItem.options!.length : publicItem.type === 'multiple_choice' ? 0.05 : 0;
   if (guessing !== family.c) throw new Error('Inconsistent guessing parameter');
-  return { familyId: family.id, templateVersion: family.templateVersion, parameters: { seed, ...variant.parameters, irt_c: guessing }, publicItem, expectedAnswer, discrimination: family.a, difficulty: family.b };
+  return { familyId: family.id, templateVersion: family.templateVersion, parameters: { seed, ...variant.parameters, irt_c: guessing, ...(family.canary ? { canary: 1 } : {}) }, publicItem, expectedAnswer, discrimination: family.a, difficulty: family.b };
 }
 
 export function requiredCompetencies(bank: readonly LiveFamily[], maxExposure: number): string[] {
