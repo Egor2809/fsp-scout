@@ -1,6 +1,7 @@
 import type { Specialization } from '../contract/model/index.js';
 import { seededRandom } from '../common/cat.ts';
 import type { ChoiceVariant, LiveFamily } from './live-bank.ts';
+import { choicePools, type ChoiceScenario } from './choice-pools.ts';
 
 type Question = readonly [id: string, skill: string, prompt: string, correct: string | readonly string[], wrong: readonly string[]];
 const questions: Record<Specialization, readonly Question[]> = {
@@ -57,17 +58,17 @@ const questions: Record<Specialization, readonly Question[]> = {
     ['secret', 'kubernetes', 'В {n} Pod нужно передать секрет. Какое утверждение верно про Kubernetes Secret по умолчанию?', 'Base64 в manifest не является шифрованием', ['Base64 гарантирует конфиденциальность', 'Любой Secret автоматически доступен всем в интернете', 'Secret нельзя ограничить через RBAC']],
     ['readiness', 'kubernetes', 'Из {n} Pod один временно не готов обслуживать запросы. Какая probe исключает его из endpoints Service?', 'Readiness probe', ['Liveness probe как проверка готовности трафика', 'Только изменение imagePullPolicy', 'Проверка количества YAML-файлов']],
     ['volume', 'docker', 'Контейнер записывает {n} ГБ данных, которые должны пережить его удаление. Что выбрать?', 'Управляемый volume с отдельным жизненным циклом', ['Только writable layer контейнера', 'tmpfs', 'stdout как файловую систему']],
-    ['rollback', 'ci_cd', 'Новая версия обрабатывает {n}% трафика, метрики ошибок выросли. Что описывает canary-откат?', 'Вернуть трафик на проверенную версию', ['Увеличить долю новой версии до 100%', 'Удалить историю образов', 'Отключить метрики ошибок']],
+    ['rollback', 'ci_cd', 'Новая версия обработала {n} запросов на части трафика, метрики ошибок выросли. Что описывает canary-откат?', 'Вернуть трафик на проверенную версию', ['Увеличить долю новой версии до 100%', 'Удалить историю образов', 'Отключить метрики ошибок']],
     ['terraform', 'terraform', '{n} инженеров одновременно применяют Terraform к одному state. Что предотвращает конкурентную запись state?', 'Backend с блокировкой state', ['Общий файл без блокировки', 'Одновременный запуск с -lock=false', 'Разные копии state для тех же ресурсов']],
     ['prometheus', 'prometheus', 'Счётчик HTTP-запросов вырос на {n}, но процесс иногда перезапускается. Какая PromQL-функция подходит для скорости счётчика?', 'rate(counter[5m])', ['sum_over_time(counter[5m]) как скорость', 'abs(counter) как скорость', 'sort(counter) как скорость']],
-    ['budget', 'system_design', 'Ошибка за окно исчерпала {n}% бюджета SLO. Какое решение соответствует политике error budget при полном исчерпании?', 'Ограничить рискованные релизы и заняться надёжностью', ['Обнулить метрики без изменения системы', 'Удалить неуспешные запросы из статистики', 'Всегда ускорить релизы']],
+    ['budget', 'system_design', 'Сервис обработал {n} запросов. Бюджет ошибок за окно SLO полностью исчерпан. Какое решение соответствует политике error budget?', 'Ограничить рискованные релизы и заняться надёжностью', ['Обнулить метрики без изменения системы', 'Удалить неуспешные запросы из статистики', 'Всегда ускорить релизы']],
     ['migration', 'postgresql', '{n} экземпляров старой и новой версии работают одновременно. Как менять схему без немедленного нарушения совместимости?', 'Expand-contract: добавить совместимую схему, мигрировать, затем удалить старую', ['Сразу удалить используемую старой версией колонку', 'Переименовать все поля без переходного периода', 'Отключить резервное копирование']],
     ['shutdown', 'kubernetes', 'Pod с {n} активными запросами получает SIGTERM. Выберите меры корректного завершения.', ['Перестать принимать новые запросы', 'Дать текущим запросам ограниченное время на завершение'], ['Немедленно уничтожить процесс без ожидания', 'Начать новый бесконечный цикл приёма запросов']],
   ],
   data_ml: [
     ['split', 'ml', 'Датасет содержит {n} тысяч строк. Для чего нужен отложенный test set?', 'Оценить качество на данных, не использованных для выбора модели', ['Подбирать гиперпараметры после каждого запуска', 'Обучать нормализацию на всех данных', 'Заменить обучающую выборку']],
     ['imbalance', 'ml', 'Положительный класс составляет 1/{n} объектов. Что демонстрирует проблема accuracy у константного отрицательного классификатора?', 'Высокая accuracy может сочетаться с нулевым recall положительного класса', ['Accuracy всегда равна нулю', 'Accuracy автоматически учитывает цену пропуска', 'Высокая accuracy доказывает отсутствие ошибок']],
-    ['scaling', 'sklearn', 'В {n} folds используется StandardScaler. Где обучать его параметры для каждого fold?', 'Только на обучающей части fold', ['На полном датасете до разделения', 'Только на test set', 'На целевой переменной вместо признаков']],
+    ['scaling', 'sklearn', 'На выборке из {n} строк используется StandardScaler и cross-validation. Где обучать его параметры для каждого fold?', 'Только на обучающей части fold', ['На полном датасете до разделения', 'Только на test set', 'На целевой переменной вместо признаков']],
     ['time', 'ml', 'Есть {n} месяцев истории для прогнозирования следующего месяца. Как разделять данные для реалистичной проверки?', 'Обучаться на прошлом и проверять на более позднем периоде', ['Случайно смешать будущее и прошлое без ограничений', 'Обучаться только на будущем', 'Проверять на обучающих строках']],
     ['overfit', 'ml', 'После {n} эпох train loss падает, validation loss устойчиво растёт. Какое объяснение наиболее соответствует наблюдению?', 'Переобучение', ['Гарантированное улучшение обобщения', 'Доказанная утечка только по этому признаку', 'Отсутствие обучения']],
     ['threshold', 'ml', 'Модель оценивает риск для {n} клиентов. Что обычно происходит с recall при снижении порога положительного решения при фиксированных оценках?', 'Не уменьшается', ['Обязательно уменьшается', 'Всегда становится нулём', 'Меняет обученные веса модели']],
@@ -84,20 +85,26 @@ const questions: Record<Specialization, readonly Question[]> = {
     ['requirements', 'requirements', 'Согласуются {n} требований к API. Какая формулировка проверяема?', 'p95 ответа ≤ 300 мс при 100 запросах/с на заданном стенде', ['API должен быть достаточно быстрым', 'API должен нравиться всем', 'API должен работать идеально']],
     ['ab', 'bi', 'В A/B-тесте {n} пользователей. Что обеспечивает случайное назначение группы?', 'Сопоставимость групп в ожидании по наблюдаемым и ненаблюдаемым факторам', ['Полное равенство всех характеристик в любой выборке', 'Гарантированную статистическую значимость', 'Отсутствие любых ошибок измерения']],
     ['pvalue', 'bi', 'Для эксперимента с {n} наблюдениями получено p=0.03. Какова корректная интерпретация при нулевой гипотезе и предпосылках теста?', 'Вероятность результата не менее экстремального равна 0.03', ['Вероятность истинности нулевой гипотезы равна 0.03', 'Вероятность успеха продукта равна 0.97', 'Эффект обязательно практически важен']],
-    ['simpson', 'bi', 'В {n} сегментах доли трафика различаются между группами. Общая конверсия противоречит сравнению внутри сегментов. Что проверить?', 'Парадокс Симпсона и состав групп', ['Только округление названий сегментов', 'Обязательно ошибку SQL без анализа данных', 'Только число столбцов']],
+    ['simpson', 'bi', 'Для {n} наблюдений доли трафика сегментов различаются между группами. Общая конверсия противоречит сравнению внутри сегментов. Что проверить?', 'Парадокс Симпсона и состав групп', ['Только округление названий сегментов', 'Обязательно ошибку SQL без анализа данных', 'Только число столбцов']],
     ['incrementality', 'bi', '{n} пользователей получили рекламу и сделали покупки. Почему их все покупки нельзя считать эффектом рекламы?', 'Часть покупок могла произойти без рекламы; нужен контрфактуальный контроль', ['Любая покупка после показа всегда вызвана рекламой', 'Контроль нужен только для подсчёта кликов', 'Число покупок всегда равно числу показов']],
     ['experiment', 'bi', 'Проверяются {n} гипотез в одном эксперименте. Выберите меры против ложных открытий.', ['Заранее определить основную метрику и план анализа', 'Применить подходящую поправку на множественные проверки'], ['Выбрать только минимальное p-value без поправки', 'Остановить тест при первом случайном p<0.05']],
   ],
 };
 
 const competencies: Record<Specialization, string> = { backend: 'databases', frontend: 'interface', mobile: 'systems', qa: 'quality', devops: 'systems', data_ml: 'data_reasoning', analyst: 'data_reasoning' };
-export const choiceFamilies: readonly LiveFamily[] = (Object.entries(questions) as [Specialization, readonly Question[]][]).flatMap(([specialization, rows]) => rows.map(([id, skill, prompt, correct, wrong], index): LiveFamily => ({
-  id: `choice-${specialization}-${id}`, title: ({ backend: 'Серверная разработка', frontend: 'Веб-интерфейс', mobile: 'Мобильная разработка', qa: 'Проверка качества', devops: 'Эксплуатация', data_ml: 'Машинное обучение', analyst: 'Анализ данных' })[specialization] ?? specialization,
-  competency: specialization === 'backend' && !['postgresql', 'sql'].includes(skill) ? 'systems' : competencies[specialization], a: 1.2, b: Math.round((-1.8 + index * 0.4) * 10) / 10,
-  specializations: [specialization as Specialization], skillIds: [skill], templateVersion: 1, calibration: 'expert_prior',
-  generate(seed): ChoiceVariant {
-    const n = 5 + Math.floor(seededRandom(seed)() * 195), answers = typeof correct === 'string' ? [correct] : [...correct];
-    return { parameters: { n }, prompt: prompt.replaceAll('{n}', String(n)), type: typeof correct === 'string' ? 'single_choice' : 'multiple_choice',
-      options: [...answers, ...wrong].map((text, i) => ({ id: `private-${i}`, text })), correctIds: answers.map((_, i) => `private-${i}`) };
-  },
-})));
+export const choiceFamilies: readonly LiveFamily[] = (Object.entries(questions) as [Specialization, readonly Question[]][]).flatMap(([specialization, rows]) => rows.map(([id, skill, prompt, correct, wrong], index): LiveFamily => {
+  const pool: readonly ChoiceScenario[] = [[prompt, correct, wrong], ...choicePools[specialization][id]!];
+  return {
+    id: `choice-${specialization}-${id}`, title: ({ backend: 'Серверная разработка', frontend: 'Веб-интерфейс', mobile: 'Мобильная разработка', qa: 'Проверка качества', devops: 'Эксплуатация', data_ml: 'Машинное обучение', analyst: 'Анализ данных' })[specialization] ?? specialization,
+    competency: specialization === 'backend' && !['postgresql', 'sql'].includes(skill) ? 'systems' : competencies[specialization], a: 1.2, b: Math.round((-1.8 + index * 0.4) * 10) / 10,
+    specializations: [specialization], skillIds: [skill], templateVersion: 2, calibration: 'expert_prior',
+    generate(seed): ChoiceVariant {
+      const random = seededRandom(seed);
+      const scenario = Math.floor(random() * pool.length), n = 100 + Math.floor(random() * 9900);
+      const [question, key, distractors] = pool[scenario]!, answers = typeof key === 'string' ? [key] : [...key];
+      const render = (text: string) => text.replaceAll('{n-1}', String(n - 1)).replaceAll('{n+1}', String(n + 1)).replaceAll('{n}', String(n));
+      return { parameters: { n, scenario }, prompt: render(question), type: typeof key === 'string' ? 'single_choice' : 'multiple_choice',
+        options: [...answers, ...distractors].map((text, i) => ({ id: `private-${i}`, text: render(text) })), correctIds: answers.map((_, i) => `private-${i}`) };
+    },
+  };
+}));

@@ -6,7 +6,7 @@ import { choiceFamilies } from './choice-bank.ts';
 interface NumericVariant { parameters: Record<string, number>; prompt: string; value: number; tolerance?: number; options?: never }
 export interface ChoiceVariant { parameters: Record<string, number>; prompt: string; type: 'single_choice' | 'multiple_choice'; options: { id: string; text: string }[]; correctIds: string[]; value?: never; tolerance?: never }
 type Variant = NumericVariant | ChoiceVariant;
-export const LIVE_BANK_VERSION = 'expert-bank-20261010-v4';
+export const LIVE_BANK_VERSION = 'expert-bank-20261010-v5';
 export interface LiveFamily extends Family {
   title: string;
   specializations: readonly Specialization[];

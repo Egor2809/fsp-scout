@@ -5,9 +5,18 @@ import { readFileSync } from 'node:fs';
 import { LIVE_BANK, LIVE_BANK_VERSION, instantiate, bankInventory, requiredCompetencies } from '../src/assessment/live-bank.ts';
 import { gradeAnswer } from '../src/assessment/grading.ts';
 import { FAMILIES } from '../src/assessment/showcase.ts';
+import { choicePools } from '../src/assessment/choice-pools.ts';
+
+test('every choice pool contains four different questions and four different answer sets before substitution', () => {
+  for (const pools of Object.values(choicePools)) for (const scenarios of Object.values(pools)) {
+    assert.equal(scenarios.length, 4);
+    assert.equal(new Set(scenarios.map(([prompt]) => prompt)).size, 4);
+    assert.equal(new Set(scenarios.map(([, correct]) => (typeof correct === 'string' ? [correct] : [...correct]).sort().join('\u0000'))).size, 4);
+  }
+});
 
 test('choice families cover every specialization and validate 200 deterministic shuffled instances', () => {
-  assert.equal(LIVE_BANK_VERSION, 'expert-bank-20261010-v4');
+  assert.equal(LIVE_BANK_VERSION, 'expert-bank-20261010-v5');
   const choices = LIVE_BANK.filter(f => f.generate(0).options);
   for (const spec of ['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst'] as const) {
     const families = choices.filter(f => f.specializations.includes(spec));
@@ -17,15 +26,18 @@ test('choice families cover every specialization and validate 200 deterministic 
     assert.ok(families.some(f => instantiate(f, 0, 'item', 1).publicItem.type === 'multiple_choice'));
   }
   for (const family of choices) {
-    const variants = new Set<string>(), positions = new Set<string>();
+    const variants = new Set<string>(), positions = new Set<string>(), keys = new Set<string>(), scenarios = new Set<number>();
     for (let seed = 0; seed < 200; seed++) {
       const instance = instantiate(family, seed, 'item', 1), item = instance.publicItem, expected = instance.expectedAnswer;
       assert.equal(expected.kind, 'options');
       if (expected.kind !== 'options') throw new Error('Expected options');
       assert.deepEqual(instance, instantiate(family, seed, 'item', 1));
       const options = item.options!;
+      keys.add(options.filter(o => expected.ids.includes(o.id)).map(o => o.text).sort().join('\u0000'));
+      scenarios.add(instance.parameters.scenario!);
       assert.equal(new Set(options.map(o => o.id)).size, options.length);
       assert.equal(new Set(options.map(o => o.text)).size, options.length);
+      assert.ok(!/\{n(?:[+-]1)?\}/.test(JSON.stringify(item)), `${family.id}: unresolved parameter`);
       assert.ok(expected.ids.every(id => options.some(o => o.id === id)));
       assert.ok(!JSON.stringify(item).includes('private-'));
       assert.ok(!('correctIds' in item) && !('expectedAnswer' in item));
@@ -43,6 +55,8 @@ test('choice families cover every specialization and validate 200 deterministic 
       variants.add(item.prompt);
     }
     assert.ok(variants.size >= 5, family.id);
+    assert.ok(keys.size >= 4, `${family.id}: only ${keys.size} correct texts`);
+    assert.equal(scenarios.size, 5, `${family.id}: missing scenario`);
     assert.ok(positions.size > 1, `${family.id}: fixed answer position`);
   }
 });
