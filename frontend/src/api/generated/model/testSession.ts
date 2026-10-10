@@ -7,6 +7,7 @@ import type { TestProgress } from './testProgress';
 import type { TestStatus } from './testStatus';
 
 export interface TestSession {
+  express?: boolean;
   id: string;
   specialization: Specialization;
   declared_grade: Grade;

@@ -799,6 +799,7 @@ export const startTestResponseProgressPracticeTotalMin = 0;
 
 
 export const StartTestResponse = zod.object({
+  "express": zod.boolean().optional(),
   "id": zod.uuid(),
   "specialization": zod.enum(['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst']).describe('Backend, Frontend, Mobile, QA, DevOps/SRE, Data/ML, Аналитик'),
   "declared_grade": zod.enum(['junior', 'middle', 'senior', 'lead']).describe('Junior (до 1 года), Middle (1–3), Senior (3–6), Lead (6+)'),
@@ -828,6 +829,7 @@ export const listMyTestsResponsePercentileMax = 99;
 
 
 export const ListMyTestsResponseItem = zod.object({
+  "express": zod.boolean().optional(),
   "id": zod.uuid(),
   "specialization": zod.enum(['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst']).describe('Backend, Frontend, Mobile, QA, DevOps/SRE, Data/ML, Аналитик'),
   "declared_grade": zod.enum(['junior', 'middle', 'senior', 'lead']).describe('Junior (до 1 года), Middle (1–3), Senior (3–6), Lead (6+)'),
@@ -859,6 +861,7 @@ export const getTestResponseProgressPracticeTotalMin = 0;
 
 
 export const GetTestResponse = zod.object({
+  "express": zod.boolean().optional(),
   "id": zod.uuid(),
   "specialization": zod.enum(['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst']).describe('Backend, Frontend, Mobile, QA, DevOps/SRE, Data/ML, Аналитик'),
   "declared_grade": zod.enum(['junior', 'middle', 'senior', 'lead']).describe('Junior (до 1 года), Middle (1–3), Senior (3–6), Lead (6+)'),
@@ -1067,6 +1070,7 @@ export const finishTestResponseTraceItemDifficultyLevelMax = 5;
 
 
 export const FinishTestResponse = zod.object({
+  "express": zod.boolean().optional(),
   "test_id": zod.uuid(),
   "specialization": zod.enum(['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst']).describe('Backend, Frontend, Mobile, QA, DevOps/SRE, Data/ML, Аналитик'),
   "declared_grade": zod.enum(['junior', 'middle', 'senior', 'lead']).describe('Junior (до 1 года), Middle (1–3), Senior (3–6), Lead (6+)'),
@@ -1143,6 +1147,7 @@ export const getTestResultResponseTraceItemDifficultyLevelMax = 5;
 
 
 export const GetTestResultResponse = zod.object({
+  "express": zod.boolean().optional(),
   "test_id": zod.uuid(),
   "specialization": zod.enum(['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst']).describe('Backend, Frontend, Mobile, QA, DevOps/SRE, Data/ML, Аналитик'),
   "declared_grade": zod.enum(['junior', 'middle', 'senior', 'lead']).describe('Junior (до 1 года), Middle (1–3), Senior (3–6), Lead (6+)'),

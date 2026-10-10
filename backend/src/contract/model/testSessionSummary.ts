@@ -7,6 +7,7 @@ import type { TestOutcome } from './testOutcome.js';
 import type { TestStatus } from './testStatus.js';
 
 export interface TestSessionSummary {
+  express?: boolean;
   id: string;
   specialization: Specialization;
   declared_grade: Grade;

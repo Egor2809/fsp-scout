@@ -29,6 +29,7 @@ export class AssessmentHistoryController {
     return rows.map(t => {
       const result = t.result as Prisma.JsonObject | null;
       return { id: t.id, specialization: t.specialization, declared_grade: t.declaredGrade, status: t.status,
+        express: (t.policy as Prisma.JsonObject).express === true,
         outcome: result?.outcome ?? null, assigned_grade: result?.assigned_grade ?? null, percentile: result?.percentile ?? null,
         started_at: t.startedAt.toISOString(), finished_at: t.finishedAt?.toISOString() ?? null };
     });
@@ -42,6 +43,7 @@ export class AssessmentHistoryController {
     await this.expire(c.id);
     const t = await this.db.testSession.findUniqueOrThrow({ where: { id }, include: { items: { orderBy: { ordinal: 'asc' } } } });
     return { id: t.id, specialization: t.specialization, declared_grade: t.declaredGrade, status: t.status,
+      express: (t.policy as Prisma.JsonObject).express === true,
       started_at: t.startedAt.toISOString(), deadline_at: t.deadlineAt.toISOString(), finished_at: t.finishedAt?.toISOString() ?? null,
       time_limit_sec: Math.round((t.deadlineAt.getTime() - t.startedAt.getTime()) / 1000), vacancy_id: t.vacancyId,
       progress: progress(t.items as IssuedItem[], t.policy as unknown as SessionPolicy) };

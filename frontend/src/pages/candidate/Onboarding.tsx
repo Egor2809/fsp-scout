@@ -51,6 +51,7 @@ export default function Onboarding() {
               ))}
             </ol>
             <PageHeader title={title} />
+            {import.meta.env.VITE_API_MOCK === 'false' && import.meta.env.VITE_ASSESSMENT_EXPRESS === 'true' && <p role="status" className="mb-6 rounded-lg border border-primary p-4">Экспресс-тест для жюри: 5–6 вопросов, около 5 минут. Лимит — 10 минут. Категория профиля не изменяется.</p>}
             {step === 'consents' && <ConsentsForm onDone={() => void me.refetch()} />}
             {step === 'survey' && <SurveyForm onDone={() => void me.refetch()} />}
             {(step === 'grade' || step === 'test') && <GradePicker />}

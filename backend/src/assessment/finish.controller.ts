@@ -13,7 +13,7 @@ import { competencyScores, resultTrace, skipOutstanding, scoreCompletion } from 
 import { GRADE_ORDER, empiricalPercentile, modelPercentile } from './result-scoring.js';
 import { normativeCohort, normativePolicySignature } from './normative-cohort.js';
 import { telemetryFlags } from './telemetry-flags.js';
-import type { SessionPolicy } from './session-state.js';
+import { confirmsCategory, fullAttempts, type SessionPolicy } from './session-state.js';
 import { confirmedSkills, SKILL_CONFIRMATION_POLICY } from './confirmed-skills.js';
 import { LIVE_BANK, LIVE_BANK_VERSION } from './live-bank.js';
 import { skills as taxonomySkills } from '../taxonomy/taxonomy.controller.js';
@@ -63,7 +63,7 @@ export class AssessmentFinishController {
         return null;
       }
       const sameCategory = c.confirmedSpecialization === test.specialization && c.grade === test.declaredGrade;
-      const mayConfirm = scored.outcome !== 'failed' && (sameCategory || gradeChangeAvailable({ lastGradeChangeAt: c.gradeChangedAt }, now));
+      const mayConfirm = confirmsCategory(policy, scored.outcome !== 'failed', sameCategory || gradeChangeAvailable({ lastGradeChangeAt: c.gradeChangedAt }, now));
       const assignedGrade = (mayConfirm ? test.declaredGrade : c.grade) as Grade | null;
       const assignedSpecialization = (mayConfirm ? test.specialization : c.confirmedSpecialization) as Specialization | null;
       const profile = c.profile as Prisma.JsonObject;
@@ -96,7 +96,7 @@ export class AssessmentFinishController {
       const suggestedEligibility = suggested ? eligibility({ surveyCompleted: c.surveyCompleted, activeTestId: null,
         currentGrade: assignedSpecialization === test.specialization ? assignedGrade : null,
         lastGradeChangeAt: mayConfirm && !sameCategory ? now : c.gradeChangedAt, experienceYears: null,
-        attempts: history.map(t => ({ id: t.id, grade: t.declaredGrade as Grade, startedAt: t.startedAt,
+        attempts: fullAttempts(history).map(t => ({ id: t.id, grade: t.declaredGrade as Grade, startedAt: t.startedAt,
           finishedAt: t.id === id ? now : t.finishedAt, exceptionParentId: t.exceptionParentId,
           outcome: t.id === id ? scored.outcome : ((t.result as Prisma.JsonObject | null)?.outcome ?? null) as TestResult['outcome'] | null })) }, now).find(g => g.grade === suggested) : null;
       const changed = mayConfirm && !sameCategory;
@@ -106,16 +106,17 @@ export class AssessmentFinishController {
       const protectedSkillIds = new Set(previousSkills.filter(s => s.source === 'fsp' || s.source === 'task').map(s => s.skill_id));
       const changeAt = changed ? now : c.gradeChangedAt;
       const output: TestResult = {
+        express: policy.express === true,
         test_id: id, specialization: test.specialization as Specialization, declared_grade: test.declaredGrade as Grade,
-        outcome: scored.outcome, assigned_grade: assignedGrade, category: assignedGrade && assignedSpecialization ? category(assignedSpecialization, assignedGrade) : null,
-        percentile, theta: scored.theta, se: scored.se, confidence: scored.incomplete || flags.some(f => f.severity === 'warning') ? 'low' : scored.se <= policy.targetSe ? 'high' : 'medium',
+        outcome: scored.outcome, assigned_grade: policy.express ? null : assignedGrade, category: !policy.express && assignedGrade && assignedSpecialization ? category(assignedSpecialization, assignedGrade) : null,
+        percentile: policy.express ? null : percentile, theta: scored.theta, se: scored.se, confidence: policy.express || scored.incomplete || flags.some(f => f.severity === 'warning') ? 'low' : scored.se <= policy.targetSe ? 'high' : 'medium',
         confirmed_skills: verifiedSkills, competencies: competencyScores(items), flags,
         suggestion: { action: suggested ? scored.outcome === 'failed' ? 'try_lower' : 'try_higher' : 'none', grade: suggested, available_at: suggestedEligibility?.available_at ?? null,
-          message: scored.incomplete ? 'Тест завершён досрочно; обязательные блоки не пройдены, новая категория не подтверждена.'
+          message: policy.express ? 'Экспресс-тест завершён. Для подтверждения категории пройдите полный тест.' : scored.incomplete ? 'Тест завершён досрочно; обязательные блоки не пройдены, новая категория не подтверждена.'
             : scored.practiceFailed ? 'Практика или уточняющий вопрос не пройдены; новая категория не подтверждена.'
             : suggested ? 'Доступность следующей попытки проверьте в правилах пересдачи.' : 'Результат сохранён.' },
         items_answered: items.length, duration_sec: Math.max(0, Math.floor((now.getTime() - test.startedAt.getTime()) / 1000)), finished_at: now.toISOString(),
-        next_retake_at: afterDays(now, 30).toISOString(), next_grade_change_at: changeAt ? afterDays(changeAt, 90).toISOString() : null, trace: resultTrace(items),
+        next_retake_at: policy.express ? now.toISOString() : afterDays(now, 30).toISOString(), next_grade_change_at: changeAt ? afterDays(changeAt, 90).toISOString() : null, trace: resultTrace(items),
       };
       const validated = FinishTestResponse.parse(output);
       const committedAt = new Date();

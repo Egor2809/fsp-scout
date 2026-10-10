@@ -4,6 +4,7 @@ import type { Answer } from '../contract/model/answer.js';
 import type { GradeCuts } from './result-scoring.ts';
 import type { CodeLanguage, TestBlueprint } from '../contract/model/index.js';
 export interface SessionPolicy extends CatPolicy {
+  express?: boolean;
   practiceTotal: number; familyIds?: string[]; requiredCompetencies?: string[]; waivedCompetencies?: string[]; gradeCuts?: GradeCuts;
   practiceBankVersion?: string; practiceFamilyIds?: string[]; practiceLanguage?: CodeLanguage; practiceRuntimeVersion?: string; approachTotal?: number;
   vacancyBlueprint?: TestBlueprint;
@@ -14,9 +15,21 @@ export function coveredCompetencies(policy: SessionPolicy): string[] {
 }
 export const DEFAULT_GRADE_POLICY = JSON.stringify({ version: 'expert-cuts-20261010-v2', cuts: { junior: -1.2, middle: -0.4, senior: 0.4, lead: 1.2 }, passProbability: 0.6 });
 export const DEFAULT_POLICY: SessionPolicy = { min: 8, max: 12, targetSe: 0.4, topK: 5, maxExposure: 0.4, practiceTotal: 1, approachTotal: 1 };
+export function assessmentMode(setting?: string): { policy: SessionPolicy; timeLimitSec: number } {
+  return setting === 'true'
+    ? { policy: { ...DEFAULT_POLICY, express: true, min: 5, max: 6, practiceTotal: 0, approachTotal: 0 }, timeLimitSec: 600 }
+    : { policy: { ...DEFAULT_POLICY, express: false }, timeLimitSec: 2400 };
+}
+export function fullAttempts<T extends { policy: unknown }>(rows: readonly T[]): T[] {
+  return rows.filter(row => (row.policy as { express?: unknown } | null)?.express !== true);
+}
+export function confirmsCategory(policy: SessionPolicy, passed: boolean, permitted: boolean): boolean {
+  return policy.express !== true && passed && permitted;
+}
 export interface IssuedItem { id: string; ordinal: number; block: 'adaptive' | 'practice' | 'approach'; answeredAt: Date | null; correct: boolean | null }
 
 export function validatePolicy(policy: SessionPolicy): void {
+  if (policy.express !== undefined && typeof policy.express !== 'boolean') throw new Error('Invalid saved assessment mode');
   if (policy.competencyWeights && (Object.values(policy.competencyWeights).some(w => !Number.isFinite(w) || w <= 0)
     || Math.abs(Object.values(policy.competencyWeights).reduce((sum, w) => sum + w, 0) - 1) > 1e-8
     || policy.requiredCompetencies?.some(id => !policy.competencyWeights![id]))) throw new Error('Invalid saved competency weights');

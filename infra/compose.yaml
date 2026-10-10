@@ -81,6 +81,7 @@ services:
       PUBLIC_VERIFICATION_BASE_URL: ${PUBLIC_VERIFICATION_BASE_URL:-http://localhost:8081}
       FSP_WEBHOOK_SECRET: ${FSP_WEBHOOK_SECRET:?Set FSP_WEBHOOK_SECRET}
       ASSESSMENT_GRADE_POLICY: ${ASSESSMENT_GRADE_POLICY:-}
+      ASSESSMENT_EXPRESS: ${ASSESSMENT_EXPRESS:-false}
       PISTON_EXECUTE_URL: ${PISTON_EXECUTE_URL:-}
       PISTON_PYTHON_VERSION: ${PISTON_PYTHON_VERSION:-}
       PISTON_JAVASCRIPT_VERSION: ${PISTON_JAVASCRIPT_VERSION:-}
@@ -138,6 +139,7 @@ services:
       context: ../frontend
       args:
         VITE_OIDC_AUTHORITY: ${OIDC_ISSUER:-http://localhost:8080/realms/scout}
+        VITE_ASSESSMENT_EXPRESS: ${ASSESSMENT_EXPRESS:-false}
     depends_on:
       api:
         condition: service_healthy

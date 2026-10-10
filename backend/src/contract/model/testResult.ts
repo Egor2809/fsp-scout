@@ -13,6 +13,7 @@ import type { TestResultTraceItem } from './testResultTraceItem.js';
 import type { TestSuggestion } from './testSuggestion.js';
 
 export interface TestResult {
+  express?: boolean;
   test_id: string;
   specialization: Specialization;
   declared_grade: Grade;

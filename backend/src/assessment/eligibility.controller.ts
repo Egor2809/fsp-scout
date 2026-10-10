@@ -8,6 +8,7 @@ import type { TestOutcome } from '../contract/model/testOutcome.js';
 import { parse } from '../common/validation.js';
 import { Problem } from '../common/problem.js';
 import { afterDays, eligibility, type RetakeState } from '../common/retake.js';
+import { assessmentMode, fullAttempts } from './session-state.js';
 
 @Controller('me/test-eligibility')
 @UseGuards(AuthGuard)
@@ -34,13 +35,14 @@ export class EligibilityController {
         surveyCompleted: c.surveyCompleted && specialization !== null,
         activeTestId: active?.id ?? null, currentGrade, lastGradeChangeAt: c.gradeChangedAt,
         experienceYears: typeof profile.experience_years === 'number' ? profile.experience_years : null,
-        attempts: history.map(t => ({ id: t.id, grade: t.declaredGrade as Grade, startedAt: t.startedAt,
+        attempts: fullAttempts(history).map(t => ({ id: t.id, grade: t.declaredGrade as Grade, startedAt: t.startedAt,
           finishedAt: t.finishedAt, exceptionParentId: t.exceptionParentId,
           outcome: ((t.result as Prisma.JsonObject | null)?.outcome ?? null) as TestOutcome | null })),
       };
       return { specialization, current_grade: currentGrade, last_grade_change_at: c.gradeChangedAt?.toISOString() ?? null,
         next_grade_change_at: c.gradeChangedAt ? afterDays(c.gradeChangedAt, 90).toISOString() : null,
-        active_test_id: active?.id ?? null, grades: eligibility(state, now) };
+        active_test_id: active?.id ?? null, grades: eligibility(state, now).map(g => assessmentMode(process.env.ASSESSMENT_EXPRESS).policy.express && !active && state.surveyCompleted
+          ? { ...g, can_start: true, reason: null, available_at: null } : g) };
     });
   }
 }

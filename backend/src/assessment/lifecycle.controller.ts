@@ -12,7 +12,7 @@ import { Problem } from '../common/problem.js';
 import { eligibility, exceptionParent, type RetakeState } from '../common/retake.js';
 import { selectWithWaiver, seededRandom, type CatState } from '../common/cat.js';
 import { LIVE_BANK, LIVE_BANK_VERSION, bankInventory, instantiate, requiredCompetencies } from './live-bank.js';
-import { coveredCompetencies, currentItem, DEFAULT_GRADE_POLICY, DEFAULT_POLICY, exposure, progress, validatePolicy, type IssuedItem, type SessionPolicy } from './session-state.js';
+import { assessmentMode, fullAttempts, coveredCompetencies, currentItem, DEFAULT_GRADE_POLICY, DEFAULT_POLICY, exposure, progress, validatePolicy, type IssuedItem, type SessionPolicy } from './session-state.js';
 import { validateGradeCuts, type GradeCuts } from './result-scoring.js';
 import { PRACTICE_BANK, PRACTICE_BANK_VERSION, instantiatePractice, selectPracticeFamily } from './practice-bank.js';
 import { CODE_JOB_TOPIC } from './code-job.js';
@@ -31,6 +31,7 @@ export class AssessmentLifecycleController {
   @Post()
   async start(@Req() req: { identity: Identity }, @Body() body: unknown) {
     const d = parse(StartTestBody, body), c = await this.candidate(req.identity);
+    const mode = assessmentMode(process.env.ASSESSMENT_EXPRESS);
     // Expiry is committed independently of later validation failures.
     await this.db.testSession.updateMany({ where: { candidateId: c.id, status: 'in_progress', deadlineAt: { lte: new Date() } }, data: { status: 'expired', finishedAt: new Date() } });
     return this.db.$transaction(async tx => {
@@ -46,10 +47,10 @@ export class AssessmentLifecycleController {
       const p = fresh.profile as Prisma.JsonObject;
       const state: RetakeState = { surveyCompleted: true, activeTestId: null, currentGrade: fresh.confirmedSpecialization === specialization ? fresh.grade as Grade | null : null,
         lastGradeChangeAt: fresh.gradeChangedAt, experienceYears: typeof p.experience_years === 'number' ? p.experience_years : null,
-        attempts: history.map(t => ({ id: t.id, grade: t.declaredGrade as Grade, startedAt: t.startedAt, finishedAt: t.finishedAt, exceptionParentId: t.exceptionParentId,
+        attempts: fullAttempts(history).map(t => ({ id: t.id, grade: t.declaredGrade as Grade, startedAt: t.startedAt, finishedAt: t.finishedAt, exceptionParentId: t.exceptionParentId,
           outcome: ((t.result as Prisma.JsonObject | null)?.outcome ?? null) as TestOutcome | null })) };
       const now = new Date(), allowed = eligibility(state, now).find(g => g.grade === d.declared_grade)!;
-      if (!allowed.can_start) throw new Problem(409, 'retake_locked', 'Пересдача пока недоступна', { available_at: allowed.available_at });
+      if (!mode.policy.express && !allowed.can_start) throw new Problem(409, 'retake_locked', 'Пересдача пока недоступна', { available_at: allowed.available_at });
       let blueprint: TestBlueprint | undefined;
       if (d.vacancy_id) {
         const vacancy = await tx.vacancy.findFirst({ where: { id: d.vacancy_id, status: 'published' } });
@@ -60,12 +61,12 @@ export class AssessmentLifecycleController {
         if (!blueprint.competencies.length || blueprint.competencies.some(c => c.families_count === 0))
           throw new Problem(409, 'conflict', 'Банк не покрывает требования вакансии');
       }
-      const inventory = bankInventory(specialization, DEFAULT_POLICY.max, DEFAULT_POLICY.maxExposure);
+      const inventory = bankInventory(specialization, mode.policy.max, mode.policy.maxExposure);
       if (!inventory.sufficientInventory) throw new Problem(409, 'conflict', 'Банк этой специализации ещё не готов к тестированию');
       const bank = LIVE_BANK.filter(f => f.specializations.includes(specialization)
         && (!blueprint || blueprint.competencies.some(c => c.competency_id === f.competency)));
       const required = requiredCompetencies(bank, DEFAULT_POLICY.maxExposure);
-      if (bank.length < Math.ceil(DEFAULT_POLICY.max / DEFAULT_POLICY.maxExposure) || !required.length) throw new Problem(409, 'conflict', 'Недостаточно семейств для бланка вакансии');
+      if (bank.length < Math.ceil(mode.policy.max / mode.policy.maxExposure) || !required.length) throw new Problem(409, 'conflict', 'Недостаточно семейств для бланка вакансии');
       let gradeCuts: GradeCuts;
       try {
         gradeCuts = JSON.parse(process.env.ASSESSMENT_GRADE_POLICY || DEFAULT_GRADE_POLICY) as GradeCuts;
@@ -74,9 +75,9 @@ export class AssessmentLifecycleController {
       const practiceBank = PRACTICE_BANK.filter(f => f.specializations.includes(specialization));
       const practiceLanguage = specialization === 'frontend' ? 'javascript' : 'python';
       const practiceRuntimeVersion = process.env[`PISTON_${practiceLanguage.toUpperCase()}_VERSION`];
-      const practice = Boolean(process.env.PISTON_EXECUTE_URL && practiceRuntimeVersion && /^\d+\.\d+\.\d+$/.test(practiceRuntimeVersion)
+      const practice = Boolean(!mode.policy.express && process.env.PISTON_EXECUTE_URL && practiceRuntimeVersion && /^\d+\.\d+\.\d+$/.test(practiceRuntimeVersion)
         && practiceBank.length >= Math.ceil(DEFAULT_POLICY.practiceTotal / DEFAULT_POLICY.maxExposure));
-      const policy: SessionPolicy = { ...DEFAULT_POLICY, gradeCuts, skillConfirmationPolicyVersion: SKILL_CONFIRMATION_POLICY.version,
+      const policy: SessionPolicy = { ...mode.policy, gradeCuts, skillConfirmationPolicyVersion: SKILL_CONFIRMATION_POLICY.version,
         familyIds: bank.map(f => f.id), requiredCompetencies: required,
         ...(practice ? { practiceBankVersion: PRACTICE_BANK_VERSION, practiceFamilyIds: practiceBank.map(f => f.id), practiceLanguage, practiceRuntimeVersion }
           : { practiceTotal: 0, approachTotal: 0 }) };
@@ -85,10 +86,10 @@ export class AssessmentLifecycleController {
         policy.competencyWeights = Object.fromEntries(blueprint.competencies.map(c => [c.competency_id, c.share]));
       }
       const test = await tx.testSession.create({ data: { candidateId: c.id, specialization, declaredGrade: d.declared_grade, seed: randomInt(0, 2147483647),
-        startedAt: now, deadlineAt: new Date(now.getTime() + 40 * 60000), policy: policy as unknown as Prisma.InputJsonObject, bankVersion: LIVE_BANK_VERSION,
-        exceptionParentId: exceptionParent(state, d.declared_grade), vacancyId: d.vacancy_id ?? null } });
+        startedAt: now, deadlineAt: new Date(now.getTime() + mode.timeLimitSec * 1000), policy: policy as unknown as Prisma.InputJsonObject, bankVersion: LIVE_BANK_VERSION,
+        exceptionParentId: policy.express ? null : exceptionParent(state, d.declared_grade), vacancyId: d.vacancy_id ?? null } });
       return { id: test.id, specialization, declared_grade: d.declared_grade, status: test.status, started_at: test.startedAt.toISOString(), deadline_at: test.deadlineAt.toISOString(),
-        finished_at: null, time_limit_sec: 2400, progress: progress([], policy), vacancy_id: test.vacancyId };
+        finished_at: null, express: policy.express === true, time_limit_sec: mode.timeLimitSec, progress: progress([], policy), vacancy_id: test.vacancyId };
     });
   }
   @Get(':id/next')

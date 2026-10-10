@@ -2866,6 +2866,7 @@ components:
       type: object
       required: [id, specialization, declared_grade, status, started_at, deadline_at, finished_at, time_limit_sec, progress, vacancy_id]
       properties:
+        express: { type: boolean }
         id: { type: string, format: uuid }
         specialization: { $ref: '#/components/schemas/Specialization' }
         declared_grade: { $ref: '#/components/schemas/Grade' }
@@ -2883,6 +2884,7 @@ components:
       type: object
       required: [id, specialization, declared_grade, status, outcome, assigned_grade, percentile, started_at, finished_at]
       properties:
+        express: { type: boolean }
         id: { type: string, format: uuid }
         specialization: { $ref: '#/components/schemas/Specialization' }
         declared_grade: { $ref: '#/components/schemas/Grade' }
@@ -3076,6 +3078,7 @@ components:
         - next_grade_change_at
         - trace
       properties:
+        express: { type: boolean }
         test_id: { type: string, format: uuid }
         specialization: { $ref: '#/components/schemas/Specialization' }
         declared_grade: { $ref: '#/components/schemas/Grade' }

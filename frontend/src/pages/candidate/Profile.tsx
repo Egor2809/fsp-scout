@@ -1,4 +1,6 @@
 import { useGetMyCardPreview, useGetMyProfile } from '@/api/generated/endpoints/profile/profile'
+import { useListMyTests } from '@/api/generated/endpoints/assessment/assessment'
+import { Link } from 'react-router'
 import { CandidateCardView, ContactList, Section } from '@/components/candidate'
 import { PageHeader } from '@/components/layout/AppShell'
 import { QueryView } from '@/components/states'
@@ -16,9 +18,12 @@ const VISIBILITY = {
 export default function CandidateProfile() {
   const profile = useGetMyProfile()
   const preview = useGetMyCardPreview()
+  const tests = useListMyTests()
+  const express = tests.data?.find(t => t.express && t.status === 'finished')
   return (
     <>
       <PageHeader title="Профиль и карточка" />
+      {express && <p className="mb-6 rounded-lg border border-primary p-4">Пройден экспресс-тест для жюри. Результат демонстрационный; подтверждённая категория не изменена. <Link to={`/c/results/${express.id}`}>Посмотреть результат</Link></p>}
       <div className="grid gap-16 lg:grid-cols-2">
         <QueryView query={profile}>
           {(p) => (

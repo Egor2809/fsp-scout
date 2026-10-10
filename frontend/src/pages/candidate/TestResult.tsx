@@ -35,7 +35,8 @@ export default function TestResult() {
               <div className="relative grid gap-10">
                 <FadeIn className="grid gap-3" delay={r.percentile !== null ? 0.7 : 0} y={8}>
                   <p className="text-sm font-medium text-white/85">{testOutcomeLabel[r.outcome]}</p>
-                  <h1 className="display-xl text-[clamp(2.75rem,8vw,6.5rem)] break-words text-white">{r.category ? r.category.label : 'Без категории'}</h1>
+                  {r.express && <p className="rounded-lg border border-white/50 p-3 text-white">Экспресс-тест для жюри · демонстрационный результат. Категория профиля не изменена.</p>}
+                  <h1 className="display-xl text-[clamp(2.75rem,8vw,6.5rem)] break-words text-white">{r.express ? 'Экспресс-тест' : r.category ? r.category.label : 'Без категории'}</h1>
                 </FadeIn>
                 <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-8 border-t border-white/30 pt-8">
                   {r.percentile !== null ? (

@@ -28,6 +28,7 @@ export default function History() {
                     {list.map((t) => (
                       <li key={t.id} className="flex flex-wrap items-center gap-2 py-3.5 text-sm">
                         <span className="font-medium">{categoryLabel(t.specialization, t.declared_grade)}</span>
+                        {t.express && <Tag tone="warning">Экспресс · демо</Tag>}
                         <span className="text-muted-foreground">{formatDate(t.finished_at ?? t.started_at)}</span>
                         {t.outcome && <Tag tone={t.outcome === 'failed' ? 'warning' : 'success'}>{testOutcomeLabel[t.outcome]}</Tag>}
                         {t.status === 'in_progress' && <Tag tone="primary">идёт</Tag>}

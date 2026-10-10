@@ -56,6 +56,10 @@ export default function Landing() {
         </section>
         <section className="grid content-start gap-4">
           <h2 className="text-xl">Войти в демо</h2>
+          {import.meta.env.VITE_API_MOCK === 'false' && import.meta.env.VITE_ASSESSMENT_EXPRESS === 'true' && <div className="grid gap-2 rounded-lg border border-primary p-4">
+            <Button onClick={() => void go(provider.login({ loginHint: 'jury1-candidate@demo.ru' }))}>Экспресс-тест для жюри (5 минут)</Button>
+            <p className="text-sm text-muted-foreground">После входа: согласия, опрос и выбор грейда. 5–6 вопросов, лимит 10 минут. Результат демонстрационный.</p>
+          </div>}
           <Link to="/evaluate" className="text-link">Проверка подбора на своих резюме (для работодателя)</Link>
           {provider.mode === 'oidc' && (
             <>
