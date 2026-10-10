@@ -17,7 +17,7 @@ export interface MatchExplanation {
   fit: number;
   /**
      * @minimum 0
-     * @maximum 115
+     * @maximum 130
      */
   strength: number;
   /**

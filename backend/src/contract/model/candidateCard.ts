@@ -33,9 +33,9 @@ export interface CandidateCard {
   percentile: number | null;
   test_flags?: IntegrityFlag[];
   /**
-     * Сила профиля (0–100 + бонус ФСП до 15)
+     * Сила профиля (0–100 + бонус ФСП до 30)
      * @minimum 0
-     * @maximum 115
+     * @maximum 130
      */
   strength: number;
   skills: CandidateSkill[];

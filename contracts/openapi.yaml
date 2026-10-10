@@ -3790,7 +3790,7 @@ components:
           maximum: 100
           description: 'Score = 0.6·Fit + 0.4·Strength − штрафы'
         fit: { type: number, minimum: 0, maximum: 100 }
-        strength: { type: number, minimum: 0, maximum: 115 }
+        strength: { type: number, minimum: 0, maximum: 130 }
         chips:
           type: array
           maxItems: 3
@@ -3917,8 +3917,8 @@ components:
         strength:
           type: number
           minimum: 0
-          maximum: 115
-          description: Сила профиля (0–100 + бонус ФСП до 15)
+          maximum: 130
+          description: Сила профиля (0–100 + бонус ФСП до 30)
         skills:
           type: array
           items: { $ref: '#/components/schemas/CandidateSkill' }

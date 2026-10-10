@@ -449,7 +449,7 @@ export const DownloadMyProfilePdfResponse = zod.unknown()
 export const getMyCardPreviewResponsePercentileMax = 99;
 
 export const getMyCardPreviewResponseStrengthMin = 0;
-export const getMyCardPreviewResponseStrengthMax = 115;
+export const getMyCardPreviewResponseStrengthMax = 130;
 
 export const getMyCardPreviewResponseSkillsItemScoreMin = 0;
 export const getMyCardPreviewResponseSkillsItemScoreMax = 100;
@@ -494,7 +494,7 @@ export const GetMyCardPreviewResponse = zod.object({
   "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
-  "strength": zod.number().min(getMyCardPreviewResponseStrengthMin).max(getMyCardPreviewResponseStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
+  "strength": zod.number().min(getMyCardPreviewResponseStrengthMin).max(getMyCardPreviewResponseStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
   "name": zod.string(),
@@ -2389,7 +2389,7 @@ export const getSearchResultsResponseOneTotalMin = 0;
 export const getSearchResultsResponseTwoItemsItemCandidatePercentileMax = 99;
 
 export const getSearchResultsResponseTwoItemsItemCandidateStrengthMin = 0;
-export const getSearchResultsResponseTwoItemsItemCandidateStrengthMax = 115;
+export const getSearchResultsResponseTwoItemsItemCandidateStrengthMax = 130;
 
 export const getSearchResultsResponseTwoItemsItemCandidateSkillsItemScoreMin = 0;
 export const getSearchResultsResponseTwoItemsItemCandidateSkillsItemScoreMax = 100;
@@ -2425,7 +2425,7 @@ export const getSearchResultsResponseTwoItemsItemExplanationFitMin = 0;
 export const getSearchResultsResponseTwoItemsItemExplanationFitMax = 100;
 
 export const getSearchResultsResponseTwoItemsItemExplanationStrengthMin = 0;
-export const getSearchResultsResponseTwoItemsItemExplanationStrengthMax = 115;
+export const getSearchResultsResponseTwoItemsItemExplanationStrengthMax = 130;
 
 export const getSearchResultsResponseTwoItemsItemExplanationChipsMax = 3;
 
@@ -2455,7 +2455,7 @@ export const GetSearchResultsResponse = zod.object({
   "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
-  "strength": zod.number().min(getSearchResultsResponseTwoItemsItemCandidateStrengthMin).max(getSearchResultsResponseTwoItemsItemCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
+  "strength": zod.number().min(getSearchResultsResponseTwoItemsItemCandidateStrengthMin).max(getSearchResultsResponseTwoItemsItemCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
   "name": zod.string(),
@@ -2746,7 +2746,7 @@ export const listCandidatesResponseOneTotalMin = 0;
 export const listCandidatesResponseTwoItemsItemPercentileMax = 99;
 
 export const listCandidatesResponseTwoItemsItemStrengthMin = 0;
-export const listCandidatesResponseTwoItemsItemStrengthMax = 115;
+export const listCandidatesResponseTwoItemsItemStrengthMax = 130;
 
 export const listCandidatesResponseTwoItemsItemSkillsItemScoreMin = 0;
 export const listCandidatesResponseTwoItemsItemSkillsItemScoreMax = 100;
@@ -2796,7 +2796,7 @@ export const ListCandidatesResponse = zod.object({
   "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
-  "strength": zod.number().min(listCandidatesResponseTwoItemsItemStrengthMin).max(listCandidatesResponseTwoItemsItemStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
+  "strength": zod.number().min(listCandidatesResponseTwoItemsItemStrengthMin).max(listCandidatesResponseTwoItemsItemStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
   "name": zod.string(),
@@ -2898,7 +2898,7 @@ export const GetCandidateQueryParams = zod.object({
 export const getCandidateResponseOnePercentileMax = 99;
 
 export const getCandidateResponseOneStrengthMin = 0;
-export const getCandidateResponseOneStrengthMax = 115;
+export const getCandidateResponseOneStrengthMax = 130;
 
 export const getCandidateResponseOneSkillsItemScoreMin = 0;
 export const getCandidateResponseOneSkillsItemScoreMax = 100;
@@ -2934,7 +2934,7 @@ export const getCandidateResponseTwoExplanationOneFitMin = 0;
 export const getCandidateResponseTwoExplanationOneFitMax = 100;
 
 export const getCandidateResponseTwoExplanationOneStrengthMin = 0;
-export const getCandidateResponseTwoExplanationOneStrengthMax = 115;
+export const getCandidateResponseTwoExplanationOneStrengthMax = 130;
 
 export const getCandidateResponseTwoExplanationOneChipsMax = 3;
 
@@ -2958,7 +2958,7 @@ export const GetCandidateResponse = zod.object({
   "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
-  "strength": zod.number().min(getCandidateResponseOneStrengthMin).max(getCandidateResponseOneStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
+  "strength": zod.number().min(getCandidateResponseOneStrengthMin).max(getCandidateResponseOneStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
   "name": zod.string(),
@@ -4625,7 +4625,7 @@ export const ListVacancyApplicationsParams = zod.object({
 export const listVacancyApplicationsResponseTwoCandidatePercentileMax = 99;
 
 export const listVacancyApplicationsResponseTwoCandidateStrengthMin = 0;
-export const listVacancyApplicationsResponseTwoCandidateStrengthMax = 115;
+export const listVacancyApplicationsResponseTwoCandidateStrengthMax = 130;
 
 export const listVacancyApplicationsResponseTwoCandidateSkillsItemScoreMin = 0;
 export const listVacancyApplicationsResponseTwoCandidateSkillsItemScoreMax = 100;
@@ -4661,7 +4661,7 @@ export const listVacancyApplicationsResponseTwoExplanationFitMin = 0;
 export const listVacancyApplicationsResponseTwoExplanationFitMax = 100;
 
 export const listVacancyApplicationsResponseTwoExplanationStrengthMin = 0;
-export const listVacancyApplicationsResponseTwoExplanationStrengthMax = 115;
+export const listVacancyApplicationsResponseTwoExplanationStrengthMax = 130;
 
 export const listVacancyApplicationsResponseTwoExplanationChipsMax = 3;
 
@@ -4705,7 +4705,7 @@ export const ListVacancyApplicationsResponseItem = zod.object({
   "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
-  "strength": zod.number().min(listVacancyApplicationsResponseTwoCandidateStrengthMin).max(listVacancyApplicationsResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
+  "strength": zod.number().min(listVacancyApplicationsResponseTwoCandidateStrengthMin).max(listVacancyApplicationsResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
   "name": zod.string(),
@@ -4945,7 +4945,7 @@ export const UpdateApplicationStatusBody = zod.object({
 export const updateApplicationStatusResponseTwoCandidatePercentileMax = 99;
 
 export const updateApplicationStatusResponseTwoCandidateStrengthMin = 0;
-export const updateApplicationStatusResponseTwoCandidateStrengthMax = 115;
+export const updateApplicationStatusResponseTwoCandidateStrengthMax = 130;
 
 export const updateApplicationStatusResponseTwoCandidateSkillsItemScoreMin = 0;
 export const updateApplicationStatusResponseTwoCandidateSkillsItemScoreMax = 100;
@@ -4981,7 +4981,7 @@ export const updateApplicationStatusResponseTwoExplanationFitMin = 0;
 export const updateApplicationStatusResponseTwoExplanationFitMax = 100;
 
 export const updateApplicationStatusResponseTwoExplanationStrengthMin = 0;
-export const updateApplicationStatusResponseTwoExplanationStrengthMax = 115;
+export const updateApplicationStatusResponseTwoExplanationStrengthMax = 130;
 
 export const updateApplicationStatusResponseTwoExplanationChipsMax = 3;
 
@@ -5025,7 +5025,7 @@ export const UpdateApplicationStatusResponse = zod.object({
   "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
-  "strength": zod.number().min(updateApplicationStatusResponseTwoCandidateStrengthMin).max(updateApplicationStatusResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
+  "strength": zod.number().min(updateApplicationStatusResponseTwoCandidateStrengthMin).max(updateApplicationStatusResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
   "name": zod.string(),
@@ -5502,7 +5502,7 @@ export const listTaskSubmissionsResponseOneFinalScoreMax = 100;
 export const listTaskSubmissionsResponseTwoCandidatePercentileMax = 99;
 
 export const listTaskSubmissionsResponseTwoCandidateStrengthMin = 0;
-export const listTaskSubmissionsResponseTwoCandidateStrengthMax = 115;
+export const listTaskSubmissionsResponseTwoCandidateStrengthMax = 130;
 
 export const listTaskSubmissionsResponseTwoCandidateSkillsItemScoreMin = 0;
 export const listTaskSubmissionsResponseTwoCandidateSkillsItemScoreMax = 100;
@@ -5560,7 +5560,7 @@ export const ListTaskSubmissionsResponseItem = zod.object({
   "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
-  "strength": zod.number().min(listTaskSubmissionsResponseTwoCandidateStrengthMin).max(listTaskSubmissionsResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
+  "strength": zod.number().min(listTaskSubmissionsResponseTwoCandidateStrengthMin).max(listTaskSubmissionsResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
   "name": zod.string(),
@@ -5677,7 +5677,7 @@ export const scoreTaskSubmissionResponseOneFinalScoreMax = 100;
 export const scoreTaskSubmissionResponseTwoCandidatePercentileMax = 99;
 
 export const scoreTaskSubmissionResponseTwoCandidateStrengthMin = 0;
-export const scoreTaskSubmissionResponseTwoCandidateStrengthMax = 115;
+export const scoreTaskSubmissionResponseTwoCandidateStrengthMax = 130;
 
 export const scoreTaskSubmissionResponseTwoCandidateSkillsItemScoreMin = 0;
 export const scoreTaskSubmissionResponseTwoCandidateSkillsItemScoreMax = 100;
@@ -5735,7 +5735,7 @@ export const ScoreTaskSubmissionResponse = zod.object({
   "code": zod.enum(['fast_correct', 'paste', 'focus_loss']),
   "severity": zod.enum(['info', 'warning'])
 }).describe('Сигнал прокторинга подтверждающего теста; не доказывает нарушение')).optional(),
-  "strength": zod.number().min(scoreTaskSubmissionResponseTwoCandidateStrengthMin).max(scoreTaskSubmissionResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 15)'),
+  "strength": zod.number().min(scoreTaskSubmissionResponseTwoCandidateStrengthMin).max(scoreTaskSubmissionResponseTwoCandidateStrengthMax).describe('Сила профиля (0–100 + бонус ФСП до 30)'),
   "skills": zod.array(zod.object({
   "skill_id": zod.string(),
   "name": zod.string(),

@@ -3,7 +3,7 @@ import type { FspAchievement, FspDiscipline, FspIndexComponent, FspLevel, FspRes
 /**
  * ФСП-индекс 0–100 (SOLUTION.md, раздел 7):
  * Σ w_уровня · w_результата · релевантность_дисциплины_специализации · затухание (период полураспада 2 года),
- * с ограничением сверху. Бонус к силе профиля = индекс × 0.15 (0…+15). Нет истории — индекс 0, бонус 0, без штрафа.
+ * с ограничением сверху. Бонус к силе профиля = индекс × 0.3 (0…+30). Нет истории — индекс 0, бонус 0, без штрафа.
  */
 export const LEVEL_WEIGHT: Record<FspLevel, number> = { regional: 22, national: 48, international: 70 }
 export const RESULT_WEIGHT: Record<FspResult, number> = { winner: 1, prize_winner: 0.78, finalist: 0.55, participant: 0.28 }
@@ -60,7 +60,7 @@ export function computeFspScore(
     .sort((x, y) => y.contribution - x.contribution)
   const raw = components.reduce((sum, c) => sum + c.contribution, 0)
   const index = Math.min(INDEX_CAP, Math.round(raw))
-  return { index, bonus: Math.round(index * 0.15 * 10) / 10, components }
+  return { index, bonus: Math.round(index * 0.3 * 10) / 10, components }
 }
 
 const LEVEL_ORDER: FspLevel[] = ['regional', 'national', 'international']
