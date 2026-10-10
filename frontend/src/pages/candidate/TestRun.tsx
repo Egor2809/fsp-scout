@@ -87,7 +87,7 @@ function ProgressBar({ progress, left }: { progress: TestProgress; left: number 
   )
 }
 
-function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem; onAnswered: () => void }) {
+export function ItemView({ testId, item, onAnswered }: { testId: string; item: TestItem; onAnswered: () => void }) {
   const [options, setOptions] = useState<string[]>([])
   const [text, setText] = useState('')
   const [code, setCode] = useState(item.starter_code ?? '')

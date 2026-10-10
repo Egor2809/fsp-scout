@@ -2,9 +2,50 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { LIVE_BANK, instantiate, bankInventory, requiredCompetencies } from '../src/assessment/live-bank.ts';
+import { LIVE_BANK, LIVE_BANK_VERSION, instantiate, bankInventory, requiredCompetencies } from '../src/assessment/live-bank.ts';
 import { gradeAnswer } from '../src/assessment/grading.ts';
 import { FAMILIES } from '../src/assessment/showcase.ts';
+
+test('choice families cover every specialization and validate 200 deterministic shuffled instances', () => {
+  assert.equal(LIVE_BANK_VERSION, 'expert-bank-20261010-v4');
+  const choices = LIVE_BANK.filter(f => f.generate(0).options);
+  for (const spec of ['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst'] as const) {
+    const families = choices.filter(f => f.specializations.includes(spec));
+    assert.ok(families.length >= 10, spec);
+    assert.equal(Math.min(...families.map(f => f.b)), -1.8);
+    assert.equal(Math.max(...families.map(f => f.b)), 1.8);
+    assert.ok(families.some(f => instantiate(f, 0, 'item', 1).publicItem.type === 'multiple_choice'));
+  }
+  for (const family of choices) {
+    const variants = new Set<string>(), positions = new Set<string>();
+    for (let seed = 0; seed < 200; seed++) {
+      const instance = instantiate(family, seed, 'item', 1), item = instance.publicItem, expected = instance.expectedAnswer;
+      assert.equal(expected.kind, 'options');
+      if (expected.kind !== 'options') throw new Error('Expected options');
+      assert.deepEqual(instance, instantiate(family, seed, 'item', 1));
+      const options = item.options!;
+      assert.equal(new Set(options.map(o => o.id)).size, options.length);
+      assert.equal(new Set(options.map(o => o.text)).size, options.length);
+      assert.ok(expected.ids.every(id => options.some(o => o.id === id)));
+      assert.ok(!JSON.stringify(item).includes('private-'));
+      assert.ok(!('correctIds' in item) && !('expectedAnswer' in item));
+      assert.deepEqual(gradeAnswer(item, expected, { option_ids: [...expected.ids].reverse() }), { status: 'evaluated', correct: true });
+      for (const wrong of options.filter(o => !expected.ids.includes(o.id))) {
+        assert.deepEqual(gradeAnswer(item, expected, { option_ids: [wrong.id] }), { status: 'evaluated', correct: false });
+      }
+      if (item.type === 'multiple_choice') {
+        assert.ok(expected.ids.length > 1);
+        assert.deepEqual(gradeAnswer(item, expected, { option_ids: expected.ids.slice(1) }), { status: 'evaluated', correct: false });
+        assert.deepEqual(gradeAnswer(item, expected, { option_ids: options.map(o => o.id) }), { status: 'evaluated', correct: false });
+      } else assert.equal(expected.ids.length, 1);
+      assert.throws(() => gradeAnswer(item, expected, { option_ids: ['unknown'] }));
+      positions.add(expected.ids.join(','));
+      variants.add(item.prompt);
+    }
+    assert.ok(variants.size >= 5, family.id);
+    assert.ok(positions.size > 1, `${family.id}: fixed answer position`);
+  }
+});
 test('live instances have private answer keys, reproducible variants and a complete public projection', () => {
   const publicKeys = ['instance_id', 'index', 'block', 'type', 'competency', 'difficulty_level', 'title', 'prompt', 'code', 'options', 'answer_language', 'starter_code', 'max_length', 'public_tests'].sort();
   assert.equal(new Set(LIVE_BANK.map(f => f.id)).size, LIVE_BANK.length);
@@ -17,9 +58,13 @@ test('live instances have private answer keys, reproducible variants and a compl
       assert.deepEqual(instance, instantiate(family, seed, id, 1));
       assert.deepEqual(Object.keys(instance.publicItem).sort(), publicKeys);
       assert.ok(instance.publicItem.difficulty_level >= 1 && instance.publicItem.difficulty_level <= 5);
-      const answer = family.generate(seed).value;
-      assert.deepEqual(gradeAnswer(instance.publicItem, instance.expectedAnswer, { text: String(answer) }), { status: 'evaluated', correct: true });
-      assert.deepEqual(gradeAnswer(instance.publicItem, instance.expectedAnswer, { text: String(answer + 1) }), { status: 'evaluated', correct: false });
+      if (instance.expectedAnswer.kind === 'numeric') {
+        const answer = instance.expectedAnswer.value;
+        assert.deepEqual(gradeAnswer(instance.publicItem, instance.expectedAnswer, { text: String(answer) }), { status: 'evaluated', correct: true });
+        assert.deepEqual(gradeAnswer(instance.publicItem, instance.expectedAnswer, { text: String(answer + 1) }), { status: 'evaluated', correct: false });
+      } else if (instance.expectedAnswer.kind === 'options') {
+        assert.deepEqual(gradeAnswer(instance.publicItem, instance.expectedAnswer, { option_ids: instance.expectedAnswer.ids }), { status: 'evaluated', correct: true });
+      }
       variants.add(instance.publicItem.prompt);
     }
     assert.ok(variants.size >= 10, family.id);
@@ -64,7 +109,7 @@ test('every live family yields finite, deterministic and varied variants', () =>
     const prompts = new Set<string>();
     for (let seed = 0; seed < 200; seed++) {
       const variant = family.generate(seed);
-      assert.ok(Number.isFinite(variant.value), `${family.id} seed ${seed}`);
+      if (!variant.options) assert.ok(Number.isFinite(variant.value), `${family.id} seed ${seed}`);
       assert.ok(!/undefined|NaN/.test(variant.prompt), `${family.id} seed ${seed}`);
       assert.ok(Object.values(variant.parameters).every(Number.isFinite), `${family.id} seed ${seed}`);
       assert.ok(variant.tolerance === undefined || (variant.tolerance >= 0 && variant.tolerance < 1), family.id);

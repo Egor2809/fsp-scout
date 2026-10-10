@@ -1,9 +1,12 @@
 import type { Specialization, TestItem } from '../contract/model/index.js';
 import { seededRandom, type Family } from '../common/cat.ts';
 import type { ExpectedAnswer } from './grading.ts';
+import { choiceFamilies } from './choice-bank.ts';
 
-interface Variant { parameters: Record<string, number>; prompt: string; value: number; tolerance?: number }
-export const LIVE_BANK_VERSION = 'expert-bank-20261010-v3';
+interface NumericVariant { parameters: Record<string, number>; prompt: string; value: number; tolerance?: number; options?: never }
+export interface ChoiceVariant { parameters: Record<string, number>; prompt: string; type: 'single_choice' | 'multiple_choice'; options: { id: string; text: string }[]; correctIds: string[]; value?: never; tolerance?: never }
+type Variant = NumericVariant | ChoiceVariant;
+export const LIVE_BANK_VERSION = 'expert-bank-20261010-v4';
 export interface LiveFamily extends Family {
   title: string;
   specializations: readonly Specialization[];
@@ -25,6 +28,7 @@ function family(id: string, title: string, competency: string, b: number, specia
 
 /** Versioned parameterized objective families. These priors are NOT empirical calibration. */
 export const LIVE_BANK: readonly LiveFamily[] = [
+  ...choiceFamilies,
   family('live-sql-count-null', 'COUNT и NULL', 'databases', -1, ['backend', 'qa', 'data_ml', 'analyst'], seed => {
     const n = draw(seed), rows = n(20, 200), nulls = n(1, rows - 1);
     return { parameters: { rows, nulls }, prompt: `В таблице ${rows} строк. В ${nulls} строках поле value равно NULL, в остальных содержит число. Что вернёт SELECT COUNT(value) FROM events?`, value: rows - nulls };
@@ -703,7 +707,25 @@ export function instantiate(family: LiveFamily, seed: number, id: string, index:
   const publicItem: TestItem = { instance_id: id, index, block: 'adaptive', type: 'short_answer',
     competency: { id: family.competency, name: ({ databases: 'Базы данных', systems: 'Системы и инфраструктура', quality: 'Качество и тестирование', data_reasoning: 'Работа с данными', algorithms: 'Алгоритмы', interface: 'Интерфейсы' } as Record<string, string>)[family.competency] ?? family.competency }, difficulty_level: difficulty,
     title: family.title, prompt: variant.prompt, code: null, options: null, answer_language: null, starter_code: null, max_length: 100, public_tests: null };
-  const expectedAnswer: ExpectedAnswer = { kind: 'numeric', value: variant.value, absoluteTolerance: variant.tolerance ?? 0, relativeTolerance: 0 };
+  let expectedAnswer: ExpectedAnswer;
+  if (variant.options) {
+    if (variant.options.length < 2 || new Set(variant.options.map(o => o.id)).size !== variant.options.length
+      || new Set(variant.options.map(o => o.text.trim())).size !== variant.options.length || variant.options.some(o => !o.text.trim())
+      || !variant.correctIds.length || new Set(variant.correctIds).size !== variant.correctIds.length
+      || variant.correctIds.some(id => !variant.options.some(o => o.id === id))
+      || (variant.type === 'single_choice' && variant.correctIds.length !== 1)) throw new Error('Invalid choice family');
+    const random = seededRandom(seed ^ 0x5f3759df), options = [...variant.options];
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [options[i], options[j]] = [options[j]!, options[i]!];
+    }
+    publicItem.type = variant.type;
+    publicItem.max_length = null;
+    publicItem.options = options.map((o, i) => ({ id: `o${i + 1}`, text: o.text }));
+    expectedAnswer = { kind: 'options', ids: options.flatMap((o, i) => variant.correctIds.includes(o.id) ? [`o${i + 1}`] : []) };
+  } else {
+    expectedAnswer = { kind: 'numeric', value: variant.value, absoluteTolerance: variant.tolerance ?? 0, relativeTolerance: 0 };
+  }
   return { familyId: family.id, templateVersion: family.templateVersion, parameters: { seed, ...variant.parameters }, publicItem, expectedAnswer, discrimination: family.a, difficulty: family.b };
 }
 

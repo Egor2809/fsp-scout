@@ -6,7 +6,7 @@ test('blueprint weights mandatory skills, exposes uncovered skills and counts ac
   const result = vacancyBlueprint(vacancy, new Date('2026-10-10T00:00:00Z'));
   assert.ok(Math.abs(result.competencies.reduce((s, c) => s + c.share, 0) - 1) < 1e-12);
   assert.equal(result.extracted_skills[0].weight, 2 / 3);
-  assert.equal(result.competencies.find(c => c.competency_id === 'databases')?.families_count, 5);
+  assert.equal(result.competencies.find(c => c.competency_id === 'databases')?.families_count, 8);
   assert.equal(result.competencies.find(c => c.competency_id === 'skill:go')?.families_count, 0);
   assert.equal(result.practice, null);
   assert.equal(result.generated_at, '2026-10-10T00:00:00.000Z');
