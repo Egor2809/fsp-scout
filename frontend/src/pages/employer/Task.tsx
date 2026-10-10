@@ -12,6 +12,7 @@ import { EmptyState, InlineError, QueryView } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { buildTaskScore } from '@/lib/taskForms'
 
 function Review({ submission }: { submission: EmployerTaskSubmission }) {
   const score = useScoreTaskSubmission()
@@ -26,15 +27,13 @@ function Review({ submission }: { submission: EmployerTaskSubmission }) {
     <form className="grid gap-3" onSubmit={async e => {
       e.preventDefault()
       setError(null)
-      const finalScore = Number(value)
-      if (!value.trim() || !Number.isFinite(finalScore) || finalScore < 0 || finalScore > 100) { setError('Укажите оценку от 0 до 100.'); return }
       try {
-        await score.mutateAsync({ taskId: submission.task_id, submissionId: submission.id, data: { final_score: finalScore, feedback: feedback.trim() || null } })
+        await score.mutateAsync({ taskId: submission.task_id, submissionId: submission.id, data: buildTaskScore(value, feedback) })
         await invalidatePaths(qc, '/regular-tasks', '/candidates', '/searches', '/me/tasks', '/me/profile', '/me/card-preview')
       } catch (cause) { setError(errorMessage(cause)) }
     }}>
       <fieldset disabled={score.isPending} className="grid gap-3">
-        <label className="grid max-w-48 gap-1 text-sm">Итоговая оценка<Input type="number" min={0} max={100} step="any" required value={value} onChange={e => setValue(e.target.value)} /></label>
+        <label className="grid max-w-48 gap-1 text-sm">Итоговая оценка<Input type="number" min={0} max={100} step={1} required value={value} onChange={e => setValue(e.target.value)} /></label>
         <label className="grid gap-1 text-sm">Обратная связь кандидату<Textarea maxLength={2000} value={feedback} onChange={e => setFeedback(e.target.value)} /></label>
         <p className="text-sm text-muted-foreground">От 75 баллов задание засчитывается в профиль. При исправлении оценки результат пересчитывается.</p>
         <InlineError>{error}</InlineError>

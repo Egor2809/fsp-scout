@@ -5,7 +5,7 @@ import { IconAlertOctagon, IconInbox, IconRefresh } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
-import { errorMessage } from '@/api/problem'
+import { errorMessage, isApiError } from '@/api/problem'
 import { ConnectLines } from '@/components/brand'
 import { cn } from '@/lib/utils'
 
@@ -94,11 +94,15 @@ export function QueryView<T>({
   const [afterSkeleton] = useState(() => query.isPending)
   const reduce = useReducedMotion()
   if (query.isPending) return <>{skeleton ?? <SkeletonCards />}</>
-  if (query.isError || query.data === undefined) {
+  // A failed background refresh must not unmount forms and erase unsent work.
+  // Client errors (including revoked access) still replace cached content.
+  const clientError = query.isError && isApiError(query.error) && query.error.status >= 400 && query.error.status < 500
+  if (clientError || query.data === undefined) {
     return <ErrorBanner title={errorTitle ?? 'Не удалось загрузить данные'} error={query.error} onRetry={() => void query.refetch()} />
   }
   return (
     <motion.div initial={afterSkeleton && !reduce ? { opacity: 0 } : false} animate={{ opacity: 1 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
+      {query.isError && <ErrorBanner className="mb-4" title="Не удалось обновить данные" error={query.error} onRetry={() => void query.refetch()} />}
       {children(query.data)}
     </motion.div>
   )

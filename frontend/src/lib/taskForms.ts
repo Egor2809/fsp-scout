@@ -1,4 +1,4 @@
-import type { CodeLanguage, Grade, RegularTaskInput, Specialization, TaskKind, TaskSubmissionCreate } from '../api/generated/model/index.ts'
+import type { CodeLanguage, Grade, RegularTaskInput, Specialization, TaskKind, TaskScore, TaskSubmissionCreate } from '../api/generated/model/index.ts'
 
 export interface TaskDraft {
   title: string
@@ -39,4 +39,12 @@ export function buildTaskSubmission(kind: TaskKind, language: CodeLanguage | nul
   if (kind !== 'code' && !answer) throw new Error('Добавьте текст решения.')
   if (answer.length > 4000 || source.length > 20000) throw new Error('Допустимо до 4 000 символов пояснения и 20 000 символов кода.')
   return { answer_text: answer || null, code: kind === 'code' ? source : null, language: kind === 'code' ? language : null }
+}
+
+export function buildTaskScore(value: string, feedback: string): TaskScore {
+  const score = Number(value)
+  if (!value.trim() || !Number.isInteger(score) || score < 0 || score > 100) throw new Error('Укажите целую оценку от 0 до 100.')
+  const comment = feedback.trim()
+  if (comment.length > 2000) throw new Error('Обратная связь должна содержать не более 2 000 символов.')
+  return { final_score: score, feedback: comment || null }
 }

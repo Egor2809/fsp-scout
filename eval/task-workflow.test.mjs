@@ -1,11 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTaskInput, buildTaskSubmission } from '../frontend/src/lib/taskForms.ts';
+import { buildTaskInput, buildTaskSubmission, buildTaskScore } from '../frontend/src/lib/taskForms.ts';
 import { recomputeTaskSignal } from '../frontend/src/mocks/lib/taskSignal.ts';
 import { taskSignal, validateRubric } from '../backend/src/common/task-policy.ts';
 
 const now = new Date('2026-10-10T10:00:00Z');
 const draft = () => ({ title: '  Проверка повторной обработки  ', description: 'Опишите устойчивый к повторной доставке алгоритм обработки платежа.', kind: 'approach', specializations: ['backend'], grades: ['middle'], minutes: '15', language: 'python', starter: 'old code', deadline: '2026-10-12T12:00:00Z', rubric: [{ criterion: 'Корректность', percent: '70' }, { criterion: 'Граничные случаи', percent: '30' }] });
+
+test('reviews accept only integer scores required by the API contract', () => {
+  for (const value of ['0', '74', '75', '100']) assert.deepEqual(buildTaskScore(value, '  Feedback  '), { final_score: Number(value), feedback: 'Feedback' });
+  assert.deepEqual(buildTaskScore('75', ' '), { final_score: 75, feedback: null });
+  for (const value of ['', ' ', '75.5', '-1', '101', 'Infinity', 'NaN']) assert.throws(() => buildTaskScore(value, ''));
+  assert.throws(() => buildTaskScore('75', 'x'.repeat(2001)));
+});
 
 test('task form sends normalized contract data and converts percentages into a valid server rubric', () => {
   const input = buildTaskInput(draft(), now);
