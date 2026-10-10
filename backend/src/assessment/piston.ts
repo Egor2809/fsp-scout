@@ -14,7 +14,7 @@ function stage(value: unknown): Stage {
     || !(v.signal === null || typeof v.signal === 'string') || !(v.status === undefined || v.status === null || typeof v.status === 'string')) throw new JudgeError('unavailable');
   return v as unknown as Stage;
 }
-async function boundedJson(response: Response): Promise<Record<string, unknown>> {
+async function boundedJson(response: Response): Promise<unknown> {
   if (!response.ok || !response.body) throw new JudgeError('unavailable');
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -28,12 +28,27 @@ async function boundedJson(response: Response): Promise<Record<string, unknown>>
       chunks.push(value);
     }
     const parsed = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('shape');
+    if (!parsed || typeof parsed !== 'object') throw new Error('shape');
     return parsed;
   } catch { throw new JudgeError('unavailable'); }
   finally { reader.releaseLock(); }
 }
 const normalize = (text: string) => text.replaceAll('\r\n', '\n').trimEnd();
+
+export async function runtimeAvailable(config: { url?: string; version?: string; language: CodeLanguage }, transport: typeof fetch = fetch): Promise<boolean> {
+  if (!config.url || !config.version || !/^\d+\.\d+\.\d+$/.test(config.version)) return false;
+  try {
+    const url = new URL(config.url);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.hash || url.search || !url.pathname.endsWith('/execute')) return false;
+    url.pathname = url.pathname.slice(0, -'execute'.length) + 'runtimes';
+    const runtimes = await boundedJson(await transport(url, { redirect: 'error', signal: AbortSignal.timeout(1500) }));
+    return Array.isArray(runtimes) && runtimes.some(value => {
+      if (!value || typeof value !== 'object') return false;
+      const runtime = value as Record<string, unknown>;
+      return runtime.language === config.language && runtime.version === config.version;
+    });
+  } catch { return false; }
+}
 
 /** Sends only server-owned open cases to a separately operated Piston sandbox. */
 export async function runOpenTests(input: { code: string; language: CodeLanguage; tests: NonNullable<TestItemPublicTests>; deadlineAt: Date },
@@ -59,12 +74,14 @@ export async function runOpenTests(input: { code: string; language: CodeLanguage
       const remaining = input.deadlineAt.getTime() - Date.now();
       let payload: Record<string, unknown>;
       try {
-        payload = await boundedJson(await transport(url, { method: 'POST', redirect: 'error',
+        const value = await boundedJson(await transport(url, { method: 'POST', redirect: 'error',
           headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(Math.max(1, Math.min(15000, remaining))),
           body: JSON.stringify({ language: input.language, version: config.version,
             files: [{ name: input.language === 'go' ? 'main.go' : input.language === 'python' ? 'main.py' : 'main.js', content: input.code }],
             stdin: test.input, args: [], compile_timeout: 10000, run_timeout: 3000,
             compile_memory_limit: 268435456, run_memory_limit: 134217728 }) }));
+        if (!value || typeof value !== 'object' || Array.isArray(value)) throw new JudgeError('unavailable');
+        payload = value as Record<string, unknown>;
       } catch { throw new JudgeError('unavailable'); }
       if (payload.language !== input.language || payload.version !== config.version) throw new JudgeError('unavailable');
       const compiled = payload.compile === undefined ? null : stage(payload.compile);

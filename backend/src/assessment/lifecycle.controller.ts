@@ -17,6 +17,7 @@ import { validateGradeCuts, type GradeCuts } from './result-scoring.js';
 import { PRACTICE_BANK, PRACTICE_BANK_VERSION, instantiatePractice, selectPracticeFamily } from './practice-bank.js';
 import { CODE_JOB_TOPIC } from './code-job.js';
 import { SKILL_CONFIRMATION_POLICY } from './confirmed-skills.js';
+import { runtimeAvailable } from './piston.js';
 
 @Controller('tests')
 @UseGuards(AuthGuard)
@@ -75,8 +76,8 @@ export class AssessmentLifecycleController {
       const practiceBank = PRACTICE_BANK.filter(f => f.specializations.includes(specialization));
       const practiceLanguage = specialization === 'frontend' ? 'javascript' : 'python';
       const practiceRuntimeVersion = process.env[`PISTON_${practiceLanguage.toUpperCase()}_VERSION`];
-      const practice = Boolean(!mode.policy.express && process.env.PISTON_EXECUTE_URL && practiceRuntimeVersion && /^\d+\.\d+\.\d+$/.test(practiceRuntimeVersion)
-        && practiceBank.length >= Math.ceil(DEFAULT_POLICY.practiceTotal / DEFAULT_POLICY.maxExposure));
+      const practice = !mode.policy.express && practiceBank.length >= Math.ceil(DEFAULT_POLICY.practiceTotal / DEFAULT_POLICY.maxExposure)
+        && await runtimeAvailable({ url: process.env.PISTON_EXECUTE_URL, version: practiceRuntimeVersion, language: practiceLanguage });
       const policy: SessionPolicy = { ...mode.policy, gradeCuts, skillConfirmationPolicyVersion: SKILL_CONFIRMATION_POLICY.version,
         familyIds: bank.map(f => f.id), requiredCompetencies: required,
         ...(practice ? { practiceBankVersion: PRACTICE_BANK_VERSION, practiceFamilyIds: practiceBank.map(f => f.id), practiceLanguage, practiceRuntimeVersion }

@@ -1,5 +1,30 @@
 name: scout
 services:
+  piston:
+    image: ghcr.io/engineer-man/piston:latest
+    profiles: ["sandbox"]
+    privileged: true
+    restart: unless-stopped
+    volumes: ["piston_packages:/piston/packages"]
+    tmpfs: ["/tmp:exec,size=512m"]
+    mem_limit: 1g
+    pids_limit: 256
+  piston-init:
+    image: node:24-alpine
+    profiles: ["sandbox"]
+    command: ["node", "/app/piston-init.mjs"]
+    environment:
+      PISTON_EXECUTE_URL: ${PISTON_EXECUTE_URL:-http://piston:2000/api/v2/execute}
+      PISTON_PYTHON_VERSION: ${PISTON_PYTHON_VERSION:-3.10.0}
+      PISTON_JAVASCRIPT_VERSION: ${PISTON_JAVASCRIPT_VERSION:-18.15.0}
+    volumes: ["../backend/src/assessment/piston-init.mjs:/app/piston-init.mjs:ro"]
+    depends_on:
+      piston:
+        condition: service_started
+    restart: "no"
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
   postgres:
     image: postgres:17.6
     environment:
@@ -82,9 +107,9 @@ services:
       FSP_WEBHOOK_SECRET: ${FSP_WEBHOOK_SECRET:?Set FSP_WEBHOOK_SECRET}
       ASSESSMENT_GRADE_POLICY: ${ASSESSMENT_GRADE_POLICY:-}
       ASSESSMENT_EXPRESS: ${ASSESSMENT_EXPRESS:-false}
-      PISTON_EXECUTE_URL: ${PISTON_EXECUTE_URL:-}
-      PISTON_PYTHON_VERSION: ${PISTON_PYTHON_VERSION:-}
-      PISTON_JAVASCRIPT_VERSION: ${PISTON_JAVASCRIPT_VERSION:-}
+      PISTON_EXECUTE_URL: ${PISTON_EXECUTE_URL:-http://piston:2000/api/v2/execute}
+      PISTON_PYTHON_VERSION: ${PISTON_PYTHON_VERSION:-3.10.0}
+      PISTON_JAVASCRIPT_VERSION: ${PISTON_JAVASCRIPT_VERSION:-18.15.0}
       PISTON_GO_VERSION: ${PISTON_GO_VERSION:-}
     depends_on:
       seed:
@@ -120,7 +145,7 @@ services:
       KEYCLOAK_ERASURE_CLIENT_SECRET: ${KEYCLOAK_ERASURE_CLIENT_SECRET:-}
       DATABASE_URL: postgresql://scout:${POSTGRES_PASSWORD}@postgres:5432/scout
       REDIS_URL: redis://redis:6379
-      PISTON_EXECUTE_URL: ${PISTON_EXECUTE_URL:-}
+      PISTON_EXECUTE_URL: ${PISTON_EXECUTE_URL:-http://piston:2000/api/v2/execute}
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -145,5 +170,6 @@ services:
         condition: service_healthy
     ports: ["127.0.0.1:8081:80"]
 volumes:
+  piston_packages:
   postgres:
   redis:

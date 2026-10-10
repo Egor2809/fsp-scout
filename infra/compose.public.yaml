@@ -1,4 +1,11 @@
 services:
+  piston:
+    image: ghcr.io/engineer-man/piston:latest
+    profiles: ["sandbox"]
+    restart: unless-stopped
+  piston-init:
+    profiles: ["sandbox"]
+    restart: "no"
   keycloak:
     command: ["start", "--import-realm"]
     environment:
