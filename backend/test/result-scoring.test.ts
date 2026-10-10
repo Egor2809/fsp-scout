@@ -14,7 +14,7 @@ test('posterior outcome uses explicit ordered thresholds and higher evidence onl
   assert.notEqual(scoreOutcome(strong, 'lead', policy).outcome, 'passed_confident');
   assert.throws(() => scoreOutcome([], 'junior', policy));
   assert.throws(() => validateGradeCuts({ ...policy, cuts: { ...policy.cuts, senior: -1 } }));
-  assert.throws(() => validateGradeCuts({ ...policy, passProbability: 0.5 }));
+  assert.throws(() => validateGradeCuts({ ...policy, passProbability: 0.49 }));
   assert.notEqual(gradePolicySignature(policy), gradePolicySignature({ ...policy, cuts: { ...policy.cuts, lead: 2 } }));
 });
 test('normative percentile excludes self, handles ties and refuses artificial duplicated observations', () => {

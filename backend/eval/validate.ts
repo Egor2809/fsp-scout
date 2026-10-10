@@ -12,9 +12,9 @@ import { rankExternal } from '../src/evaluation/rank.ts';
 import { SKILLS, SKILL_BY_ID, skillName, taxonomy } from '../src/common/taxonomy-data.ts';
 import type { CandidateSkill, FspAchievement, Grade, Industry, SearchFilters, Specialization, WorkFormat } from '../src/contract/model/index.js';
 
-const SEED = 20261010, N = 2000, LEAK_N = 600, BOOT = 1000, K = 10, DUMP = 300;
+const SEED = Number(process.env.EVAL_SEED ?? 20261010), N = 2000, LEAK_N = 600, BOOT = 1000, K = 10, DUMP = 300;
 const SPECS: Specialization[] = ['backend', 'frontend', 'mobile', 'qa', 'devops', 'data_ml', 'analyst'];
-const CUTS = JSON.parse(DEFAULT_GRADE_POLICY) as GradeCuts;
+const CUTS = { ...JSON.parse(DEFAULT_GRADE_POLICY), ...(process.env.EVAL_PASS ? { passProbability: Number(process.env.EVAL_PASS) } : {}) } as GradeCuts;
 const NOW = new Date('2026-10-10T00:00:00Z');
 const COMPANY = 'eval-company';
 const started = performance.now();
@@ -457,7 +457,7 @@ const report = {
     'Практический блок с кодом и вопрос о подходе не моделируются: в симуляции practiceTotal = 0, как при отключённой песочнице.',
   ],
 };
-writeFileSync(new URL('./validation-report.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');
+writeFileSync(process.env.EVAL_OUT ?? new URL('./validation-report.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');
 const v = (m: { value: number }) => m.value;
 console.log(JSON.stringify({
   grade_exact: v(assessment.grade_by_theta.exact), kappa: v(assessment.grade_by_theta.quadratic_kappa), r: v(assessment.grade_by_theta.pearson_theta),

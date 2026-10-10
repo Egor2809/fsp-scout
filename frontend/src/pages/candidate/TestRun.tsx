@@ -45,7 +45,7 @@ function ProgressBar({ progress, left }: { progress: TestProgress; left: number 
         <div className="grid min-w-0 gap-0.5">
           <span className="eyebrow">{testBlockLabel[progress.block]}</span>
           <span className="num text-sm">
-            <b className="text-base">{String(progress.answered + 1).padStart(2, '0')}</b>
+            <b className="text-base">{String(Math.min(progress.answered + 1, total)).padStart(2, '0')}</b>
           </span>
         </div>
         {left !== null && (

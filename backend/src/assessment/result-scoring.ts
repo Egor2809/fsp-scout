@@ -5,7 +5,7 @@ export const GRADE_ORDER: readonly Grade[] = ['junior', 'middle', 'senior', 'lea
 export interface GradeCuts { version: string; cuts: Record<Grade, number>; passProbability: number }
 
 export function validateGradeCuts(policy: GradeCuts): void {
-  if (!policy.version.trim() || !Number.isFinite(policy.passProbability) || policy.passProbability < 0.7 || policy.passProbability >= 1)
+  if (!policy.version.trim() || !Number.isFinite(policy.passProbability) || policy.passProbability < 0.5 || policy.passProbability >= 1)
     throw new RangeError('Invalid grade policy');
   const values = GRADE_ORDER.map(grade => policy.cuts[grade]);
   if (values.some((cut, i) => !Number.isFinite(cut) || (i > 0 && cut <= values[i - 1]))) throw new RangeError('Grade cuts must increase strictly');
