@@ -51,7 +51,11 @@ let ciSeed = SEED;
 const metric = (n: number, stat: (idx: number[]) => number) => ({ value: r4(stat(Array.from({ length: n }, (_, i) => i))), ci95: ci(n, stat, ++ciSeed) });
 
 const truthRandom = seededRandom(SEED ^ 0x5eed);
-const TRUE = new Map(LIVE_BANK.map(f => [f.id, { a: f.a * (0.7 + 0.6 * truthRandom()), b: f.b - 0.4 + 0.8 * truthRandom(), c: 0.02 }]));
+const guessing = (f: LiveFamily) => {
+  const sample = f.generate(1) as { options?: unknown[]; type?: string };
+  return sample.options?.length ? (sample.type === 'single_choice' ? 1 / sample.options.length : 0.05) : 0.02;
+};
+const TRUE = new Map(LIVE_BANK.map(f => [f.id, { a: f.a * (0.7 + 0.6 * truthRandom()), b: f.b - 0.4 + 0.8 * truthRandom(), c: guessing(f) }]));
 const solveProbability = (theta: number, f: LiveFamily) => {
   const t = TRUE.get(f.id)!;
   return t.c + (1 - t.c) * sigmoid(t.a * (theta - t.b));
@@ -196,20 +200,31 @@ const retest = {
 };
 
 const leakRandom = seededRandom(SEED ^ 0x1eaf);
+function leakedKey(instance: ReturnType<typeof instantiate>) {
+  const expected = instance.expectedAnswer;
+  if (expected.kind === 'numeric') return String(expected.value);
+  if (expected.kind === 'options') return (instance.publicItem.options ?? []).filter(o => expected.ids.includes(o.id)).map(o => o.text).sort().join('\u0000');
+  throw new Error('Unsupported live answer kind');
+}
 const DUMPS = new Map(LIVE_BANK.map(f => {
-  const prompts = new Map<string, number>(), counts = new Map<string, number>();
+  const prompts = new Map<string, string>(), counts = new Map<string, number>();
   for (let i = 0; i < DUMP; i++) {
     const instance = instantiate(f, seedOf(leakRandom), 'leak', 1);
-    if (instance.expectedAnswer.kind !== 'numeric') throw new Error('Live bank must be numeric');
-    prompts.set(instance.publicItem.prompt, instance.expectedAnswer.value);
-    counts.set(String(instance.expectedAnswer.value), (counts.get(String(instance.expectedAnswer.value)) ?? 0) + 1);
+    const key = leakedKey(instance);
+    prompts.set(instance.publicItem.prompt, key);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   return [f.id, { prompts, modal: [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]![0] }];
 }));
 function keyHit(f: LiveFamily, seed: number) {
   const instance = instantiate(f, seed, 'probe', 1), dump = DUMPS.get(f.id)!;
   if (dump.prompts.has(instance.publicItem.prompt)) return true;
-  const graded = gradeAnswer(instance.publicItem, instance.expectedAnswer, { text: dump.modal });
+  const expected = instance.expectedAnswer;
+  const answer = expected.kind === 'options'
+    ? { option_ids: (instance.publicItem.options ?? []).filter(o => dump.modal.split('\u0000').includes(o.text)).map(o => o.id) }
+    : { text: dump.modal };
+  if ('option_ids' in answer && !answer.option_ids.length) return false;
+  const graded = gradeAnswer(instance.publicItem, expected, answer);
   return graded.status === 'evaluated' && graded.correct;
 }
 const hitRates = LIVE_BANK.map(f => ({ id: f.id, rate: mean(Array.from({ length: 200 }, () => Number(keyHit(f, seedOf(leakRandom))))) })).sort((a, b) => b.rate - a.rate);
@@ -445,7 +460,7 @@ const report = {
   policy: { cat: { min: DEFAULT_POLICY.min, max: DEFAULT_POLICY.max, target_se: DEFAULT_POLICY.targetSe, top_k: DEFAULT_POLICY.topK, max_exposure: DEFAULT_POLICY.maxExposure }, grades: CUTS },
   generator: {
     model: '3PL: P = c + (1 - c) / (1 + exp(-a_true (θ - b_true)))',
-    a_true: 'a_bank × U(0.7, 1.3)', b_true: 'b_bank + U(-0.4, 0.4)', c: 0.02,
+    a_true: 'a_bank × U(0.7, 1.3)', b_true: 'b_bank + U(-0.4, 0.4)', c: 'числовые 0.02, single_choice 1/число вариантов, multiple_choice 0.05',
     realized: { mean_abs_relative_a_shift: r4(mean(LIVE_BANK.map(f => Math.abs(TRUE.get(f.id)!.a / f.a - 1)))), mean_abs_b_shift: r4(mean(LIVE_BANK.map(f => Math.abs(TRUE.get(f.id)!.b - f.b)))) },
     estimator: 'EAP 2PL с экспертными a, b из банка (src/common/irt.ts), без знания a_true, b_true, c',
   },

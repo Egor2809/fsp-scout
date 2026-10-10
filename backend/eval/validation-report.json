@@ -2,7 +2,7 @@
   "dataset": "synthetic",
   "seed": 20261010,
   "generated_by": "npm run eval (backend/eval/validate.ts)",
-  "bank_version": "expert-bank-20261010-v3",
+  "bank_version": "expert-bank-20261010-v4",
   "policy": {
     "cat": {
       "min": 8,
@@ -26,10 +26,10 @@
     "model": "3PL: P = c + (1 - c) / (1 + exp(-a_true (θ - b_true)))",
     "a_true": "a_bank × U(0.7, 1.3)",
     "b_true": "b_bank + U(-0.4, 0.4)",
-    "c": 0.02,
+    "c": "числовые 0.02, single_choice 1/число вариантов, multiple_choice 0.05",
     "realized": {
-      "mean_abs_relative_a_shift": 0.1576,
-      "mean_abs_b_shift": 0.2024
+      "mean_abs_relative_a_shift": 0.159,
+      "mean_abs_b_shift": 0.2042
     },
     "estimator": "EAP 2PL с экспертными a, b из банка (src/common/irt.ts), без знания a_true, b_true, c"
   },
@@ -57,103 +57,103 @@
     },
     "grade_by_theta": {
       "exact": {
-        "value": 0.59,
+        "value": 0.558,
         "ci95": [
-          0.569,
-          0.611
+          0.5365,
+          0.58
         ]
       },
       "within_one": {
-        "value": 0.982,
+        "value": 0.9755,
         "ci95": [
-          0.976,
-          0.9875
+          0.969,
+          0.982
         ]
       },
       "quadratic_kappa": {
-        "value": 0.8159,
+        "value": 0.7961,
         "ci95": [
-          0.801,
-          0.8288
+          0.7796,
+          0.8103
         ]
       },
       "pearson_theta": {
-        "value": 0.8717,
+        "value": 0.8549,
         "ci95": [
-          0.8619,
-          0.8812
+          0.8434,
+          0.8661
         ]
       },
       "rmse": {
-        "value": 0.4868,
+        "value": 0.5224,
         "ci95": [
-          0.4704,
-          0.5029
+          0.5055,
+          0.5394
         ]
       },
       "confusion_true_rows_estimated_columns": [
         [
-          127,
-          100,
-          13,
-          0,
-          0
-        ],
-        [
-          38,
-          267,
-          141,
-          7,
-          0
-        ],
-        [
-          4,
-          128,
-          394,
           113,
-          3
+          110,
+          17,
+          0,
+          0
+        ],
+        [
+          32,
+          235,
+          171,
+          15,
+          0
+        ],
+        [
+          1,
+          111,
+          366,
+          158,
+          6
         ],
         [
           0,
-          3,
-          138,
-          268,
-          43
+          4,
+          122,
+          271,
+          55
         ],
         [
           0,
           0,
           6,
-          83,
-          124
+          76,
+          131
         ]
       ]
     },
     "confirmation_decision": {
       "accuracy": {
-        "value": 0.773,
+        "value": 0.7685,
         "ci95": [
-          0.7535,
-          0.792
+          0.7495,
+          0.7865
         ]
       },
       "false_reject_rate": {
-        "value": 0.2289,
+        "value": 0.2076,
         "ci95": [
-          0.2089,
-          0.2505
+          0.187,
+          0.2279
         ]
       },
       "false_confirm_rate": {
-        "value": 0.222,
+        "value": 0.2954,
         "ci95": [
-          0.1894,
-          0.2588
+          0.26,
+          0.3369
         ]
       },
       "eligible_share": 0.7275,
       "false_reject_by_true_minus_declared": {
-        "0": 0.2849,
+        "0": 0.2582,
         "1": 0.0068,
         "2": 0,
         "3": 0
@@ -161,101 +161,101 @@
     },
     "product_flow_grade": {
       "exact": {
-        "value": 0.6175,
+        "value": 0.6215,
         "ci95": [
-          0.597,
-          0.638
+          0.6005,
+          0.6435
         ]
       },
       "within_one": {
-        "value": 0.9935,
+        "value": 0.994,
         "ci95": [
-          0.9895,
-          0.997
+          0.9905,
+          0.9975
         ]
       },
       "quadratic_kappa": {
-        "value": 0.8383,
+        "value": 0.8382,
         "ci95": [
-          0.8263,
-          0.8498
+          0.8254,
+          0.8509
         ]
       },
-      "over_assigned": 0.097,
-      "under_assigned": 0.2855,
-      "mean_attempts": 1.5325
+      "over_assigned": 0.129,
+      "under_assigned": 0.2495,
+      "mean_attempts": 1.5405
     },
     "length": {
       "mean": 12,
       "min": 12,
       "max": 12,
-      "mean_se": 0.4673,
-      "sessions_with_waived_coverage": 60,
+      "mean_se": 0.4642,
+      "sessions_with_waived_coverage": 31,
       "stop_reasons": {
         "max_length": 2000
       }
     },
     "fixed_12_item_form": {
       "exact": {
-        "value": 0.5375,
+        "value": 0.523,
         "ci95": [
-          0.516,
-          0.559
+          0.502,
+          0.545
         ]
       },
       "quadratic_kappa": {
-        "value": 0.7881,
+        "value": 0.7612,
         "ci95": [
-          0.7723,
-          0.8031
+          0.7416,
+          0.7776
         ]
       },
       "pearson_theta": {
-        "value": 0.8495,
+        "value": 0.8333,
         "ci95": [
-          0.8378,
-          0.8613
+          0.8196,
+          0.8461
         ]
       },
       "rmse": {
-        "value": 0.5238,
+        "value": 0.5503,
         "ci95": [
-          0.5084,
-          0.5389
+          0.5327,
+          0.5685
         ]
       }
     }
   },
   "test_retest": {
     "exact_agreement": {
-      "value": 0.515,
+      "value": 0.4825,
       "ci95": [
-        0.4925,
-        0.5385
+        0.461,
+        0.5055
       ]
     },
     "quadratic_kappa": {
-      "value": 0.7268,
+      "value": 0.6885,
       "ci95": [
-        0.7054,
-        0.7467
+        0.6653,
+        0.7119
       ]
     },
     "decision_agreement": {
-      "value": 0.742,
+      "value": 0.7395,
       "ci95": [
-        0.7215,
-        0.7605
+        0.719,
+        0.7585
       ]
     },
     "pearson_theta": {
-      "value": 0.7689,
+      "value": 0.7382,
       "ci95": [
-        0.7514,
-        0.7866
+        0.7188,
+        0.7574
       ]
     },
-    "shared_families_mean": 5.257
+    "shared_families_mean": 4.441
   },
   "bank_leak": {
     "cheaters": {
@@ -266,29 +266,29 @@
     },
     "instance_key_dump": {
       "instances_per_family": 300,
-      "mean_hit_rate": 0.3114,
-      "median_hit_rate": 0.12,
-      "families_hit_rate_over_10pct": 87,
-      "families_hit_rate_over_50pct": 45,
+      "mean_hit_rate": 0.5226,
+      "median_hit_rate": 0.495,
+      "families_hit_rate_over_10pct": 155,
+      "families_hit_rate_over_50pct": 115,
       "worst_families": [
         {
-          "family": "live-srcset-choice",
+          "family": "choice-backend-index",
           "hit_rate": 1
         },
         {
-          "family": "live-closure-var-let",
+          "family": "choice-backend-null",
           "hit_rate": 1
         },
         {
-          "family": "live-cidr-hosts",
+          "family": "choice-backend-password",
           "hit_rate": 1
         },
         {
-          "family": "live-touch-target",
+          "family": "choice-backend-idempotency",
           "hit_rate": 1
         },
         {
-          "family": "live-decision-table",
+          "family": "choice-backend-cache",
           "hit_rate": 1
         }
       ]
@@ -296,10 +296,10 @@
     "cat": {
       "clean": {
         "bias_theta": {
-          "value": 0.2722,
+          "value": 0.3487,
           "ci95": [
-            0.2352,
-            0.3091
+            0.3074,
+            0.3869
           ]
         },
         "inflation_vs_clean": {
@@ -310,166 +310,166 @@
           ]
         },
         "false_confirm_rate": {
-          "value": 0.1717,
+          "value": 0.235,
           "ci95": [
-            0.145,
-            0.2
+            0.2033,
+            0.2683
           ]
         },
-        "mean_length": 11.9967
+        "mean_length": 12
       },
       "key_25": {
         "bias_theta": {
-          "value": 0.398,
+          "value": 0.5439,
           "ci95": [
-            0.3609,
-            0.4384
+            0.4993,
+            0.588
           ]
         },
         "inflation_vs_clean": {
-          "value": 0.1258,
+          "value": 0.1953,
           "ci95": [
-            0.1052,
-            0.1493
+            0.1666,
+            0.2215
           ]
         },
         "false_confirm_rate": {
-          "value": 0.2533,
+          "value": 0.3367,
           "ci95": [
-            0.2167,
-            0.2883
+            0.3,
+            0.3733
           ]
         },
-        "mean_length": 11.9967
+        "mean_length": 12
       },
       "method_25": {
         "bias_theta": {
-          "value": 0.8961,
+          "value": 0.9738,
           "ci95": [
-            0.8504,
-            0.9423
+            0.9197,
+            1.0255
           ]
         },
         "inflation_vs_clean": {
-          "value": 0.6239,
+          "value": 0.6251,
           "ci95": [
-            0.5834,
-            0.6676
+            0.5819,
+            0.6681
           ]
         },
         "false_confirm_rate": {
-          "value": 0.5633,
+          "value": 0.615,
           "ci95": [
-            0.5217,
-            0.6017
+            0.575,
+            0.655
           ]
         },
-        "mean_length": 11.9983
+        "mean_length": 12
       },
       "key_50": {
         "bias_theta": {
-          "value": 0.5041,
+          "value": 0.7523,
           "ci95": [
-            0.463,
-            0.5448
+            0.7077,
+            0.7974
           ]
         },
         "inflation_vs_clean": {
-          "value": 0.232,
+          "value": 0.4036,
           "ci95": [
-            0.2045,
-            0.2611
+            0.3672,
+            0.4426
           ]
         },
         "false_confirm_rate": {
-          "value": 0.3133,
+          "value": 0.445,
           "ci95": [
-            0.275,
-            0.3517
+            0.4067,
+            0.485
           ]
         },
-        "mean_length": 11.9967
+        "mean_length": 12
       },
       "method_50": {
         "bias_theta": {
-          "value": 1.6133,
+          "value": 1.7823,
           "ci95": [
-            1.5523,
-            1.6686
+            1.7261,
+            1.8373
           ]
         },
         "inflation_vs_clean": {
-          "value": 1.3411,
+          "value": 1.4337,
           "ci95": [
-            1.2912,
-            1.392
+            1.3744,
+            1.4892
           ]
         },
         "false_confirm_rate": {
-          "value": 0.8917,
+          "value": 0.9083,
           "ci95": [
-            0.8667,
-            0.9167
+            0.8833,
+            0.93
           ]
         },
-        "mean_length": 11.9983
+        "mean_length": 12
       },
       "key_100": {
         "bias_theta": {
-          "value": 0.9157,
+          "value": 1.3183,
           "ci95": [
-            0.8608,
-            0.9707
+            1.2572,
+            1.3809
           ]
         },
         "inflation_vs_clean": {
-          "value": 0.6435,
+          "value": 0.9697,
           "ci95": [
-            0.5928,
-            0.6873
+            0.9095,
+            1.0325
           ]
         },
         "false_confirm_rate": {
-          "value": 0.5733,
+          "value": 0.7367,
           "ci95": [
-            0.5367,
-            0.6117
+            0.7,
+            0.77
           ]
         },
-        "mean_length": 11.9967
+        "mean_length": 12
       },
       "method_100": {
         "bias_theta": {
-          "value": 3.2248,
+          "value": 3.3595,
           "ci95": [
-            3.1681,
-            3.2789
+            3.3055,
+            3.4113
           ]
         },
         "inflation_vs_clean": {
-          "value": 2.9526,
+          "value": 3.0108,
           "ci95": [
-            2.897,
-            3.0065
+            2.9589,
+            3.0591
           ]
         },
         "false_confirm_rate": {
-          "value": 0.9983,
+          "value": 1,
           "ci95": [
-            0.9933,
+            1,
             1
           ]
         },
-        "mean_length": 11.9983
+        "mean_length": 12
       }
     },
     "fixed_12": {
       "clean": {
         "bias_theta": {
-          "value": 0.3344,
+          "value": 0.4031,
           "ci95": [
-            0.2938,
-            0.3713
+            0.3592,
+            0.4409
           ]
         },
         "inflation_vs_clean": {
@@ -480,49 +480,49 @@
           ]
         },
         "false_confirm_rate": {
-          "value": 0.2,
+          "value": 0.23,
           "ci95": [
-            0.1683,
-            0.23
+            0.1967,
+            0.2633
           ]
         }
       },
       "leak_25": {
         "bias_theta": {
-          "value": 0.9991,
+          "value": 1.037,
           "ci95": [
-            0.9615,
-            1.0366
+            0.9989,
+            1.0779
           ]
         },
         "inflation_vs_clean": {
-          "value": 0.6647,
+          "value": 0.6339,
           "ci95": [
-            0.6443,
-            0.6838
+            0.6134,
+            0.6525
           ]
         },
         "false_confirm_rate": {
-          "value": 0.6567,
+          "value": 0.7217,
           "ci95": [
-            0.6133,
-            0.6933
+            0.6833,
+            0.7567
           ]
         }
       },
       "leak_50": {
         "bias_theta": {
-          "value": 1.632,
+          "value": 1.6482,
           "ci95": [
-            1.5875,
-            1.6748
+            1.606,
+            1.6896
           ]
         },
         "inflation_vs_clean": {
-          "value": 1.2976,
+          "value": 1.2451,
           "ci95": [
-            1.2697,
-            1.3248
+            1.217,
+            1.2736
           ]
         },
         "false_confirm_rate": {
@@ -535,17 +535,17 @@
       },
       "leak_100": {
         "bias_theta": {
-          "value": 3.0757,
+          "value": 3.0915,
           "ci95": [
-            3.031,
-            3.1253
+            3.0462,
+            3.1408
           ]
         },
         "inflation_vs_clean": {
-          "value": 2.7413,
+          "value": 2.6884,
           "ci95": [
-            2.7008,
-            2.7867
+            2.6475,
+            2.7303
           ]
         },
         "false_confirm_rate": {
@@ -565,108 +565,108 @@
       {
         "specialization": "backend",
         "sessions": 286,
-        "families": 54,
+        "families": 64,
         "max_rate": 0.3916,
-        "mean_rate": 0.2222,
+        "mean_rate": 0.1875,
         "unused_families": 0,
         "items_per_session": 12
       },
       {
         "specialization": "frontend",
         "sessions": 286,
-        "families": 42,
+        "families": 52,
         "max_rate": 0.3986,
-        "mean_rate": 0.2857,
+        "mean_rate": 0.2308,
         "unused_families": 0,
         "items_per_session": 12
       },
       {
         "specialization": "mobile",
         "sessions": 286,
-        "families": 38,
+        "families": 48,
         "max_rate": 0.3986,
-        "mean_rate": 0.3158,
+        "mean_rate": 0.25,
         "unused_families": 0,
         "items_per_session": 12
       },
       {
         "specialization": "qa",
         "sessions": 286,
-        "families": 40,
+        "families": 50,
         "max_rate": 0.3986,
-        "mean_rate": 0.3,
+        "mean_rate": 0.24,
         "unused_families": 0,
         "items_per_session": 12
       },
       {
         "specialization": "devops",
         "sessions": 286,
-        "families": 47,
+        "families": 57,
         "max_rate": 0.3986,
-        "mean_rate": 0.2553,
+        "mean_rate": 0.2105,
         "unused_families": 0,
         "items_per_session": 12
       },
       {
         "specialization": "data_ml",
         "sessions": 285,
-        "families": 45,
+        "families": 55,
         "max_rate": 0.4,
-        "mean_rate": 0.2667,
+        "mean_rate": 0.2182,
         "unused_families": 0,
         "items_per_session": 12
       },
       {
         "specialization": "analyst",
         "sessions": 285,
-        "families": 44,
+        "families": 54,
         "max_rate": 0.4,
-        "mean_rate": 0.2727,
+        "mean_rate": 0.2222,
         "unused_families": 0,
         "items_per_session": 12
       }
     ],
     "max_rate": 0.4,
-    "mean_rate": 0.2741,
-    "retest_shared_families_mean": 5.257
+    "mean_rate": 0.2227,
+    "retest_shared_families_mean": 4.441
   },
   "matching": {
     "gold": "Метка 0–3 из скрытой истины: соответствие истинного грейда (по θ) грейду потребности × владение must (вес 0.7) и nice (0.3) навыками на уровне не ниже порога грейда − 0.4; пороги метки 0.75/0.5/0.25. Основная (soft): совпал 1, выше на ступень 0.85, на две 0.6, ниже на ступень 0.3. Строгая (strict): выше на ступень 0.7, на две 0. Мягкая к переквалификации (lenient): любой грейд не ниже требуемого 1. Релевантен = метка ≥ 2.",
     "dev": {
       "candidates": 1750,
       "needs": 210,
-      "test_sessions": 2972,
-      "people_with_confirmed_grade": 1494,
+      "test_sessions": 2978,
+      "people_with_confirmed_grade": 1534,
       "confirmed_grade_vs_true": {
-        "0": 791,
-        "1": 99,
-        "-2": 43,
-        "-1": 561
+        "0": 809,
+        "1": 144,
+        "-2": 40,
+        "-1": 539
       },
-      "people_with_test_verified_skills": 76,
+      "people_with_test_verified_skills": 109,
       "mean_relevant_per_need": 53.8333,
-      "relevant_visible_after_hard_filters": 0.3446,
+      "relevant_visible_after_hard_filters": 0.3392,
       "systems": {
         "ours": {
           "p_at_10": {
-            "value": 0.6605,
+            "value": 0.6476,
             "ci95": [
-              0.631,
-              0.689
+              0.6205,
+              0.6733
             ]
           },
           "ndcg_at_10": {
-            "value": 0.5916,
+            "value": 0.5717,
             "ci95": [
-              0.572,
-              0.6125
+              0.553,
+              0.5908
             ]
           },
           "mrr_at_10": {
-            "value": 0.9125,
+            "value": 0.8917,
             "ci95": [
-              0.8847,
-              0.9389
+              0.8571,
+              0.9217
             ]
           }
         },
@@ -695,47 +695,47 @@
         },
         "ours_no_fsp": {
           "p_at_10": {
-            "value": 0.6524,
+            "value": 0.6362,
             "ci95": [
-              0.6257,
-              0.6805
+              0.6129,
+              0.6643
             ]
           },
           "ndcg_at_10": {
-            "value": 0.588,
+            "value": 0.5651,
             "ci95": [
-              0.5695,
-              0.6074
+              0.5473,
+              0.5842
             ]
           },
           "mrr_at_10": {
-            "value": 0.9135,
+            "value": 0.8827,
             "ci95": [
-              0.8849,
-              0.9397
+              0.8489,
+              0.9139
             ]
           }
         },
         "ours_no_tasks": {
           "p_at_10": {
-            "value": 0.6462,
+            "value": 0.6352,
             "ci95": [
-              0.621,
-              0.6733
+              0.6095,
+              0.6614
             ]
           },
           "ndcg_at_10": {
-            "value": 0.5831,
+            "value": 0.5632,
             "ci95": [
-              0.5628,
-              0.6036
+              0.5439,
+              0.5835
             ]
           },
           "mrr_at_10": {
-            "value": 0.8988,
+            "value": 0.8774,
             "ci95": [
-              0.8679,
-              0.9246
+              0.8441,
+              0.9069
             ]
           }
         },
@@ -764,24 +764,24 @@
         },
         "bm25_filtered": {
           "p_at_10": {
-            "value": 0.4733,
+            "value": 0.4619,
             "ci95": [
-              0.4471,
-              0.4986
+              0.4362,
+              0.4862
             ]
           },
           "ndcg_at_10": {
-            "value": 0.4224,
+            "value": 0.4137,
             "ci95": [
-              0.3972,
-              0.4452
+              0.389,
+              0.4367
             ]
           },
           "mrr_at_10": {
-            "value": 0.6523,
+            "value": 0.6491,
             "ci95": [
-              0.6053,
-              0.6986
+              0.6036,
+              0.6976
             ]
           }
         },
@@ -835,28 +835,28 @@
       "other_gold": {
         "strict": {
           "ours": {
-            "ndcg_at_10": 0.5423,
-            "p_at_10": 0.5886
+            "ndcg_at_10": 0.5249,
+            "p_at_10": 0.5786
           },
           "ours_no_test": {
             "ndcg_at_10": 0.4314,
             "p_at_10": 0.4348
           },
           "ours_no_fsp": {
-            "ndcg_at_10": 0.5426,
-            "p_at_10": 0.5848
+            "ndcg_at_10": 0.5231,
+            "p_at_10": 0.5733
           },
           "ours_no_tasks": {
-            "ndcg_at_10": 0.5404,
-            "p_at_10": 0.5824
+            "ndcg_at_10": 0.5222,
+            "p_at_10": 0.5733
           },
           "bm25": {
             "ndcg_at_10": 0.3093,
             "p_at_10": 0.3443
           },
           "bm25_filtered": {
-            "ndcg_at_10": 0.4045,
-            "p_at_10": 0.4448
+            "ndcg_at_10": 0.3958,
+            "p_at_10": 0.4343
           },
           "eval_rank_text": {
             "ndcg_at_10": 0.3089,
@@ -869,28 +869,28 @@
         },
         "lenient": {
           "ours": {
-            "ndcg_at_10": 0.6153,
-            "p_at_10": 0.7095
+            "ndcg_at_10": 0.596,
+            "p_at_10": 0.6929
           },
           "ours_no_test": {
             "ndcg_at_10": 0.4365,
             "p_at_10": 0.45
           },
           "ours_no_fsp": {
-            "ndcg_at_10": 0.6047,
-            "p_at_10": 0.6948
+            "ndcg_at_10": 0.5846,
+            "p_at_10": 0.6752
           },
           "ours_no_tasks": {
-            "ndcg_at_10": 0.6001,
-            "p_at_10": 0.6871
+            "ndcg_at_10": 0.5814,
+            "p_at_10": 0.6738
           },
           "bm25": {
             "ndcg_at_10": 0.3248,
             "p_at_10": 0.4
           },
           "bm25_filtered": {
-            "ndcg_at_10": 0.4089,
-            "p_at_10": 0.4976
+            "ndcg_at_10": 0.4021,
+            "p_at_10": 0.4838
           },
           "eval_rank_text": {
             "ndcg_at_10": 0.3213,
@@ -905,81 +905,81 @@
       "paired_differences": {
         "ours_minus_bm25": {
           "ndcg_at_10": {
-            "value": 0.2601,
+            "value": 0.2402,
             "ci95": [
-              0.2347,
-              0.2848
+              0.2152,
+              0.2647
             ]
           },
           "p_at_10": {
-            "value": 0.29,
+            "value": 0.2771,
             "ci95": [
-              0.2562,
-              0.3229
+              0.2462,
+              0.3095
             ]
           }
         },
         "ours_minus_bm25_filtered": {
           "ndcg_at_10": {
-            "value": 0.1692,
+            "value": 0.158,
             "ci95": [
-              0.1483,
-              0.1911
+              0.1372,
+              0.1783
             ]
           },
           "p_at_10": {
-            "value": 0.1871,
+            "value": 0.1857,
             "ci95": [
-              0.1595,
-              0.2133
+              0.159,
+              0.2095
             ]
           }
         },
         "full_minus_no_test": {
           "ndcg_at_10": {
-            "value": 0.1457,
+            "value": 0.1258,
             "ci95": [
-              0.1273,
-              0.1636
+              0.1083,
+              0.1436
             ]
           },
           "p_at_10": {
-            "value": 0.2133,
+            "value": 0.2005,
             "ci95": [
-              0.1881,
-              0.2348
+              0.1771,
+              0.2224
             ]
           }
         },
         "full_minus_no_fsp": {
           "ndcg_at_10": {
-            "value": 0.0036,
+            "value": 0.0066,
             "ci95": [
-              -0.0027,
-              0.0099
+              0.0002,
+              0.0139
             ]
           },
           "p_at_10": {
-            "value": 0.0081,
+            "value": 0.0114,
             "ci95": [
-              0,
-              0.0162
+              0.0033,
+              0.0205
             ]
           }
         },
         "full_minus_no_tasks": {
           "ndcg_at_10": {
-            "value": 0.0084,
+            "value": 0.0085,
             "ci95": [
-              0.0012,
-              0.0151
+              0.0017,
+              0.0155
             ]
           },
           "p_at_10": {
-            "value": 0.0143,
+            "value": 0.0124,
             "ci95": [
-              0.0043,
-              0.0243
+              0.0029,
+              0.0214
             ]
           }
         }
@@ -988,38 +988,38 @@
     "holdout": {
       "candidates": 1750,
       "needs": 210,
-      "test_sessions": 2944,
-      "people_with_confirmed_grade": 1506,
+      "test_sessions": 2955,
+      "people_with_confirmed_grade": 1508,
       "confirmed_grade_vs_true": {
-        "0": 786,
-        "1": 115,
-        "-2": 40,
-        "-1": 565
+        "0": 767,
+        "1": 151,
+        "-2": 35,
+        "-1": 553
       },
-      "people_with_test_verified_skills": 84,
+      "people_with_test_verified_skills": 125,
       "mean_relevant_per_need": 53.3048,
-      "relevant_visible_after_hard_filters": 0.35,
+      "relevant_visible_after_hard_filters": 0.3458,
       "systems": {
         "ours": {
           "p_at_10": {
-            "value": 0.6314,
+            "value": 0.6148,
             "ci95": [
-              0.6033,
-              0.659
+              0.5881,
+              0.6419
             ]
           },
           "ndcg_at_10": {
-            "value": 0.5449,
+            "value": 0.5267,
             "ci95": [
-              0.5237,
-              0.5656
+              0.5057,
+              0.5484
             ]
           },
           "mrr_at_10": {
-            "value": 0.8675,
+            "value": 0.8359,
             "ci95": [
-              0.8353,
-              0.9004
+              0.7978,
+              0.8715
             ]
           }
         },
@@ -1048,47 +1048,47 @@
         },
         "ours_no_fsp": {
           "p_at_10": {
-            "value": 0.621,
+            "value": 0.6124,
             "ci95": [
-              0.5919,
-              0.6467
+              0.5833,
+              0.6405
             ]
           },
           "ndcg_at_10": {
-            "value": 0.5411,
+            "value": 0.5316,
             "ci95": [
-              0.5185,
-              0.5641
+              0.5097,
+              0.553
             ]
           },
           "mrr_at_10": {
-            "value": 0.8792,
+            "value": 0.851,
             "ci95": [
-              0.8433,
-              0.9113
+              0.8154,
+              0.882
             ]
           }
         },
         "ours_no_tasks": {
           "p_at_10": {
-            "value": 0.6224,
+            "value": 0.6095,
             "ci95": [
-              0.5948,
-              0.65
+              0.5829,
+              0.6357
             ]
           },
           "ndcg_at_10": {
-            "value": 0.5447,
+            "value": 0.532,
             "ci95": [
-              0.5226,
-              0.5674
+              0.5116,
+              0.5544
             ]
           },
           "mrr_at_10": {
-            "value": 0.8726,
+            "value": 0.8489,
             "ci95": [
-              0.8391,
-              0.9052
+              0.8112,
+              0.8829
             ]
           }
         },
@@ -1117,24 +1117,24 @@
         },
         "bm25_filtered": {
           "p_at_10": {
-            "value": 0.4786,
+            "value": 0.4638,
             "ci95": [
-              0.451,
-              0.5057
+              0.4352,
+              0.4919
             ]
           },
           "ndcg_at_10": {
-            "value": 0.4104,
+            "value": 0.3983,
             "ci95": [
-              0.3867,
-              0.4345
+              0.3752,
+              0.4218
             ]
           },
           "mrr_at_10": {
-            "value": 0.6362,
+            "value": 0.6243,
             "ci95": [
-              0.5903,
-              0.6832
+              0.5753,
+              0.6696
             ]
           }
         },
@@ -1188,28 +1188,28 @@
       "other_gold": {
         "strict": {
           "ours": {
-            "ndcg_at_10": 0.5024,
-            "p_at_10": 0.5662
+            "ndcg_at_10": 0.4905,
+            "p_at_10": 0.5571
           },
           "ours_no_test": {
             "ndcg_at_10": 0.4073,
             "p_at_10": 0.4133
           },
           "ours_no_fsp": {
-            "ndcg_at_10": 0.5049,
-            "p_at_10": 0.5614
+            "ndcg_at_10": 0.4985,
+            "p_at_10": 0.559
           },
           "ours_no_tasks": {
-            "ndcg_at_10": 0.5062,
-            "p_at_10": 0.5619
+            "ndcg_at_10": 0.4971,
+            "p_at_10": 0.5557
           },
           "bm25": {
             "ndcg_at_10": 0.2961,
             "p_at_10": 0.3329
           },
           "bm25_filtered": {
-            "ndcg_at_10": 0.4019,
-            "p_at_10": 0.4533
+            "ndcg_at_10": 0.3894,
+            "p_at_10": 0.4376
           },
           "eval_rank_text": {
             "ndcg_at_10": 0.3145,
@@ -1222,28 +1222,28 @@
         },
         "lenient": {
           "ours": {
-            "ndcg_at_10": 0.5845,
-            "p_at_10": 0.6824
+            "ndcg_at_10": 0.5601,
+            "p_at_10": 0.6662
           },
           "ours_no_test": {
             "ndcg_at_10": 0.4014,
             "p_at_10": 0.43
           },
           "ours_no_fsp": {
-            "ndcg_at_10": 0.5725,
-            "p_at_10": 0.6695
+            "ndcg_at_10": 0.5581,
+            "p_at_10": 0.6595
           },
           "ours_no_tasks": {
-            "ndcg_at_10": 0.5798,
-            "p_at_10": 0.6729
+            "ndcg_at_10": 0.5595,
+            "p_at_10": 0.6552
           },
           "bm25": {
             "ndcg_at_10": 0.3083,
             "p_at_10": 0.3871
           },
           "bm25_filtered": {
-            "ndcg_at_10": 0.4132,
-            "p_at_10": 0.5071
+            "ndcg_at_10": 0.3992,
+            "p_at_10": 0.4929
           },
           "eval_rank_text": {
             "ndcg_at_10": 0.3236,
@@ -1258,81 +1258,81 @@
       "paired_differences": {
         "ours_minus_bm25": {
           "ndcg_at_10": {
-            "value": 0.2356,
+            "value": 0.2174,
             "ci95": [
-              0.2114,
-              0.2598
+              0.1918,
+              0.2423
             ]
           },
           "p_at_10": {
-            "value": 0.27,
+            "value": 0.2533,
             "ci95": [
-              0.24,
-              0.2986
+              0.2238,
+              0.2838
             ]
           }
         },
         "ours_minus_bm25_filtered": {
           "ndcg_at_10": {
-            "value": 0.1345,
+            "value": 0.1284,
             "ci95": [
-              0.1121,
-              0.1557
+              0.1077,
+              0.1514
             ]
           },
           "p_at_10": {
-            "value": 0.1529,
+            "value": 0.151,
             "ci95": [
-              0.1271,
-              0.1795
+              0.1257,
+              0.1762
             ]
           }
         },
         "full_minus_no_test": {
           "ndcg_at_10": {
-            "value": 0.1378,
+            "value": 0.1196,
             "ci95": [
-              0.1196,
-              0.1575
+              0.0985,
+              0.1415
             ]
           },
           "p_at_10": {
-            "value": 0.2062,
+            "value": 0.1895,
             "ci95": [
-              0.1824,
-              0.2281
+              0.1671,
+              0.2124
             ]
           }
         },
         "full_minus_no_fsp": {
           "ndcg_at_10": {
-            "value": 0.0037,
+            "value": -0.0049,
             "ci95": [
-              -0.0028,
-              0.0105
+              -0.0134,
+              0.0033
             ]
           },
           "p_at_10": {
-            "value": 0.0105,
+            "value": 0.0024,
             "ci95": [
-              0.0029,
-              0.0186
+              -0.0062,
+              0.011
             ]
           }
         },
         "full_minus_no_tasks": {
           "ndcg_at_10": {
-            "value": 0.0002,
+            "value": -0.0053,
             "ci95": [
-              -0.007,
-              0.0068
+              -0.0128,
+              0.0025
             ]
           },
           "p_at_10": {
-            "value": 0.009,
+            "value": 0.0052,
             "ci95": [
-              -0.0005,
-              0.019
+              -0.0052,
+              0.0152
             ]
           }
         }
