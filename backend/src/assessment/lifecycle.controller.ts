@@ -18,6 +18,7 @@ import { PRACTICE_BANK, PRACTICE_BANK_VERSION, instantiatePractice, selectPracti
 import { CODE_JOB_TOPIC } from './code-job.js';
 import { SKILL_CONFIRMATION_POLICY } from './confirmed-skills.js';
 import { runtimeAvailable } from './piston.js';
+import { itemResponse } from './item-response.js';
 
 @Controller('tests')
 @UseGuards(AuthGuard)
@@ -127,7 +128,7 @@ export class AssessmentLifecycleController {
       }
       const counts: Record<string, number> = {};
       for (const item of answered) counts[item.competency] = (counts[item.competency] ?? 0) + 1;
-      const state: CatState = { responses: answered.map(i => ({ a: i.discrimination, b: i.difficulty, correct: i.correct! })), servedIds: t.items.map(i => i.familyId), competencyCounts: counts };
+      const state: CatState = { responses: answered.map(itemResponse), servedIds: t.items.map(i => i.familyId), competencyCounts: counts };
       // Serialize exposure reservations for the same bank and specialization across all replicas.
       const lock = `assessment:${t.bankVersion}:${t.specialization}`;
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lock}, 0))`;

@@ -12,7 +12,10 @@ export function selectFamily(
       || !Number.isFinite(policy.targetSe) || policy.targetSe <= 0 || !Number.isInteger(policy.topK) || policy.topK < 1 || !Number.isFinite(policy.maxExposure) || policy.maxExposure <= 0 || policy.maxExposure > 1) {
     throw new RangeError('Invalid CAT policy');
   }
-  const posterior = estimate(state.responses);
+  const byId = new Map(bank.map(f => [f.id, f]));
+  const posterior = estimate(state.responses.map((r, index) => ({ ...r,
+    c: r.c ?? byId.get(r.familyId ?? state.servedIds[index] ?? '')?.c ?? 0,
+  })));
   const missing = requiredCompetencies.filter(id => !state.competencyCounts[id]);
   if (state.responses.length >= policy.max) return { family: null, reason: missing.length ? 'coverage_unavailable' : 'max_length' };
   if (state.responses.length >= policy.min && posterior.se <= policy.targetSe && missing.length === 0) return { family: null, reason: 'precision' };

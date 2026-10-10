@@ -1,18 +1,21 @@
-export interface ItemParameters { a: number; b: number }
-export interface ItemResponse extends ItemParameters { correct: boolean }
+export interface ItemParameters { a: number; b: number; c?: number }
+export interface ItemResponse extends ItemParameters { correct: boolean; familyId?: string }
 
 function validate(item: ItemParameters): void {
-  if (!Number.isFinite(item.a) || item.a <= 0 || !Number.isFinite(item.b)) throw new RangeError('Invalid IRT parameters');
+  if (!Number.isFinite(item.a) || item.a <= 0 || !Number.isFinite(item.b)
+    || !Number.isFinite(item.c ?? 0) || (item.c ?? 0) < 0 || (item.c ?? 0) >= 1) throw new RangeError('Invalid IRT parameters');
 }
 export function probability(theta: number, item: ItemParameters): number {
   validate(item);
   if (!Number.isFinite(theta)) throw new RangeError('Invalid theta');
   const x = item.a * (theta - item.b);
-  return x >= 0 ? 1 / (1 + Math.exp(-x)) : Math.exp(x) / (1 + Math.exp(x));
+  const logistic = x >= 0 ? 1 / (1 + Math.exp(-x)) : Math.exp(x) / (1 + Math.exp(x));
+  return (item.c ?? 0) + (1 - (item.c ?? 0)) * logistic;
 }
 export function information(theta: number, item: ItemParameters): number {
+  const logistic = probability(theta, { a: item.a, b: item.b });
   const p = probability(theta, item);
-  return item.a ** 2 * p * (1 - p);
+  return p === 0 ? 0 : item.a ** 2 * (1 - (item.c ?? 0)) * logistic ** 2 * (1 - logistic) / p;
 }
 function softplus(x: number): number { return Math.max(0, x) + Math.log1p(Math.exp(-Math.abs(x))); }
 
@@ -22,7 +25,9 @@ export function estimate(responses: readonly ItemResponse[]) {
   const grid = Array.from({ length: 401 }, (_, i) => -5 + i * 0.025);
   const logs = grid.map(theta => responses.reduce((sum, r) => {
     const x = r.a * (theta - r.b);
-    return sum - softplus(r.correct ? -x : x);
+    const c = r.c ?? 0;
+    if (c === 0) return sum - softplus(r.correct ? -x : x);
+    return sum + (r.correct ? Math.log(c + (1 - c) * Math.exp(-softplus(-x))) : Math.log1p(-c) - softplus(x));
   }, -(theta ** 2) / 2));
   const peak = Math.max(...logs);
   const weights = logs.map(x => Math.exp(x - peak));

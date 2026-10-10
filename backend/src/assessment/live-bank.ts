@@ -8,6 +8,7 @@ export interface ChoiceVariant { parameters: Record<string, number>; prompt: str
 type Variant = NumericVariant | ChoiceVariant;
 export const LIVE_BANK_VERSION = 'expert-bank-20261010-v5';
 export interface LiveFamily extends Family {
+  c: number;
   title: string;
   specializations: readonly Specialization[];
   skillIds: readonly string[];
@@ -23,7 +24,7 @@ const draw = (seed: number) => {
 const pick = <T>(n: (from: number, to: number) => number, items: readonly T[]): T => items[n(0, items.length - 1)];
 const R2 = 0.00500001, R3 = 0.000500001;
 function family(id: string, title: string, competency: string, b: number, specializations: readonly Specialization[], generate: LiveFamily['generate'], skillIds: readonly string[] = []): LiveFamily {
-  return { id, title, competency, a: 1.2, b, specializations, skillIds, templateVersion: 1, calibration: 'expert_prior', generate };
+  return { id, title, competency, a: 1.2, b, c: 0, specializations, skillIds, templateVersion: 1, calibration: 'expert_prior', generate };
 }
 
 /** Versioned parameterized objective families. These priors are NOT empirical calibration. */
@@ -726,7 +727,9 @@ export function instantiate(family: LiveFamily, seed: number, id: string, index:
   } else {
     expectedAnswer = { kind: 'numeric', value: variant.value, absoluteTolerance: variant.tolerance ?? 0, relativeTolerance: 0 };
   }
-  return { familyId: family.id, templateVersion: family.templateVersion, parameters: { seed, ...variant.parameters }, publicItem, expectedAnswer, discrimination: family.a, difficulty: family.b };
+  const guessing = publicItem.type === 'single_choice' ? 1 / publicItem.options!.length : publicItem.type === 'multiple_choice' ? 0.05 : 0;
+  if (guessing !== family.c) throw new Error('Inconsistent guessing parameter');
+  return { familyId: family.id, templateVersion: family.templateVersion, parameters: { seed, ...variant.parameters, irt_c: guessing }, publicItem, expectedAnswer, discrimination: family.a, difficulty: family.b };
 }
 
 export function requiredCompetencies(bank: readonly LiveFamily[], maxExposure: number): string[] {

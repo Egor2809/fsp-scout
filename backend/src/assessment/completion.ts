@@ -2,8 +2,9 @@ import { estimate, type ItemResponse } from '../common/irt.ts';
 import { coveredCompetencies, currentItem, validatePolicy, type IssuedItem, type SessionPolicy } from './session-state.ts';
 import type { Grade } from '../contract/model/index.js';
 import { scoreOutcome, validateGradeCuts, GRADE_ORDER, type GradeCuts } from './result-scoring.ts';
+import { itemResponse, type ScoredItem } from './item-response.ts';
 
-export interface CompletionItem extends IssuedItem {
+export interface CompletionItem extends IssuedItem, ScoredItem {
   competency: string; discrimination: number; difficulty: number;
 }
 export type CompletionReadiness = 'ready' | 'unanswered' | 'pending_grading' | 'adaptive_incomplete' | 'coverage_incomplete' | 'practice_incomplete' | 'approach_incomplete';
@@ -21,7 +22,7 @@ export function scoreCompletion(items: readonly CompletionItem[], policy: Sessio
   validateGradeCuts(cuts);
   const readiness = completionReadiness(items, policy);
   if (readiness === 'unanswered' || readiness === 'pending_grading') throw new Error('Complete/grade issued responses before scoring');
-  const observations = items.filter(i => i.block === 'adaptive').map(i => ({ a: i.discrimination, b: i.difficulty, correct: i.correct! }));
+  const observations = items.filter(i => i.block === 'adaptive').map(itemResponse);
   if (readiness === 'ready' && (policy.practiceTotal === 0 || (policy.approachTotal ?? 0) >= 1)) {
     const scored = scoreOutcome(observations, grade, cuts);
     const practiceFailed = items.filter(i => i.block === 'practice' || i.block === 'approach').some(i => i.correct !== true);
@@ -43,7 +44,7 @@ export function completionReadiness(items: readonly CompletionItem[], policy: Se
   if (items.some(item => item.correct === null)) return 'pending_grading';
   const adaptive = items.filter(item => item.block === 'adaptive');
   if (adaptive.length < policy.min) return 'adaptive_incomplete';
-  const observations: ItemResponse[] = adaptive.map(item => ({ a: item.discrimination, b: item.difficulty, correct: item.correct! }));
+  const observations: ItemResponse[] = adaptive.map(itemResponse);
   if (adaptive.length < policy.max && estimate(observations).se > policy.targetSe) return 'adaptive_incomplete';
   if (coveredCompetencies(policy).some(id => !adaptive.some(item => item.competency === id))) return 'coverage_incomplete';
   if (items.filter(item => item.block === 'practice').length < policy.practiceTotal) return 'practice_incomplete';
@@ -58,7 +59,7 @@ export function resultTrace(items: readonly CompletionItem[]) {
   const observations: ItemResponse[] = [];
   return [...items].filter(item => item.block === 'adaptive' && item.answeredAt !== null).sort((a, b) => a.ordinal - b.ordinal).map(item => {
     if (typeof item.correct !== 'boolean') throw new Error('Unscored response in trace');
-    observations.push({ a: item.discrimination, b: item.difficulty, correct: item.correct });
+    observations.push(itemResponse(item));
     const posterior = estimate(observations);
     return { index: item.ordinal, difficulty_level: Math.max(1, Math.min(5, Math.round(item.difficulty + 3))),
       correct: item.correct, theta: posterior.theta, se: posterior.se };

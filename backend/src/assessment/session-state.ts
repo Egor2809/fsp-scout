@@ -14,7 +14,7 @@ export function coveredCompetencies(policy: SessionPolicy): string[] {
   return (policy.requiredCompetencies ?? []).filter(id => !policy.waivedCompetencies?.includes(id));
 }
 export const DEFAULT_GRADE_POLICY = JSON.stringify({ version: 'expert-cuts-20261010-v2', cuts: { junior: -1.2, middle: -0.4, senior: 0.4, lead: 1.2 }, passProbability: 0.6 });
-export const DEFAULT_POLICY: SessionPolicy = { min: 8, max: 12, targetSe: 0.4, topK: 5, maxExposure: 0.4, practiceTotal: 1, approachTotal: 1 };
+export const DEFAULT_POLICY: SessionPolicy = { min: 8, max: 14, targetSe: 0.4, topK: 3, maxExposure: 0.4, practiceTotal: 1, approachTotal: 1 };
 export function assessmentMode(setting?: string): { policy: SessionPolicy; timeLimitSec: number } {
   return setting === 'true'
     ? { policy: { ...DEFAULT_POLICY, express: true, min: 5, max: 6, practiceTotal: 0, approachTotal: 0 }, timeLimitSec: 600 }

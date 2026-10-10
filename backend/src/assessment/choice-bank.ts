@@ -97,6 +97,7 @@ export const choiceFamilies: readonly LiveFamily[] = (Object.entries(questions) 
   return {
     id: `choice-${specialization}-${id}`, title: ({ backend: 'Серверная разработка', frontend: 'Веб-интерфейс', mobile: 'Мобильная разработка', qa: 'Проверка качества', devops: 'Эксплуатация', data_ml: 'Машинное обучение', analyst: 'Анализ данных' })[specialization] ?? specialization,
     competency: specialization === 'backend' && !['postgresql', 'sql'].includes(skill) ? 'systems' : competencies[specialization], a: 1.2, b: Math.round((-1.8 + index * 0.4) * 10) / 10,
+    c: typeof correct === 'string' ? 1 / (1 + wrong.length) : 0.05,
     specializations: [specialization], skillIds: [skill], templateVersion: 2, calibration: 'expert_prior',
     generate(seed): ChoiceVariant {
       const random = seededRandom(seed);
