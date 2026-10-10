@@ -45,7 +45,7 @@ function Solution({ assignment }: { assignment: TaskAssignment }) {
 export default function CandidateTask() {
   const { taskId = '' } = useParams()
   const query = useGetMyTask(taskId, { query: { enabled: Boolean(taskId), refetchInterval: 15_000 } })
-  return <div className="grid max-w-3xl gap-6">
+  return <div className="grid max-w-3xl gap-6 *:min-w-0">
     <Link to="/c/tasks">← Все задания</Link>
     <QueryView query={query}>{a => <>
       <PageHeader title={a.task.title} />

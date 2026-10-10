@@ -7,7 +7,7 @@ export function TaskContent({ task, showStarter = true }: { task: RegularTask; s
       {task.language && ` · ${codeLanguageLabel[task.language]}`}</p>
     <p className="text-sm text-muted-foreground">{task.specializations.map(s => specializationLabel[s]).join(', ')} · {task.grades.map(g => gradeLabel[g]).join(', ')}</p>
     <p className="whitespace-pre-wrap break-words">{task.description}</p>
-    {showStarter && task.starter_code && <div><h3 className="mb-2 font-medium">Исходный фрагмент</h3><pre className="max-h-96 overflow-auto rounded-lg border bg-muted p-4 text-sm">{task.starter_code}</pre></div>}
+    {showStarter && task.starter_code && <div className="min-w-0"><h3 className="mb-2 font-medium">Исходный фрагмент</h3><pre className="max-h-96 overflow-auto rounded-lg border bg-muted p-4 text-sm">{task.starter_code}</pre></div>}
     <div><h3 className="mb-2 font-medium">Критерии оценки</h3><ul className="grid gap-1 text-sm">{task.rubric.map((r, i) => <li key={i} className="flex justify-between gap-4"><span className="break-words">{r.criterion}</span><span className="shrink-0 num">{Math.round(r.weight * 100)}%</span></li>)}</ul></div>
   </div>
 }

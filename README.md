@@ -88,6 +88,7 @@ Backend разрабатывался в ветке `my-feature` и был объ
 
 - [Техническая документация, PDF](docs/scout-documentation.pdf)
 - [Презентация по шаблону ФСП, PPTX](docs/scout-presentation.pptx)
+- Мобильная вёрстка (375 px, без горизонтальной прокрутки на 30 экранах): [карточка кандидата](frontend/screenshots/mobile-candidate-card.png), [подборка](frontend/screenshots/mobile-search.png)
 - [Сценарий демонстрации на 6 минут](docs/demo-script.md)
 - [Содержание презентации по шаблону ФСП](docs/presentation-content.md)
 - [Статус выполнения PLAN.md](docs/plan-progress.md)

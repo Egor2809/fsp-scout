@@ -55,7 +55,7 @@ function Submissions({ taskId }: { taskId: string }) {
 export default function EmployerTask() {
   const { taskId = '' } = useParams()
   const query = useGetCompanyTask(taskId, { query: { enabled: Boolean(taskId), refetchInterval: 30_000 } })
-  return <div className="grid max-w-4xl gap-6">
+  return <div className="grid max-w-4xl gap-6 *:min-w-0">
     <Link to="/e/tasks">← Все задания</Link>
     <QueryView query={query}>{task => <>
       <PageHeader title={task.title} />
