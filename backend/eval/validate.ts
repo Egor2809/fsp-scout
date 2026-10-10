@@ -9,6 +9,8 @@ import { confirmedSkills } from '../src/assessment/confirmed-skills.ts';
 import { category, explain, hardFilters, type CandidateSnapshot } from '../src/matching/matching.ts';
 import { rankingMetrics } from '../src/evaluation/metrics.ts';
 import { rankExternal } from '../src/evaluation/rank.ts';
+import { canaryFlags } from '../src/assessment/canary-flags.ts';
+import { fitTimingModel } from '../src/assessment/telemetry-flags.ts';
 import { SKILLS, SKILL_BY_ID, skillName, taxonomy } from '../src/common/taxonomy-data.ts';
 import type { CandidateSkill, FspAchievement, Grade, Industry, SearchFilters, Specialization, WorkFormat } from '../src/contract/model/index.js';
 
@@ -244,11 +246,13 @@ const leaked = (order: readonly string[], k: number) => new Set(order.slice(0, M
 function catScenario(kind: 'none' | 'key' | 'method', k: number) {
   const pool = cohort();
   return cheaters.map(c => {
-    const known = leaked(leakOrder.get(c.spec)!, kind === 'none' ? 0 : k), base = honest(c.theta);
-    return runSession(c.spec, 'middle', c.seed, pool, (f, seed, r) => {
-      const solved = base(f, seed, r);
-      return solved || (known.has(f.id) && (kind === 'method' || keyHit(f, seed)));
+    const known = leaked(leakOrder.get(c.spec)!, kind === 'none' ? 0 : k), base = honest(c.theta), fast = new Set<string>();
+    const session = runSession(c.spec, 'middle', c.seed, pool, (f, seed, r) => {
+      const solved = base(f, seed, r), copied = known.has(f.id) && (kind === 'method' || keyHit(f, seed));
+      if (copied) fast.add(f.id);
+      return solved || copied;
     });
+    return { ...session, fast };
   });
 }
 const fixedScenario = (k: number) => cheaters.map(c => fixedSession(c.spec, 'middle', c.seed, c.theta, leaked(formOrder.get(c.spec)!, k)));
@@ -268,6 +272,28 @@ const bankLeak = {
   cat: { clean: leakSummary(catClean, catClean),
     ...Object.fromEntries([25, 50, 100].flatMap(k => [[`key_${k}`, leakSummary(catScenario('key', k), catClean)], [`method_${k}`, leakSummary(catScenario('method', k), catClean)]])) },
   fixed_12: { clean: leakSummary(fixedClean, fixedClean), ...Object.fromEntries([25, 50, 100].map(k => [`leak_${k}`, leakSummary(fixedScenario(k), fixedClean)])) },
+};
+
+const CANARY_IDS = new Set(LIVE_BANK.filter(f => f.canary).map(f => f.id));
+const timingRandom = seededRandom(SEED ^ 0x7153);
+const MEDIAN_MS = new Map(LIVE_BANK.map(f => [f.id, 45000 * Math.exp(0.4 * f.b + 0.3 * normal(timingRandom))]));
+const responseMs = (familyId: string, fast: boolean, r: () => number) => MEDIAN_MS.get(familyId)! * Math.exp(0.5 * normal(r)) * (fast ? 0.12 : 1);
+const timed = (rows: readonly (Session & { fast: Set<string> })[], seed: number) => {
+  const r = seededRandom(seed);
+  return rows.map(row => row.items.map(item => ({ familyId: item.familyId, ordinal: item.ordinal, canary: CANARY_IDS.has(item.familyId), correct: item.correct, serverElapsedMs: Math.round(responseMs(item.familyId, row.fast.has(item.familyId), r)) })));
+};
+const canaryModels = [...CANARY_IDS].flatMap(id => { const m = fitTimingModel(id, Array.from({ length: 200 }, () => Math.round(responseMs(id, false, timingRandom)))); return m ? [m] : []; });
+const flagRate = (rows: readonly (Session & { fast: Set<string> })[], seed: number) => {
+  const sessions = timed(rows, seed);
+  return { flagged: r4(mean(sessions.map(s => Number(canaryFlags(s, canaryModels).length > 0)))), with_canary: r4(mean(sessions.map(s => Number(s.some(i => i.canary))))) };
+};
+const canaryReport = {
+  rule: 'leak_suspected: канарейка решена верно с z < -2.5 по логнормальной модели времени, оба соседних обычных задания решены неверно',
+  timing_model: 'медиана семейства 45 с × exp(0.4 b + 0.3 N), разброс log-нормальный σ = 0.5; ответ по слитому ключу или готовому решателю в 8 раз быстрее (×0.12); модель времени — 200 честных верных ответов на семейство, как при завершении теста',
+  families_with_timing_model: canaryModels.length,
+  false_positive_honest: flagRate(catClean, SEED + 11),
+  detected_key_100: flagRate(catScenario('key', 100), SEED + 13),
+  ...Object.fromEntries([25, 50, 100].map(k => [`detected_method_${k}`, flagRate(catScenario('method', k), SEED + 17 + k)])),
 };
 
 const exposureReport = {
@@ -462,9 +488,9 @@ const report = {
     model: '3PL: P = c + (1 - c) / (1 + exp(-a_true (θ - b_true)))',
     a_true: 'a_bank × U(0.7, 1.3)', b_true: 'b_bank + U(-0.4, 0.4)', c: 'числовые 0.02, single_choice 1/число вариантов, multiple_choice 0.05',
     realized: { mean_abs_relative_a_shift: r4(mean(LIVE_BANK.map(f => Math.abs(TRUE.get(f.id)!.a / f.a - 1)))), mean_abs_b_shift: r4(mean(LIVE_BANK.map(f => Math.abs(TRUE.get(f.id)!.b - f.b)))) },
-    estimator: 'EAP 2PL с экспертными a, b из банка (src/common/irt.ts), без знания a_true, b_true, c',
+    estimator: 'EAP 3PL с экспертными a, b из банка и c по типу задания (src/common/irt.ts), без знания a_true, b_true',
   },
-  assessment, test_retest: retest, bank_leak: bankLeak, exposure: exposureReport, matching,
+  assessment, test_retest: retest, bank_leak: { ...bankLeak, canaries: canaryReport }, exposure: exposureReport, matching,
   limitations: [
     'Все кандидаты, ответы и потребности синтетические; это проверка устойчивости алгоритмов, а не эмпирическая валидность на людях.',
     'Истинные параметры заданий отличаются от экспертных случайным шумом, но форма модели (логистическая, одномерная в части 1) близка к модели оценщика.',
