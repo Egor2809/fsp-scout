@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { category, explain, hardFilters, radar, strength, type CandidateSnapshot } from '../src/matching/matching.ts';
+import { category, explain, hardFilters, radar, searchGrades, strength, type CandidateSnapshot } from '../src/matching/matching.ts';
 import { parseNeed, parseSalary } from '../src/needs/need-parser.ts';
 import type { FspAchievement, SearchFilters } from '../src/contract/model/index.js';
 
@@ -22,6 +22,44 @@ test('confirmation, publication consent and company privacy are hard requirement
   assert.equal(hardFilters(c, filters, 'company'), false);
   c.hiddenCompanyIds = []; c.profile.standing = null;
   assert.equal(hardFilters(c, filters, 'company'), false);
+});
+test('one lower grade is visible with an explicit penalty; other hard filters remain mandatory', () => {
+  const c = candidate();
+  const exact = explain(c, filters, now);
+  c.profile.standing!.category = category('backend', 'junior');
+  assert.ok(hardFilters(c, filters, 'company'));
+  const lower = explain(c, filters, now);
+  assert.equal(lower.score, exact.score - 8);
+  assert.ok(lower.chips.some(f => f.contribution === -8 && f.polarity === 'negative'));
+  assert.ok(Math.abs(lower.factors.reduce((sum, f) => sum + f.contribution, 0) - lower.score) < 1e-8);
+  assert.equal(hardFilters(c, { ...filters, grades: ['senior'] }, 'company'), false);
+  assert.equal(hardFilters(c, { ...filters, grades: [] }, 'company'), false);
+  c.profile.standing!.category = category('frontend', 'junior');
+  assert.equal(hardFilters(c, filters, 'company'), false);
+  c.profile.standing!.category = category('backend', 'junior');
+  c.profile.skills = [];
+  assert.equal(hardFilters(c, filters, 'company'), false);
+  c.profile.skills = candidate().profile.skills;
+  c.publishedConsent = false;
+  assert.equal(hardFilters(c, filters, 'company'), false);
+});
+test('exact grade wins over adjacent selections and higher grades are not silently admitted', () => {
+  const c = candidate();
+  assert.equal(explain(c, { ...filters, grades: ['middle', 'senior'] }, now).score, explain(c, filters, now).score);
+  c.profile.standing!.category = category('backend', 'senior');
+  assert.equal(hardFilters(c, filters, 'company'), false);
+});
+test('database shortlist includes the adjacent lower grade and matches the final admission rule', () => {
+  assert.deepEqual(searchGrades(['middle']), ['junior', 'middle']);
+  assert.deepEqual(searchGrades(['junior']), ['junior']);
+  assert.deepEqual(searchGrades(['lead']), ['senior', 'lead']);
+  assert.deepEqual(searchGrades(['middle', 'lead']), ['junior', 'middle', 'senior', 'lead']);
+  assert.deepEqual(searchGrades([]), []);
+  for (const grade of ['junior', 'middle', 'senior', 'lead'] as const) {
+    const c = candidate();
+    c.profile.standing!.category = category('backend', grade);
+    assert.equal(searchGrades(filters.grades).includes(grade), hardFilters(c, filters, 'company'));
+  }
 });
 test('explanations sum to score and never include personal identity', () => {
   const c = candidate(), result = explain(c, filters, now);

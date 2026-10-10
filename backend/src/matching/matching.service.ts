@@ -4,7 +4,7 @@ import type { Identity } from '../auth/auth.guard.js';
 import { Database } from '../database/database.service.js';
 import { Problem } from '../common/problem.js';
 import { candidateInclude, card, detail, snapshot, type CandidateRow } from './candidate-mapper.ts';
-import { explain, hardFilters, published } from './matching.ts';
+import { explain, hardFilters, published, searchGrades } from './matching.ts';
 import type { SearchFilters } from '../contract/model/index.js';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class MatchingService {
   }
   async ranked(companyId: string, filters: SearchFilters) {
     const now = new Date();
-    const rows = await this.rows(companyId, filters.specialization, filters.grades);
+    const rows = await this.rows(companyId, filters.specialization, searchGrades(filters.grades));
     return rows.filter(c => hardFilters(snapshot(c), filters, companyId)).map(row => ({ row, explanation: explain(snapshot(row), filters, now) }))
       .sort((a, b) => b.explanation.score - a.explanation.score || a.row.id.localeCompare(b.row.id));
   }

@@ -1,4 +1,4 @@
-import type { CandidateProfile, Category, ExplanationFactor, FspAchievement, MatchExplanation, SalaryRadar, SalaryRange, SearchFilters } from '../contract/model/index.js';
+import type { CandidateProfile, Category, ExplanationFactor, FspAchievement, Grade, MatchExplanation, SalaryRadar, SalaryRange, SearchFilters } from '../contract/model/index.js';
 import { computeFspScore, levelAtLeast, maxLevel } from './fsp-score.ts';
 import { skillName, taxonomy } from '../common/taxonomy-data.ts';
 
@@ -20,10 +20,19 @@ export function overlaps(a: SalaryRange, b: SalaryRange): boolean { return a.fro
 export function published(candidate: CandidateSnapshot, companyId: string): boolean {
   return Boolean(candidate.profile.standing) && candidate.publishedConsent && candidate.profile.availability !== 'not_looking' && !candidate.hiddenCompanyIds.includes(companyId);
 }
+const gradeOrder: Grade[] = ['junior', 'middle', 'senior', 'lead'];
+/** Exact grades or one step below a requested grade; never broaden other filters. */
+export function gradeGap(grade: Grade, requested: Grade[]): number {
+  if (requested.includes(grade)) return 0;
+  return requested.some(target => gradeOrder.indexOf(target) - gradeOrder.indexOf(grade) === 1) ? 1 : Infinity;
+}
+export function searchGrades(requested: Grade[]): Grade[] {
+  return gradeOrder.filter(grade => Number.isFinite(gradeGap(grade, requested)));
+}
 export function hardFilters(c: CandidateSnapshot, filters: SearchFilters, companyId: string): boolean {
   if (!published(c, companyId)) return false;
   const p = c.profile, standing = p.standing!;
-  if (standing.category.specialization !== filters.specialization || !filters.grades.includes(standing.category.grade)) return false;
+  if (standing.category.specialization !== filters.specialization || !Number.isFinite(gradeGap(standing.category.grade, filters.grades))) return false;
   if (p.availability === 'not_looking' || !filters.availability.includes(p.availability)) return false;
   if (!p.work_formats.some(f => filters.work_formats.includes(f))) return false;
   const remote = p.work_formats.includes('remote') && filters.work_formats.includes('remote');
@@ -62,7 +71,9 @@ export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date)
   const fit = round(100 * (0.4 * coverage + 0.25 * lexical + 0.15 * industry + 0.2 * conditions));
   const parts = strength(c, now);
   const penalty = (c.standardError ?? 1) > 0.45 ? 3 : 0;
-  const raw = 0.6 * fit + 0.4 * parts.total - penalty;
+  const belowGrade = p.standing ? gradeGap(p.standing.category.grade, filters.grades) === 1 : false;
+  const gradePenalty = belowGrade ? 8 : 0;
+  const raw = 0.6 * fit + 0.4 * parts.total - penalty - gradePenalty;
   const score = round(clamp(raw));
   const factors: ExplanationFactor[] = [
     { kind: 'skills_coverage', label: `Покрытие навыков ${Math.round(coverage * 100)}%`, contribution: round(24 * coverage), polarity: coverage >= 0.7 ? 'positive' : 'neutral', evidence: 'Подтверждённый навык весит в 1.5 раза больше заявленного' },
@@ -77,6 +88,7 @@ export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date)
   if (parts.fspBonus) factors.push({ kind: 'fsp', label: 'Подтверждённые достижения ФСП', contribution: round(0.4 * parts.fspBonus), polarity: 'positive', evidence: `Бонус Strength +${parts.fspBonus}` });
   for (const id of filters.nice_skills.filter(id => !skillMap.has(id))) factors.push({ kind: 'missing_skill', label: `Нет ${skillName(id)} (желательно)`, contribution: 0, polarity: 'negative', evidence: 'Уже учтено в покрытии навыков; повторного штрафа нет' });
   if (penalty) factors.push({ kind: 'penalty', label: 'Низкая точность оценки', contribution: -penalty, polarity: 'negative', evidence: 'SE > 0.45 или оценка отсутствует' });
+  if (belowGrade) factors.push({ kind: 'penalty', label: 'Категория на один грейд ниже запроса', contribution: -gradePenalty, polarity: 'negative', evidence: `Подтверждённая категория: ${p.standing!.category.label}; штраф 8 баллов, категория не изменяется` });
   if (raw !== clamp(raw)) factors.push({ kind: 'penalty', label: 'Ограничение итогового скора', contribution: round(clamp(raw) - raw), polarity: 'neutral', evidence: 'Score ограничен диапазоном 0–100' });
   // Account for rounding so displayed contributions sum to the displayed score.
   const residual = round(score - factors.reduce((sum, f) => sum + f.contribution, 0));
@@ -84,7 +96,9 @@ export function explain(c: CandidateSnapshot, filters: SearchFilters, now: Date)
   factors.sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
   const positives = factors.filter(f => f.polarity === 'positive');
   const missing = factors.find(f => f.kind === 'missing_skill');
-  const chips = missing ? [...positives.slice(0, 2), missing] : positives.slice(0, 3);
+  const gradeWarning = belowGrade ? factors.find(f => f.label === 'Категория на один грейд ниже запроса') : undefined;
+  const warning = gradeWarning ?? missing;
+  const chips = warning ? [...positives.slice(0, 2), warning] : positives.slice(0, 3);
   for (const factor of factors) if (chips.length < 3 && !chips.includes(factor)) chips.push(factor);
   return { score, fit, strength: parts.total, chips, factors };
 }
