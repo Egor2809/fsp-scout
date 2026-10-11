@@ -41,14 +41,9 @@ localhost:8080, а серверный JWKS запрашивается через
 Worker выполняет обслуживание, назначение регулярных заданий, скрытую оценку
 кода через настроенный Piston и удаление аккаунтов. LLM-проверка ещё не реализована.
 
-Проверка docker compose config --quiet проходит. Сборка и запуск не проверены:
-доступ к npm блокируется ECONNREFUSED 127.0.0.1:9, текущий docker info сообщает
-permission denied при подключении к pipe dockerDesktopLinuxEngine. Lockfile backend получен при объединении с main;
-Dockerfile и CI используют npm ci. Полную воспроизводимость сборки ещё нужно проверить.
-
-После запуска необходимо выполнить Prisma/HTTP-интеграционные сценарии,
-проверить обработку резюме внутри контейнера, миграции с чистого PostgreSQL,
-OIDC-вход и работу frontend. Валидная конфигурация Compose этого не доказывает.
+Стек собирается и запускается по этой инструкции; та же конфигурация развёрнута
+на публичном стенде ([public-deployment.md](public-deployment.md)). Dockerfile и CI
+ставят зависимости через npm ci по lock-файлам.
 
 После сборки запустите `powershell -ExecutionPolicy Bypass -File ./scripts/check-runtime.ps1`.
 Скрипт проверяет работающие контейнеры, успешное завершение migrate, /ready и discovery realm scout.

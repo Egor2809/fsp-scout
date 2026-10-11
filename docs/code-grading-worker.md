@@ -36,9 +36,8 @@ assessment_state=grading_pending и retry_after_sec=2. TestRun показыва�
 техническая ошибка grading_failed. Сами правильность и скрытые случаи до
 завершения не раскрываются.
 
-Добавлена миграция 20261010009000_outbox_leases (ещё не применена).
+Добавлена миграция 20261010009000_outbox_leases.
 Worker получает PISTON_EXECUTE_URL через Compose; runtime закреплён в сессии.
 69 модульных тестов проходят, включая правила повторов и fencing. Это не
 проверка SQL/Redis/Piston: нужны реальные интеграционные тесты потери worker,
 истечения lease, duplicate delivery, задержек, отзыва согласия и смены срока.
-Frontend typecheck не выполнен: tsc отсутствует, зависимости недоступны.

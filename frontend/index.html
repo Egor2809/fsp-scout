@@ -16,9 +16,36 @@
         if (dark) document.documentElement.classList.add('dark');
       } catch (e) {}
     </script>
+    <style>
+      /* Полотно до того, как loader.js построит лоадер: без него мелькнула бы страница */
+      #page-loader:empty { position: fixed; inset: 0; z-index: 99999; background: #402fff; }
+      body.loading { overflow: hidden; }
+      .boot-skip #page-loader { display: none; }
+      .boot-skip body.loading { overflow: visible; }
+    </style>
+    <script>
+      // Лоадер — один раз за вкладку; не после возврата из Keycloak и не при «уменьшить движение».
+      // Решается до первой отрисовки, иначе полотно успело бы мигнуть.
+      try {
+        if (
+          matchMedia('(prefers-reduced-motion: reduce)').matches ||
+          location.pathname.indexOf('/auth/') === 0 ||
+          sessionStorage.getItem('scout.boot')
+        ) document.documentElement.classList.add('boot-skip');
+      } catch (e) {}
+      // Страховка: если loader.js не загрузился или упал, полотно снимается само
+      setTimeout(function () {
+        var l = document.getElementById('page-loader');
+        if (l) l.remove();
+        if (document.body) document.body.classList.remove('loading');
+      }, 6000);
+    </script>
+    <link rel="stylesheet" href="/boot/loader.css" />
   </head>
-  <body>
+  <body class="loading">
+    <div id="page-loader" aria-hidden="true" data-mock="%VITE_API_MOCK%" data-authority="%VITE_OIDC_AUTHORITY%"></div>
     <div id="root"></div>
+    <script src="/boot/loader.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
