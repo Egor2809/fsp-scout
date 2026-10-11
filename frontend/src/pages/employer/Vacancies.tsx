@@ -66,7 +66,7 @@ export default function EmployerVacancies() {
       <PageHeader title="Вакансии и отклики" />
       <QueryView query={query}>
         {(list) => {
-          if (!list.length) return <EmptyState icon={<IconBriefcase />} title="Вакансий нет" />
+          if (!list.length) return <EmptyState icon={<IconBriefcase />} title="Вакансий нет" description="Вакансии публикуются через API: POST /api/v1/vacancies, описание в /api-docs/. Опубликованные вакансии с откликами кандидатов есть у демо-компании «Северный код» — вход employer@demo.ru." />
           const current = list.find((v) => v.id === selected) ?? list[0]!
           return (
             <div className="grid gap-12 lg:grid-cols-[1fr_1.6fr]">
