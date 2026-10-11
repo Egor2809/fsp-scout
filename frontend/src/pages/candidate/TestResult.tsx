@@ -10,7 +10,7 @@ import { InlineError, QueryView } from '@/components/states'
 import { SkillList, Stat, Tag } from '@/components/tags'
 import { Button } from '@/components/ui/button'
 import { formatDate } from '@/lib/format'
-import { gradeLabel, testOutcomeLabel } from '@/lib/labels'
+import { competencyLabel, gradeLabel, testOutcomeLabel } from '@/lib/labels'
 import { retakeDatesAfter } from '@/lib/retake'
 
 const CONFIDENCE = { high: 'высокая', medium: 'средняя', low: 'низкая' } as const
@@ -84,7 +84,7 @@ export default function TestResult() {
                       {r.competencies.map((c) => (
                         <li key={c.competency_id} className="grid gap-1">
                           <div className="flex justify-between gap-2 text-sm">
-                            <span>{c.name}</span>
+                            <span>{competencyLabel[c.competency_id] ?? c.name}</span>
                             <span className="num text-muted-foreground">{c.score}%</span>
                           </div>
                           <div className="h-1.5 overflow-hidden rounded-[2px] bg-muted" aria-hidden>

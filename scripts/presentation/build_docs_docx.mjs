@@ -14,7 +14,7 @@ const {
 const { marked } = require('marked');
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
-const DOCS = ['technical-guide.md', 'local-deployment.md', 'public-deployment.md', 'matching.md', 'validation.md'];
+const DOCS = ['technical-guide.md', 'local-deployment.md', 'public-deployment.md', 'matching.md', 'fsp-integration.md', 'validation.md', 'dependencies.md'];
 const BRAND = '402FFF';
 const INK = '1B1C21';
 const FONT = 'Arial';

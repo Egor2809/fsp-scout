@@ -142,6 +142,15 @@ export const testOutcomeLabel: Record<TestOutcome, string> = {
   failed: 'Не подтверждён',
 }
 
+export const competencyLabel: Record<string, string> = {
+  algorithms: 'Алгоритмы',
+  databases: 'Базы данных',
+  data_reasoning: 'Работа с данными',
+  interface: 'Интерфейсы',
+  quality: 'Качество и тестирование',
+  systems: 'Системы и инфраструктура',
+}
+
 export const testBlockLabel: Record<TestBlock, string> = {
   adaptive: 'Блок A · адаптивный',
   practice: 'Блок B · практика',

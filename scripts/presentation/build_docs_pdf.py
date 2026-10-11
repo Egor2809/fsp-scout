@@ -11,7 +11,7 @@ from pathlib import Path
 import markdown
 
 ROOT = Path(__file__).resolve().parents[2]
-DOCS = ['technical-guide.md', 'local-deployment.md', 'public-deployment.md', 'matching.md', 'validation.md']
+DOCS = ['technical-guide.md', 'local-deployment.md', 'public-deployment.md', 'matching.md', 'fsp-integration.md', 'validation.md', 'dependencies.md']
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 
 CSS = """
