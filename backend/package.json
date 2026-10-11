@@ -16,7 +16,8 @@
     "test:integration": "node --test --test-isolation=none integration/*.test.mjs",
     "prisma:generate": "prisma generate",
     "migrate": "prisma migrate deploy",
-    "seed:demo": "tsx scripts/seed-demo.ts"
+    "seed:demo": "tsx scripts/seed-demo.ts",
+    "llm:drafts": "node --experimental-strip-types scripts/llm-draft-items.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.1.6",
