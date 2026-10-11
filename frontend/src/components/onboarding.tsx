@@ -155,7 +155,7 @@ export function SurveyForm({ onDone }: { onDone: () => void }) {
           Готов к переезду
         </label>
       </div>
-      <SalaryRangeField label="Ожидания, ₽ в месяц на руки" value={salary} onChange={setSalary} error={touched ? errors.salary : null} hint="Работодатель не увидит эти цифры" />
+      <SalaryRangeField label="Ожидания, ₽ в месяц на руки" value={salary} onChange={setSalary} error={touched ? errors.salary : null} hint="Диапазон виден в анонимной карточке. Скрытый нижний порог — в разделе «Приватность»" />
       {create.isError && <ErrorBanner error={create.error} />}
       <Button type="submit" disabled={create.isPending} className="justify-self-start">
         Сохранить и выбрать грейд

@@ -113,7 +113,7 @@ export function InviteDialog({ card, open, onOpenChange, source }: { card: Candi
               setSalary(v)
               if (create.isError) create.reset()
             }}
-            error={salaryError && (touched || salary.from !== null) ? salaryError : below ? { field: 'to', message: BELOW } : null} hint="Проверим, что вилка не ниже скрытых ожиданий кандидата" />
+            error={salaryError && (touched || salary.from !== null) ? salaryError : below ? { field: 'to', message: BELOW } : null} hint="Проверим, что вилка не ниже скрытого порога кандидата" />
           <div className="grid gap-4 sm:grid-cols-3">
             <FormField label="Формат" htmlFor="inv-fmt">
               <SelectField id="inv-fmt" value={format} onChange={setFormat} options={WORK_FORMATS.map((f) => ({ value: f, label: workFormatLabel[f] }))} />
