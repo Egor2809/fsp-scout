@@ -1,8 +1,23 @@
-# Ограничения памяти для сервера на 4 ГБ (2 vCPU, своп 4 ГБ).
+# Сервер на 4 ГБ (2 vCPU, своп 4 ГБ): ограничения памяти и автоперезапуск
+# долгоживущих сервисов — стенд поднимается сам после перезагрузки VPS.
 services:
   keycloak:
     environment:
       JAVA_OPTS_KC_HEAP: "-Xms64m -Xmx448m"
     mem_limit: 768m
+    restart: unless-stopped
   postgres:
     mem_limit: 512m
+    restart: unless-stopped
+  redis:
+    restart: unless-stopped
+  mailpit:
+    restart: unless-stopped
+  api:
+    restart: unless-stopped
+  worker:
+    restart: unless-stopped
+  web:
+    restart: unless-stopped
+  edge:
+    restart: unless-stopped
