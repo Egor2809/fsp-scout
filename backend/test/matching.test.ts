@@ -70,7 +70,7 @@ test('explanations sum to score and never include personal identity', () => {
   assert.ok(!JSON.stringify(result).includes('private@example.test'));
   const missing = result.factors.find(f => f.kind === 'missing_skill')!;
   assert.equal(missing.contribution, 0);
-  assert.match(result.factors.find(f => f.kind === 'semantic')!.evidence!, /Jaccard/);
+  assert.match(result.factors.find(f => f.kind === 'semantic')!.evidence!, /Доля общих навыков/);
 });
 test('FSP is a verified positive bonus and absence has no standalone penalty', () => {
   const c = candidate(), base = strength(c, now).total;

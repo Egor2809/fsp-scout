@@ -123,6 +123,7 @@ export function FspIndexBadge({ index, className }: { index: number; className?:
     <span
       className={cn('inline-flex h-8 items-center gap-1.5 rounded-md bg-brand-accent px-2.5 text-[1.1875rem] leading-none font-bold text-white', className)}
       aria-label={`Индекс ФСП ${index}`}
+      title={`Индекс ФСП ${index}: подтверждённые достижения на соревнованиях ФСП`}
     >
       <IconMedal aria-hidden className="size-4.5" />
       <span className="num">{index}</span>

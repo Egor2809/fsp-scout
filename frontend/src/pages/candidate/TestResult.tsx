@@ -69,7 +69,7 @@ export default function TestResult() {
               </div>
             </header>
 
-            <details className="group max-w-4xl">
+            <details className="group max-w-4xl" open={r.express || undefined}>
               <summary className="cursor-pointer list-none text-sm font-medium text-link [&::-webkit-details-marker]:hidden">
                 <span className="group-open:hidden">Подробнее о результате</span>
                 <span className="hidden group-open:inline">Скрыть подробности</span>

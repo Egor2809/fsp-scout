@@ -165,7 +165,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-9 gap-2 px-1.5" aria-label="Меню пользователя">
           <span className="grid size-7 place-items-center rounded-full bg-foreground font-mono text-xs font-semibold text-background">{initials}</span>
-          <span className="hidden max-w-36 truncate text-sm md:inline">{session.displayName}</span>
+          <span className="hidden max-w-56 truncate text-sm md:inline">{session.displayName}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">

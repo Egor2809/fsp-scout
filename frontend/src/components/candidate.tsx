@@ -326,8 +326,7 @@ export function CandidateFacts({
     <div className="grid gap-2">
       <div
         className={cn(
-          "grid grid-cols-2 gap-2",
-          percentile ? "sm:grid-cols-4" : "sm:grid-cols-3",
+          "grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))]",
         )}
       >
         {percentile && (
