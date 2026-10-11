@@ -1,0 +1,8 @@
+# Ограничения памяти для сервера на 4 ГБ (2 vCPU, своп 4 ГБ).
+services:
+  keycloak:
+    environment:
+      JAVA_OPTS_KC_HEAP: "-Xms64m -Xmx448m"
+    mem_limit: 768m
+  postgres:
+    mem_limit: 512m
