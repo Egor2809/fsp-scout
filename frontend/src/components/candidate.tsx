@@ -149,8 +149,9 @@ export function WhyPanel({
             ))}
           </ul>
           <p className="num mt-3 text-xs text-muted-foreground">
-            совпадение с запросом {Math.round(explanation.fit)}% · сила профиля{" "}
-            {Math.round(explanation.strength)}%
+            совпадение с запросом {Math.round(explanation.fit)}/100 · сила профиля{" "}
+            {Math.round(explanation.strength)}/100
+            {explanation.strength > 100 && " с бонусом ФСП"}
           </p>
         </>
       )}
